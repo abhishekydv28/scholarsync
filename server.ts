@@ -27,13 +27,13 @@ const ai = apiKey
     })
   : null;
 
-// Endpoint: Student Life AI Chatbot (ScholarSync Coach)
+// Endpoint: Student Life AI Chatbot (PlanZo Coach)
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages, context } = req.body;
     const userMessage = messages?.[messages.length - 1]?.content || '';
 
-    const systemPrompt = `You are Senior Campus Mentor on ScholarSync, an experienced, friendly, and practical senior engineer advising a junior B.Tech student.
+    const systemPrompt = `You are Senior Campus Mentor on PlanZo, an experienced, friendly, and practical senior engineer advising a junior B.Tech student.
 You understand the real chaos of Indian engineering colleges: 75% attendance criteria, surprise class tests, lab record submissions, HOD external viva intimidation, mass bunks, proxy drama, canteen cutting chai, and clearing exams by studying PYQs 1 night before.
 
 User context:
@@ -215,7 +215,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`ScholarSync server running on http://0.0.0.0:${PORT}`);
+    console.log(`PlanZo server running on http://0.0.0.0:${PORT}`);
   });
 }
 

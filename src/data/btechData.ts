@@ -1,25 +1,28 @@
 import { SubjectCourse, TimetableItem } from '../types';
 
 export const COLLEGES_LIST = [
-  'IIT Bombay / Madras / Delhi',
-  'NIT Trichy / Surathkal / Warangal',
-  'VTU Belagavi (Affiliated Colleges)',
-  'AKTU Lucknow (Affiliated Colleges)',
-  'SPPU Pune (Affiliated Colleges)',
-  'Anna University Chennai',
-  'Mumbai University (MU Engineering)',
-  'DTU / NSUT Delhi',
-  'Autonomous Engineering College',
-  'Other / Custom University',
+  'RGPV Bhopal',
+  'SGSITS',
+  'IET DAVV',
+  'SATI VIDISHA',
+  'MEDICAPS UNIVERSITY',
+  'OTHERS',
 ];
 
 export const BRANCHES_LIST = [
-  'Computer Science & Engineering (CSE)',
-  'Information Technology (IT)',
-  'Electronics & Communication (ECE)',
-  'Artificial Intelligence & Data Science (AI/DS)',
-  'Mechanical Engineering (ME)',
-  'Electrical & Electronics Engineering (EEE)',
+  'B.Tech. Civil Engineering',
+  'B.Tech. Computer Science & Engineering',
+  'B.Tech. Electronics & Telecommunication Engineering',
+  'B.Tech. Electrical Engineering',
+  'B.Tech. Mechanical Engineering',
+  'B.Tech. Information Technology',
+  'B.Tech. Electronics & Instrumentation Engineering',
+  'B.Tech. Biomedical Engineering',
+  'B. Pharma',
+  'B.Tech Industrial & Production Engineering',
+  'B.Tech. Civil Engineering (Hindi)',
+  'B.Tech. AI & Robotics',
+  'B.Des. Bachelor of Design',
 ];
 
 export const DEFAULT_HABITS = [
@@ -33,7 +36,7 @@ export const DEFAULT_HABITS = [
 
 // Rich curriculum mapping for B.Tech
 export const CURRICULUM_DATA: Record<string, SubjectCourse[]> = {
-  'Computer Science & Engineering (CSE)': [
+  'B.Tech. Computer Science & Engineering': [
     {
       id: 'cs401',
       name: 'Design & Analysis of Algorithms',
@@ -281,6 +284,11 @@ export const CURRICULUM_DATA: Record<string, SubjectCourse[]> = {
     },
   ],
 };
+
+// Aliases for related departments
+CURRICULUM_DATA['Computer Science & Engineering (CSE)'] = CURRICULUM_DATA['B.Tech. Computer Science & Engineering'];
+CURRICULUM_DATA['B.Tech. Information Technology'] = CURRICULUM_DATA['B.Tech. Computer Science & Engineering'];
+CURRICULUM_DATA['B.Tech. AI & Robotics'] = CURRICULUM_DATA['B.Tech. Computer Science & Engineering'];
 
 // Realistic initial timetable designed for calm flow & cognitive pacing
 export const INITIAL_TIMETABLE: TimetableItem[] = [

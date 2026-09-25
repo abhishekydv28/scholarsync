@@ -8,6 +8,7 @@ import {
   SubjectAttendance,
   SubjectFolderData,
   FolderItem,
+  DailyScheduledTask,
 } from '../types';
 import {
   CURRICULUM_DATA,
@@ -49,10 +50,14 @@ interface AppContextType {
   setZenModeOpen: (open: boolean) => void;
   activeZenTask: TimetableItem | null;
   startZenMode: (item?: TimetableItem) => void;
-  activeView: 'timeline' | 'academic' | 'attendance' | 'analytics';
-  setActiveView: (view: 'timeline' | 'academic' | 'attendance' | 'analytics') => void;
+  activeView: 'home' | 'timeline' | 'academic' | 'attendance' | 'analytics';
+  setActiveView: (view: 'home' | 'timeline' | 'academic' | 'attendance' | 'analytics') => void;
   isAiDrawerOpen: boolean;
   setIsAiDrawerOpen: (open: boolean) => void;
+  isAttendanceModalOpen: boolean;
+  setIsAttendanceModalOpen: (open: boolean) => void;
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (open: boolean) => void;
   selectedResourceForModal: any | null;
   setSelectedResourceForModal: (resource: any | null) => void;
   // 75% Attendance Feature
@@ -65,29 +70,116 @@ interface AppContextType {
   subjectFolders: Record<string, SubjectFolderData>;
   toggleAssignmentStatus: (subjectId: string, assignmentId: string) => void;
   addCustomNoteToFolder: (subjectId: string, note: FolderItem) => void;
+  // Monthly Calendar & Task Scheduling Feature
+  scheduledTasks: Record<string, DailyScheduledTask[]>;
+  addTaskForDate: (task: Omit<DailyScheduledTask, 'id'>) => void;
+  toggleTaskForDate: (date: string, taskId: string) => void;
+  deleteTaskForDate: (date: string, taskId: string) => void;
+  getDateTaskStats: (dateStr: string) => { total: number; completed: number; percentage: number };
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
-  PROFILE: 'scholarsync_profile_v3',
-  TIMETABLE: 'scholarsync_timetable_v3',
-  SUBJECTS: 'scholarsync_subjects_v3',
-  REFLECTIONS: 'scholarsync_reflections_v3',
-  ATTENDANCE: 'scholarsync_attendance_v3',
-  FOLDERS: 'scholarsync_folders_v3',
+  PROFILE: 'planzo_profile_v1',
+  TIMETABLE: 'planzo_timetable_v1',
+  SUBJECTS: 'planzo_subjects_v1',
+  REFLECTIONS: 'planzo_reflections_v1',
+  ATTENDANCE: 'planzo_attendance_v1',
+  FOLDERS: 'planzo_folders_v1',
+  SCHEDULED_TASKS: 'planzo_scheduled_tasks_v3',
 };
+
+function generateDefaultScheduledTasks(): Record<string, DailyScheduledTask[]> {
+  const tasksByDate: Record<string, DailyScheduledTask[]> = {};
+
+  const sampleTasksPool = [
+    { title: 'DSA: Binary Search Trees & AVL Traversals', category: 'study' as const, startTime: '09:30', endTime: '10:30' },
+    { title: 'Operating Systems: Process Sync & Semaphores', category: 'lecture' as const, startTime: '10:45', endTime: '11:45' },
+    { title: 'Database Systems: SQL Normalization & Joins', category: 'study' as const, startTime: '12:00', endTime: '13:00' },
+    { title: 'Web Development Lab: React Component Architecture', category: 'lab' as const, startTime: '14:30', endTime: '16:00' },
+    { title: 'Computer Networks Assignment: TCP Handshake Analysis', category: 'assignment' as const, startTime: '17:00', endTime: '18:00' },
+    { title: 'LeetCode Daily Problem: Two Pointer & Sliding Window', category: 'study' as const, startTime: '20:30', endTime: '21:30' },
+  ];
+
+  // Rhythm of completion for past days of Sept 2026 up to today (2026-09-25)
+  // Demonstrates full spectrum from 100% light green down to 0% red
+  const completionRhythm = [
+    { total: 4, completed: 4 }, // Day 1: 100% (Light Green)
+    { total: 3, completed: 3 }, // Day 2: 100% (Light Green)
+    { total: 4, completed: 3 }, // Day 3: 75%  (Light Green)
+    { total: 5, completed: 4 }, // Day 4: 80%  (Light Green)
+    { total: 3, completed: 2 }, // Day 5: 66%  (Lime Green)
+    { total: 2, completed: 2 }, // Day 6: 100% (Light Green)
+    { total: 4, completed: 2 }, // Day 7: 50%  (Yellow)
+    { total: 4, completed: 3 }, // Day 8: 75%  (Light Green)
+    { total: 4, completed: 1 }, // Day 9: 25%  (Orange)
+    { total: 4, completed: 4 }, // Day 10: 100% (Light Green)
+    { total: 3, completed: 0 }, // Day 11: 0%   (Red - missed/lazy day)
+    { total: 4, completed: 2 }, // Day 12: 50%  (Yellow)
+    { total: 0, completed: 0 }, // Day 13: Free day (Sunday)
+    { total: 4, completed: 3 }, // Day 14: 75%  (Light Green)
+    { total: 5, completed: 1 }, // Day 15: 20%  (Light Red / Rose)
+    { total: 4, completed: 4 }, // Day 16: 100% (Light Green)
+    { total: 3, completed: 2 }, // Day 17: 66%  (Lime Green)
+    { total: 4, completed: 3 }, // Day 18: 75%  (Light Green)
+    { total: 3, completed: 1 }, // Day 19: 33%  (Orange)
+    { total: 0, completed: 0 }, // Day 20: Free day (Sunday)
+    { total: 4, completed: 4 }, // Day 21: 100% (Light Green)
+    { total: 4, completed: 3 }, // Day 22: 75%  (Light Green)
+    { total: 4, completed: 2 }, // Day 23: 50%  (Yellow)
+    { total: 4, completed: 4 }, // Day 24: 100% (Light Green)
+  ];
+
+  completionRhythm.forEach((rhythm, idx) => {
+    const day = idx + 1;
+    const dateStr = `2026-09-${day.toString().padStart(2, '0')}`;
+    const dayTasks: DailyScheduledTask[] = [];
+    for (let i = 0; i < rhythm.total; i++) {
+      const template = sampleTasksPool[i % sampleTasksPool.length];
+      dayTasks.push({
+        id: `task-${dateStr}-${i}`,
+        title: template.title,
+        category: template.category,
+        startTime: template.startTime,
+        endTime: template.endTime,
+        completed: i < rhythm.completed,
+        date: dateStr,
+      });
+    }
+    tasksByDate[dateStr] = dayTasks;
+  });
+
+  return tasksByDate;
+}
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // 1. Profile State
   const [profile, setProfile] = useState<StudentProfile>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
+    const saved = localStorage.getItem(STORAGE_KEYS.PROFILE) || localStorage.getItem('scholarsync_profile_v3');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          name: parsed.name || 'Abhishek',
+          college: parsed.college && COLLEGES_LIST.includes(parsed.college) ? parsed.college : COLLEGES_LIST[0],
+          customCollege: parsed.customCollege || '',
+          branch: parsed.branch && BRANCHES_LIST.includes(parsed.branch) ? parsed.branch : BRANCHES_LIST[1],
+          semester: parsed.semester || 4,
+          wakeTime: parsed.wakeTime || '07:00',
+          sleepTime: parsed.sleepTime || '23:30',
+          collegeStart: parsed.collegeStart || '09:00',
+          collegeEnd: parsed.collegeEnd || '16:30',
+          selectedHabits: parsed.selectedHabits || [DEFAULT_HABITS[0], DEFAULT_HABITS[1], DEFAULT_HABITS[2]],
+          onboarded: parsed.onboarded !== undefined ? parsed.onboarded : true,
+        };
+      } catch (e) {}
     }
     return {
-      college: COLLEGES_LIST[2], // VTU Belagavi default
-      branch: BRANCHES_LIST[0],  // CSE
+      name: 'Abhishek',
+      college: COLLEGES_LIST[0], // RGPV Bhopal default
+      customCollege: '',
+      branch: BRANCHES_LIST[1],  // B.Tech. Computer Science & Engineering
       semester: 4,
       wakeTime: '07:00',
       sleepTime: '23:30',
@@ -100,7 +192,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 2. Timetable State
   const [timetable, setTimetable] = useState<TimetableItem[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.TIMETABLE);
+    const saved = localStorage.getItem(STORAGE_KEYS.TIMETABLE) || localStorage.getItem('scholarsync_timetable_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -109,16 +201,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 3. Subjects & Curriculum State
   const [subjects, setSubjects] = useState<SubjectCourse[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.SUBJECTS);
+    const saved = localStorage.getItem(STORAGE_KEYS.SUBJECTS) || localStorage.getItem('scholarsync_subjects_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return CURRICULUM_DATA['Computer Science & Engineering (CSE)'];
+    return CURRICULUM_DATA['B.Tech. Computer Science & Engineering'] || Object.values(CURRICULUM_DATA)[0];
   });
 
   // 4. Daily Reflections State
   const [reflections, setReflections] = useState<ReflectionEntry[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.REFLECTIONS);
+    const saved = localStorage.getItem(STORAGE_KEYS.REFLECTIONS) || localStorage.getItem('scholarsync_reflections_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -137,7 +229,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 5. 75% Attendance State
   const [attendance, setAttendance] = useState<SubjectAttendance[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.ATTENDANCE);
+    const saved = localStorage.getItem(STORAGE_KEYS.ATTENDANCE) || localStorage.getItem('scholarsync_attendance_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -146,16 +238,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 6. Subject-Wise Folders State
   const [subjectFolders, setSubjectFolders] = useState<Record<string, SubjectFolderData>>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.FOLDERS);
+    const saved = localStorage.getItem(STORAGE_KEYS.FOLDERS) || localStorage.getItem('scholarsync_folders_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
     return SUBJECT_FOLDERS_DATA;
   });
 
+  // 7. Monthly Calendar Scheduled Tasks State
+  const [scheduledTasks, setScheduledTasks] = useState<Record<string, DailyScheduledTask[]>>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.SCHEDULED_TASKS);
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return generateDefaultScheduledTasks();
+  });
+
   // UI States
-  const [activeView, setActiveView] = useState<'timeline' | 'academic' | 'attendance' | 'analytics'>('timeline');
+  const [activeView, setActiveView] = useState<'home' | 'timeline' | 'academic' | 'attendance' | 'analytics'>('home');
   const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
+  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [zenModeOpen, setZenModeOpen] = useState(false);
   const [activeZenTask, setActiveZenTask] = useState<TimetableItem | null>(null);
   const [selectedResourceForModal, setSelectedResourceForModal] = useState<any | null>(null);
@@ -187,10 +290,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(STORAGE_KEYS.FOLDERS, JSON.stringify(subjectFolders));
   }, [subjectFolders]);
 
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.SCHEDULED_TASKS, JSON.stringify(scheduledTasks));
+  }, [scheduledTasks]);
+
   const updateProfile = (updates: Partial<StudentProfile>) => {
     setProfile((prev) => ({ ...prev, ...updates }));
-    if (updates.branch && CURRICULUM_DATA[updates.branch]) {
-      setSubjects(CURRICULUM_DATA[updates.branch]);
+    if (updates.branch) {
+      if (CURRICULUM_DATA[updates.branch]) {
+        setSubjects(CURRICULUM_DATA[updates.branch]);
+      } else {
+        setSubjects(CURRICULUM_DATA['B.Tech. Computer Science & Engineering'] || Object.values(CURRICULUM_DATA)[0]);
+      }
     }
   };
 
@@ -441,6 +552,82 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRecalibrateNotice(`Added "${note.title}" to ${subjectId.toUpperCase()} folder.`);
   };
 
+  // Monthly Calendar & Task Scheduling Methods
+  const addTaskForDate = (task: Omit<DailyScheduledTask, 'id'>) => {
+    const id = `task-${task.date}-${Date.now()}`;
+    const newTask: DailyScheduledTask = { ...task, id };
+
+    setScheduledTasks((prev) => {
+      const existing = prev[task.date] || [];
+      return { ...prev, [task.date]: [...existing, newTask] };
+    });
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (task.date === todayStr) {
+      const newTimetableItem: TimetableItem = {
+        id,
+        title: task.title,
+        category: task.category,
+        startTime: task.startTime,
+        endTime: task.endTime,
+        completed: task.completed,
+        cognitiveWeight: task.cognitiveWeight || 3,
+        date: task.date,
+      };
+      setTimetable((prev) => [...prev, newTimetableItem]);
+    }
+
+    setRecalibrateNotice(`Scheduled "${task.title}" for ${task.date}.`);
+  };
+
+  const toggleTaskForDate = (date: string, taskId: string) => {
+    setScheduledTasks((prev) => {
+      const existing = prev[date] || [];
+      const updated = existing.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t));
+      return { ...prev, [date]: updated };
+    });
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (date === todayStr) {
+      setTimetable((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t))
+      );
+    }
+  };
+
+  const deleteTaskForDate = (date: string, taskId: string) => {
+    setScheduledTasks((prev) => {
+      const existing = prev[date] || [];
+      return { ...prev, [date]: existing.filter((t) => t.id !== taskId) };
+    });
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (date === todayStr) {
+      setTimetable((prev) => prev.filter((t) => t.id !== taskId));
+    }
+  };
+
+  const getDateTaskStats = (dateStr: string) => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const tasks = scheduledTasks[dateStr];
+
+    if (dateStr === todayStr && timetable.length > 0) {
+      const total = timetable.length;
+      const completed = timetable.filter((t) => t.completed).length;
+      const percentage = total === 0 ? 100 : Math.round((completed / total) * 100);
+      return { total, completed, percentage };
+    }
+
+    if (!tasks || tasks.length === 0) {
+      return { total: 0, completed: 0, percentage: 0 };
+    }
+
+    const total = tasks.length;
+    const completed = tasks.filter((t) => t.completed).length;
+    const percentage = Math.round((completed / total) * 100);
+    return { total, completed, percentage };
+  };
+
   // Mental Bandwidth Computation
   const todayReflections = reflections.filter(
     (r) => r.date === new Date().toISOString().split('T')[0]
@@ -529,6 +716,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveView,
         isAiDrawerOpen,
         setIsAiDrawerOpen,
+        isAttendanceModalOpen,
+        setIsAttendanceModalOpen,
+        isSidebarOpen,
+        setIsSidebarOpen,
         selectedResourceForModal,
         setSelectedResourceForModal,
         // Attendance
@@ -541,6 +732,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         subjectFolders,
         toggleAssignmentStatus,
         addCustomNoteToFolder,
+        // Monthly Calendar & Scheduling
+        scheduledTasks,
+        addTaskForDate,
+        toggleTaskForDate,
+        deleteTaskForDate,
+        getDateTaskStats,
       }}
     >
       {children}

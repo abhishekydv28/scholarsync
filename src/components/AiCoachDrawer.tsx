@@ -27,7 +27,7 @@ export const AiCoachDrawer: React.FC = () => {
     {
       id: 'welcome',
       sender: 'assistant',
-      content: `Hey! Senior Campus Mentor here. 🎓
+      content: `Hey ${profile.name || 'Engineer'}! Senior Campus Mentor here. 🎓
 Engineering ki ground reality hum sab jaante hain:
 • **75% Attendance:** Ek lecture bunk kiya toh debar list ka darr.
 • **Lab Viva & Externals:** File check karne se pehle cross-questioning.
@@ -202,7 +202,7 @@ How can I help you today?
               >
                 {msg.sender === 'assistant' && (
                   <div className="w-7 h-7 rounded-lg bg-teal-800 text-stone-100 flex items-center justify-center shrink-0 text-xs font-serif font-bold">
-                    S
+                    P
                   </div>
                 )}
 

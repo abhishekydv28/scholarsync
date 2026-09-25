@@ -42,10 +42,24 @@ export interface TimetableItem {
   resource?: ResourceLink;
   cognitiveWeight: number; // 1 (light) to 5 (intensive)
   notes?: string;
+  date?: string; // YYYY-MM-DD
+}
+
+export interface DailyScheduledTask {
+  id: string;
+  title: string;
+  category: ItemCategory;
+  startTime: string;
+  endTime: string;
+  completed: boolean;
+  date: string; // YYYY-MM-DD
+  cognitiveWeight?: number;
 }
 
 export interface StudentProfile {
+  name: string;
   college: string;
+  customCollege?: string;
   branch: string;
   semester: number;
   wakeTime: string;

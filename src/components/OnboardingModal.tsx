@@ -15,7 +15,9 @@ interface OnboardingModalProps {
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) => {
   const { profile, updateProfile, recalibrateSchedule } = useApp();
 
-  const [college, setCollege] = useState(profile.college);
+  const [name, setName] = useState(profile.name || 'Abhishek');
+  const [college, setCollege] = useState(profile.college || COLLEGES_LIST[0]);
+  const [customCollege, setCustomCollege] = useState(profile.customCollege || '');
   const [branch, setBranch] = useState(profile.branch);
   const [semester, setSemester] = useState(profile.semester);
   const [wakeTime, setWakeTime] = useState(profile.wakeTime);
@@ -36,7 +38,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
 
   const handleSave = () => {
     updateProfile({
+      name: name.trim() || 'Abhishek',
       college,
+      customCollege: college === 'OTHERS' ? customCollege.trim() : '',
       branch,
       semester,
       wakeTime,
@@ -56,14 +60,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
         <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-teal-800 text-stone-100 flex items-center justify-center font-serif text-base font-bold">
-              S
+              P
             </div>
             <div>
               <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
-                Academic Profile & Calibration
+                PlanZo Profile & Calibration
               </h3>
               <p className="text-xs text-stone-500 dark:text-stone-400">
-                Zero-friction setup: automatically maps your engineering syllabus.
+                Personalize your name, university, and daily academic rhythm.
               </p>
             </div>
           </div>
@@ -75,6 +79,22 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
           </button>
         </div>
 
+        {/* 0. Student Name Input */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 flex items-center justify-between">
+            <span>Your Name / Preferred Name</span>
+            <span className="text-[11px] text-teal-700 dark:text-teal-400 font-normal">Displayed on your dashboard</span>
+          </label>
+          <input
+            type="text"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter your name (e.g. Abhishek Yadav)"
+            className="w-full rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-2.5 text-xs text-stone-900 dark:text-stone-100 focus:outline-hidden focus:border-teal-500 font-medium"
+          />
+        </div>
+
         {/* 1. College Selection */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">
@@ -83,7 +103,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
           <select
             value={college}
             onChange={(e) => setCollege(e.target.value)}
-            className="w-full rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-2.5 text-xs text-stone-900 dark:text-stone-100 focus:outline-hidden focus:border-teal-500"
+            className="w-full rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-2.5 text-xs text-stone-900 dark:text-stone-100 focus:outline-hidden focus:border-teal-500 font-medium"
           >
             {COLLEGES_LIST.map((c) => (
               <option key={c} value={c}>
@@ -91,6 +111,17 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
               </option>
             ))}
           </select>
+
+          {/* If OTHERS selected, allow typing custom college */}
+          {college === 'OTHERS' && (
+            <input
+              type="text"
+              value={customCollege}
+              onChange={(e) => setCustomCollege(e.target.value)}
+              placeholder="Enter your Institute / University name"
+              className="mt-2 w-full rounded-xl bg-stone-50 dark:bg-stone-800 border border-teal-500/70 p-2.5 text-xs text-stone-900 dark:text-stone-100 focus:outline-hidden font-medium"
+            />
+          )}
         </div>
 
         {/* 2. Branch & Semester */}
@@ -142,8 +173,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
               value={wakeTime}
               onChange={(e) => setWakeTime(e.target.value)}
               className="w-full rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-2 text-xs text-stone-900 dark:text-stone-100"
-            >
-            </input>
+            />
           </div>
 
           <div className="space-y-1.5">
@@ -156,43 +186,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
               value={sleepTime}
               onChange={(e) => setSleepTime(e.target.value)}
               className="w-full rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-2 text-xs text-stone-900 dark:text-stone-100"
-            >
-            </input>
+            />
           </div>
         </div>
 
-        {/* 4. Daily Habits Selection (pick up to 3-4) */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <label className="font-semibold text-stone-700 dark:text-stone-300">
-              Core Daily Habits ({selectedHabits.length}/4 selected)
-            </label>
-            <span className="text-stone-400 text-[11px]">Bloom in Focus Garden</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {DEFAULT_HABITS.map((habit) => {
-              const isSelected = selectedHabits.includes(habit);
-              return (
-                <button
-                  key={habit}
-                  type="button"
-                  onClick={() => toggleHabit(habit)}
-                  className={`p-2.5 rounded-xl border text-left text-xs font-medium transition-all flex items-center justify-between ${
-                    isSelected
-                      ? 'border-teal-600 bg-teal-50 dark:bg-teal-950/50 text-teal-900 dark:text-teal-100'
-                      : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700 text-stone-600 dark:text-stone-400'
-                  }`}
-                >
-                  <span className="truncate pr-2">{habit}</span>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-teal-600 shrink-0" />}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Footer save & auto-pilot trigger */}
+        {/* Footer save & submit trigger */}
         <div className="pt-2 flex items-center justify-end gap-2 border-t border-stone-100 dark:border-stone-800">
           <button
             onClick={onClose}
@@ -202,10 +200,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-teal-800 text-stone-100 hover:bg-teal-700 dark:bg-teal-700 dark:hover:bg-teal-600 transition-colors shadow-xs flex items-center gap-1.5"
+            className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-teal-800 text-stone-100 hover:bg-teal-700 dark:bg-teal-700 dark:hover:bg-teal-600 transition-colors shadow-xs"
           >
-            <Sparkles className="w-3.5 h-3.5 text-teal-300" />
-            <span>Map Syllabus & Auto-Calibrate</span>
+            Submit
           </button>
         </div>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { MentalBandwidthMeter } from './MentalBandwidthMeter';
 import {
   BarChart2,
   TrendingUp,
@@ -61,6 +62,9 @@ export const AnalyticsView: React.FC = () => {
   return (
     <div className="space-y-6">
       
+      {/* Real-Time Mental Energy & Cognitive Load Engine */}
+      <MentalBandwidthMeter />
+
       {/* 10-Second End-of-Day Reflection Card */}
       <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 shadow-xs">
         <div className="flex items-center justify-between mb-2">

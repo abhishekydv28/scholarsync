@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
-import { MentalBandwidthMeter } from './components/MentalBandwidthMeter';
-import { FocusGarden } from './components/FocusGarden';
+import { HomeOverview } from './components/HomeOverview';
 import { DailyTimeline } from './components/DailyTimeline';
 import { AcademicHub } from './components/AcademicHub';
 import { AttendanceTracker } from './components/AttendanceTracker';
@@ -11,10 +10,12 @@ import { ZenModeModal } from './components/ZenModeModal';
 import { AiCoachDrawer } from './components/AiCoachDrawer';
 import { OnboardingModal } from './components/OnboardingModal';
 import { ResourceModal } from './components/ResourceModal';
-import { Sparkles, Calendar, Coffee, Heart } from 'lucide-react';
+import { SubjectAttendanceFolderModal } from './components/SubjectAttendanceFolderModal';
+import { AppSidebar } from './components/AppSidebar';
+import { ArrowLeft } from 'lucide-react';
 
 const ScholarSyncMain: React.FC = () => {
-  const { activeView, profile } = useApp();
+  const { activeView, setActiveView, profile } = useApp();
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -37,7 +38,7 @@ const ScholarSyncMain: React.FC = () => {
   }).format(new Date());
 
   return (
-    <div className="min-h-screen bg-stone-100/60 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans transition-colors selection:bg-teal-500/20">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-stone-100/60 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans transition-colors selection:bg-teal-500/20">
       
       {/* Top Navigation */}
       <Navbar
@@ -47,31 +48,27 @@ const ScholarSyncMain: React.FC = () => {
       />
 
       {/* Main Content Viewport (Desktop 1440px baseline) */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6 overflow-x-hidden">
         
-        {/* Daily Date & Mindful Anchor */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 border-b border-stone-200/80 dark:border-stone-800/80 pb-3">
-          <div>
-            <div className="text-xs font-mono uppercase tracking-wider text-teal-700 dark:text-teal-400">
-              {todayFormatted}
-            </div>
-            <h1 className="text-xl sm:text-2xl font-serif font-bold text-stone-900 dark:text-stone-100 tracking-tight">
-              Calm Academic Companion
-            </h1>
+        {/* If user navigated inside a specific feature, show a clean, non-intrusive back link */}
+        {activeView !== 'home' && (
+          <div className="flex items-center justify-between pb-2 border-b border-stone-200/80 dark:border-stone-800/80">
+            <button
+              onClick={() => setActiveView('home')}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-teal-700 dark:hover:text-teal-400 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Overview</span>
+            </button>
+            <span className="text-[11px] font-mono uppercase tracking-wider text-stone-400">
+              PlanZo / {activeView === 'timeline' ? 'Daily Routine' : activeView === 'academic' ? 'Subject Vault' : activeView === 'attendance' ? '75% Attendance' : 'Insights & Analytics'}
+            </span>
           </div>
-          <div className="text-xs text-stone-500 dark:text-stone-400">
-            {profile.branch.split('(')[0]} · Semester {profile.semester}
-          </div>
-        </div>
-
-        {/* Cognitive Load Top Grid: Bandwidth Meter & Focus Garden */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <MentalBandwidthMeter />
-          <FocusGarden />
-        </div>
+        )}
 
         {/* Dynamic Main View Switcher */}
-        <div className="pt-2">
+        <div>
+          {activeView === 'home' && <HomeOverview />}
           {activeView === 'timeline' && <DailyTimeline />}
           {activeView === 'academic' && <AcademicHub />}
           {activeView === 'attendance' && <AttendanceTracker />}
@@ -84,7 +81,7 @@ const ScholarSyncMain: React.FC = () => {
       <footer className="mt-16 border-t border-stone-200 dark:border-stone-800/80 py-8 bg-white/40 dark:bg-stone-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500 dark:text-stone-400">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-stone-800 dark:text-stone-200">ScholarSync</span>
+            <span className="font-semibold text-stone-800 dark:text-stone-200">PlanZo</span>
             <span>·</span>
             <span>Intelligent B.Tech Academic Planning & Dynamic Auto-Correction</span>
           </div>
@@ -102,7 +99,14 @@ const ScholarSyncMain: React.FC = () => {
         onClose={() => setIsOnboardingOpen(false)}
       />
       <ResourceModal />
+      <SubjectAttendanceFolderModal />
 
+      {/* Floating Left-Bottom Sidebar Button & Popover */}
+      <AppSidebar
+        onOpenProfile={() => setIsOnboardingOpen(true)}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+      />
     </div>
   );
 };
