@@ -20,7 +20,9 @@ import {
   stopAmbientSound,
   setAmbientVolume,
   getAmbientStatus,
+  playTaskCompleteSound,
 } from '../utils/audioSynth';
+import { fireConfetti } from '../utils/audioVibes';
 
 export const ZenModeModal: React.FC = () => {
   const {
@@ -94,6 +96,8 @@ export const ZenModeModal: React.FC = () => {
   const handleCompleteActiveTask = () => {
     if (activeZenTask) {
       toggleItemComplete(activeZenTask.id);
+      playTaskCompleteSound();
+      fireConfetti(70);
     }
     setZenModeOpen(false);
   };

@@ -50,6 +50,10 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       if (e.key === 'Escape' && isSidebarOpen) {
         setIsSidebarOpen(false);
       }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSidebarOpen(!isSidebarOpen);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);

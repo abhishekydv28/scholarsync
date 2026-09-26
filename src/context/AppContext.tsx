@@ -87,7 +87,7 @@ const STORAGE_KEYS = {
   REFLECTIONS: 'planzo_reflections_v1',
   ATTENDANCE: 'planzo_attendance_v1',
   FOLDERS: 'planzo_folders_v1',
-  SCHEDULED_TASKS: 'planzo_scheduled_tasks_v3',
+  SCHEDULED_TASKS: 'planzo_scheduled_tasks_v5',
 };
 
 function generateDefaultScheduledTasks(): Record<string, DailyScheduledTask[]> {
@@ -103,32 +103,36 @@ function generateDefaultScheduledTasks(): Record<string, DailyScheduledTask[]> {
   ];
 
   // Rhythm of completion for past days of Sept 2026 up to today (2026-09-25)
-  // Demonstrates full spectrum from 100% light green down to 0% red
+  // PERFECTLY SYNCHRONIZED WITH THE 14-DAY STREAK:
+  // Days 12 to 25 are 14 unbroken consecutive days of >=75% green completion (Followed Area)!
+  // Days 9 & 11 show Red (Missed) to demonstrate previous streak break and full 3-color legend.
   const completionRhythm = [
-    { total: 4, completed: 4 }, // Day 1: 100% (Light Green)
-    { total: 3, completed: 3 }, // Day 2: 100% (Light Green)
-    { total: 4, completed: 3 }, // Day 3: 75%  (Light Green)
-    { total: 5, completed: 4 }, // Day 4: 80%  (Light Green)
-    { total: 3, completed: 2 }, // Day 5: 66%  (Lime Green)
-    { total: 2, completed: 2 }, // Day 6: 100% (Light Green)
-    { total: 4, completed: 2 }, // Day 7: 50%  (Yellow)
-    { total: 4, completed: 3 }, // Day 8: 75%  (Light Green)
-    { total: 4, completed: 1 }, // Day 9: 25%  (Orange)
-    { total: 4, completed: 4 }, // Day 10: 100% (Light Green)
-    { total: 3, completed: 0 }, // Day 11: 0%   (Red - missed/lazy day)
-    { total: 4, completed: 2 }, // Day 12: 50%  (Yellow)
-    { total: 0, completed: 0 }, // Day 13: Free day (Sunday)
-    { total: 4, completed: 3 }, // Day 14: 75%  (Light Green)
-    { total: 5, completed: 1 }, // Day 15: 20%  (Light Red / Rose)
-    { total: 4, completed: 4 }, // Day 16: 100% (Light Green)
-    { total: 3, completed: 2 }, // Day 17: 66%  (Lime Green)
-    { total: 4, completed: 3 }, // Day 18: 75%  (Light Green)
-    { total: 3, completed: 1 }, // Day 19: 33%  (Orange)
-    { total: 0, completed: 0 }, // Day 20: Free day (Sunday)
-    { total: 4, completed: 4 }, // Day 21: 100% (Light Green)
-    { total: 4, completed: 3 }, // Day 22: 75%  (Light Green)
-    { total: 4, completed: 2 }, // Day 23: 50%  (Yellow)
-    { total: 4, completed: 4 }, // Day 24: 100% (Light Green)
+    { total: 4, completed: 4 }, // Day 1: 100% (Green)
+    { total: 3, completed: 3 }, // Day 2: 100% (Green)
+    { total: 4, completed: 3 }, // Day 3: 75%  (Green)
+    { total: 5, completed: 4 }, // Day 4: 80%  (Green)
+    { total: 4, completed: 2 }, // Day 5: 50%  (Little Orange)
+    { total: 3, completed: 3 }, // Day 6: 100% (Green)
+    { total: 4, completed: 2 }, // Day 7: 50%  (Little Orange)
+    { total: 4, completed: 3 }, // Day 8: 75%  (Green)
+    { total: 4, completed: 1 }, // Day 9: 25%  (Red - Missed)
+    { total: 4, completed: 4 }, // Day 10: 100% (Green)
+    { total: 3, completed: 0 }, // Day 11: 0%   (Red - Missed, previous streak reset)
+    // --- START OF CURRENT ACTIVE 14-DAY UNBROKEN STREAK (Days 12-25) ---
+    { total: 4, completed: 4 }, // Day 12: 100% (Green - Streak Day 1)
+    { total: 3, completed: 3 }, // Day 13: 100% (Green - Streak Day 2)
+    { total: 4, completed: 3 }, // Day 14: 75%  (Green - Streak Day 3)
+    { total: 4, completed: 4 }, // Day 15: 100% (Green - Streak Day 4)
+    { total: 4, completed: 4 }, // Day 16: 100% (Green - Streak Day 5)
+    { total: 4, completed: 3 }, // Day 17: 75%  (Green - Streak Day 6)
+    { total: 4, completed: 4 }, // Day 18: 100% (Green - Streak Day 7)
+    { total: 5, completed: 4 }, // Day 19: 80%  (Green - Streak Day 8)
+    { total: 4, completed: 4 }, // Day 20: 100% (Green - Streak Day 9)
+    { total: 4, completed: 4 }, // Day 21: 100% (Green - Streak Day 10)
+    { total: 4, completed: 3 }, // Day 22: 75%  (Green - Streak Day 11)
+    { total: 4, completed: 4 }, // Day 23: 100% (Green - Streak Day 12)
+    { total: 4, completed: 4 }, // Day 24: 100% (Green - Streak Day 13)
+    { total: 4, completed: 4 }, // Day 25: 100% (Green - Streak Day 14 / Today!)
   ];
 
   completionRhythm.forEach((rhythm, idx) => {
@@ -162,6 +166,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const parsed = JSON.parse(saved);
         return {
           name: parsed.name || 'Abhishek',
+          avatarUrl: parsed.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=256&q=80',
           college: parsed.college && COLLEGES_LIST.includes(parsed.college) ? parsed.college : COLLEGES_LIST[0],
           customCollege: parsed.customCollege || '',
           branch: parsed.branch && BRANCHES_LIST.includes(parsed.branch) ? parsed.branch : BRANCHES_LIST[1],
@@ -177,6 +182,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     return {
       name: 'Abhishek',
+      avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=256&q=80',
       college: COLLEGES_LIST[0], // RGPV Bhopal default
       customCollege: '',
       branch: BRANCHES_LIST[1],  // B.Tech. Computer Science & Engineering

@@ -13,6 +13,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { ItemCategory } from '../types';
+import { playTaskCompleteSound } from '../utils/audioSynth';
+import { fireConfetti } from '../utils/audioVibes';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -408,8 +410,14 @@ export const MonthlyAcademicCalendar: React.FC = () => {
               >
                 <div className="flex items-center gap-2 truncate min-w-0 flex-1">
                   <button
-                    onClick={() => toggleTaskForDate(selectedDateStr, t.id)}
-                    className="text-stone-400 hover:text-teal-600 shrink-0"
+                    onClick={() => {
+                      toggleTaskForDate(selectedDateStr, t.id);
+                      if (!t.completed) {
+                        playTaskCompleteSound();
+                        fireConfetti(30);
+                      }
+                    }}
+                    className="text-stone-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:scale-110 active:scale-95 shrink-0 transition-transform cursor-pointer"
                     title={t.completed ? 'Mark incomplete' : 'Mark complete'}
                   >
                     {t.completed ? (

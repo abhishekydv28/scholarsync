@@ -17,16 +17,22 @@ import { ArrowLeft } from 'lucide-react';
 const ScholarSyncMain: React.FC = () => {
   const { activeView, setActiveView, profile } = useApp();
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('planzo_theme');
+    if (saved) return saved === 'dark';
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
-  // Apply dark class to html document
+  // Apply dark class to html document and body
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+      localStorage.setItem('planzo_theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+      localStorage.setItem('planzo_theme', 'light');
     }
   }, [isDarkMode]);
 
@@ -38,7 +44,7 @@ const ScholarSyncMain: React.FC = () => {
   }).format(new Date());
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-stone-100/60 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans transition-colors selection:bg-teal-500/20">
+    <div className={`${isDarkMode ? 'dark' : ''} min-h-screen w-full max-w-full overflow-x-hidden bg-stone-100/70 dark:bg-[#0b0f17] text-stone-900 dark:text-stone-100 font-sans transition-colors selection:bg-teal-500/20`}>
       
       {/* Top Navigation */}
       <Navbar
@@ -78,15 +84,15 @@ const ScholarSyncMain: React.FC = () => {
       </main>
 
       {/* Quiet Footer */}
-      <footer className="mt-16 border-t border-stone-200 dark:border-stone-800/80 py-8 bg-white/40 dark:bg-stone-900/30">
+      <footer className="mt-16 border-t border-stone-200/80 dark:border-stone-800/80 py-8 bg-white/40 dark:bg-stone-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500 dark:text-stone-400">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-stone-800 dark:text-stone-200">PlanZo</span>
+            <span className="font-semibold text-stone-800 dark:text-stone-200">ScholarSync</span>
             <span>·</span>
             <span>Intelligent B.Tech Academic Planning & Dynamic Auto-Correction</span>
           </div>
-          <div className="flex items-center gap-1 text-[11px]">
-            <span>Designed for cognitive calm & guilt-free consistency</span>
+          <div className="flex items-center gap-1 text-[11px] font-mono">
+            <span>Built for B.Tech engineers · Consistency without burnout</span>
           </div>
         </div>
       </footer>

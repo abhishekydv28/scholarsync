@@ -21,6 +21,8 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { FolderItem } from '../types';
+import { playTaskCompleteSound } from '../utils/audioSynth';
+import { fireConfetti } from '../utils/audioVibes';
 
 export const AcademicHub: React.FC = () => {
   const {
@@ -363,7 +365,13 @@ export const AcademicHub: React.FC = () => {
               {activeFolder.assignments.map((asg) => (
                 <div
                   key={asg.id}
-                  onClick={() => toggleAssignmentStatus(selectedSubjectId, asg.id)}
+                  onClick={() => {
+                    toggleAssignmentStatus(selectedSubjectId, asg.id);
+                    if (!asg.completed) {
+                      playTaskCompleteSound();
+                      fireConfetti(40);
+                    }
+                  }}
                   className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                     asg.completed
                       ? 'border-emerald-200 bg-emerald-50/40 dark:border-emerald-950 dark:bg-emerald-950/20 opacity-70'

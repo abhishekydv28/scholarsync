@@ -58,6 +58,7 @@ export interface DailyScheduledTask {
 
 export interface StudentProfile {
   name: string;
+  avatarUrl?: string;
   college: string;
   customCollege?: string;
   branch: string;

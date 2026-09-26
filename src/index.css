@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Syne', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html.dark {
+  color-scheme: dark;
+  background-color: #0b0f17;
+  color: #f5f5f4;
+}
+
+html:not(.dark) {
+  color-scheme: light;
+  background-color: #f7f7f6;
+  color: #1c1917;
+}
+
 @layer utilities {
   .scrollbar-none::-webkit-scrollbar {
     display: none;
@@ -7,6 +27,19 @@
   .scrollbar-none {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+  .glow-emerald {
+    box-shadow: 0 0 30px -5px rgba(16, 185, 129, 0.25);
+  }
+  .glow-cyan {
+    box-shadow: 0 0 30px -5px rgba(6, 182, 212, 0.25);
+  }
+  .glow-amber {
+    box-shadow: 0 0 30px -5px rgba(245, 158, 11, 0.25);
+  }
+  .glass-card {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
 }
 

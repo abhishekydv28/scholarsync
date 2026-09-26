@@ -17,6 +17,8 @@ import {
   Play,
   RotateCcw,
 } from 'lucide-react';
+import { playTaskCompleteSound } from '../utils/audioSynth';
+import { fireConfetti } from '../utils/audioVibes';
 
 export const DailyTimeline: React.FC = () => {
   const {
@@ -34,6 +36,14 @@ export const DailyTimeline: React.FC = () => {
 
   const [filter, setFilter] = useState<'all' | 'study' | 'habit' | 'chill'>('all');
   const [activeShiftMenuId, setActiveShiftMenuId] = useState<string | null>(null);
+
+  const handleToggle = (item: TimetableItem) => {
+    toggleItemComplete(item.id);
+    if (!item.completed) {
+      playTaskCompleteSound();
+      fireConfetti(35);
+    }
+  };
 
   const filteredItems = timetable.filter((item) => {
     if (filter === 'all') return true;
@@ -314,8 +324,8 @@ export const DailyTimeline: React.FC = () => {
 
                   {/* Primary Complete Button */}
                   <button
-                    onClick={() => toggleItemComplete(item.id)}
-                    className={`p-1.5 rounded-lg transition-colors ${
+                    onClick={() => handleToggle(item)}
+                    className={`p-1.5 rounded-lg transition-colors cursor-pointer active:scale-90 ${
                       item.completed
                         ? 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
                         : 'text-stone-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-stone-100 dark:hover:bg-stone-800'
