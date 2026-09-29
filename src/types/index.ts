@@ -69,6 +69,20 @@ export interface StudentProfile {
   collegeEnd: string;
   selectedHabits: string[];
   onboarded: boolean;
+  rollNo?: string;
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  rollNo?: string;
+  college: string;
+  branch: string;
+  semester: number;
+  avatarUrl?: string;
+  isAuthenticated: boolean;
+  joinedAt: string;
 }
 
 export interface MentalBandwidthState {

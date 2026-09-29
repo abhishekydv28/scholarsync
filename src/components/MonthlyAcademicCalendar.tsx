@@ -488,7 +488,7 @@ export const MonthlyAcademicCalendar: React.FC = () => {
                   placeholder="e.g. DSA: Binary Search Trees & AVL or Microprocessor Lab"
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:border-teal-600"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-850 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-medium transition-all"
                 />
               </div>
 
@@ -503,7 +503,7 @@ export const MonthlyAcademicCalendar: React.FC = () => {
                     required
                     value={newTaskDate}
                     onChange={(e) => setNewTaskDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 font-mono"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-850 text-stone-900 dark:text-stone-100 font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 cursor-pointer"
                   />
                 </div>
 
@@ -514,7 +514,7 @@ export const MonthlyAcademicCalendar: React.FC = () => {
                   <select
                     value={newTaskCategory}
                     onChange={(e) => setNewTaskCategory(e.target.value as ItemCategory)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-850 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 cursor-pointer"
                   >
                     <option value="study">Study Sprint</option>
                     <option value="lecture">Lecture</option>
@@ -536,7 +536,7 @@ export const MonthlyAcademicCalendar: React.FC = () => {
                     type="time"
                     value={newTaskStartTime}
                     onChange={(e) => setNewTaskStartTime(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 font-mono"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-850 text-stone-900 dark:text-stone-100 font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 cursor-pointer"
                   />
                 </div>
 
@@ -548,7 +548,7 @@ export const MonthlyAcademicCalendar: React.FC = () => {
                     type="time"
                     value={newTaskEndTime}
                     onChange={(e) => setNewTaskEndTime(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 font-mono"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-850 text-stone-900 dark:text-stone-100 font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 cursor-pointer"
                   />
                 </div>
               </div>
@@ -557,7 +557,7 @@ export const MonthlyAcademicCalendar: React.FC = () => {
               <div>
                 <div className="flex items-center justify-between text-[11px] font-semibold text-stone-700 dark:text-stone-300 mb-1">
                   <span>Mental Intensity Level</span>
-                  <span className="font-mono text-teal-700 dark:text-teal-400">Level {newTaskWeight}/5</span>
+                  <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">Level {newTaskWeight}/5</span>
                 </div>
                 <input
                   type="range"
@@ -565,7 +565,7 @@ export const MonthlyAcademicCalendar: React.FC = () => {
                   max="5"
                   value={newTaskWeight}
                   onChange={(e) => setNewTaskWeight(Number(e.target.value))}
-                  className="w-full accent-teal-600 cursor-pointer"
+                  className="w-full accent-emerald-500 cursor-pointer"
                 />
               </div>
 
@@ -574,13 +574,13 @@ export const MonthlyAcademicCalendar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 font-medium"
+                  className="px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-teal-800 hover:bg-teal-700 text-stone-100 font-semibold shadow-xs transition-colors"
+                  className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
                 >
                   Schedule Task
                 </button>

@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   ShieldAlert,
   Calendar,
+  CalendarPlus,
   BookOpen,
   Laptop,
 } from 'lucide-react';
@@ -22,6 +23,8 @@ import { playTaskCompleteSound } from '../utils/audioSynth';
 import { fireConfetti } from '../utils/audioVibes';
 import { StreakModal } from './StreakModal';
 import { XpModal } from './XpModal';
+import { MotivationalQuoteBanner } from './MotivationalQuoteBanner';
+import { ScheduleTaskModal } from './ScheduleTaskModal';
 
 export const HomeOverview: React.FC = () => {
   const {
@@ -36,6 +39,7 @@ export const HomeOverview: React.FC = () => {
 
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
   const [isXpModalOpen, setIsXpModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   const isAttendanceSafe = overallAttendancePercentage >= 75;
 
@@ -89,7 +93,7 @@ export const HomeOverview: React.FC = () => {
                 </button>
               </div>
 
-              {/* User greeting - Redundant B.Tech CSE removed as requested! */}
+              {/* User greeting */}
               <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
                 <span>{profile.name ? `Hey, ${profile.name}` : 'Welcome back, Scholar'}</span>
               </h1>
@@ -125,7 +129,7 @@ export const HomeOverview: React.FC = () => {
 
               <button
                 onClick={() => setActiveView('timeline')}
-                className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-xs"
+                className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-xs cursor-pointer"
               >
                 <Zap className="w-3.5 h-3.5 fill-current" />
                 <span>{completedCount}/{timetable.length} Done</span>
@@ -146,8 +150,11 @@ export const HomeOverview: React.FC = () => {
             </span>
           </div>
         </div>
+
+        {/* 1. Energetic Motivational Quotes Banner (By Successful People) */}
+        <MotivationalQuoteBanner />
         
-        {/* 1. Calm Academic Hub: Greeting & Next Up (Top) + Motion Cards (Left) + Monthly Academic Calendar (Right) */}
+        {/* 2. Calm Academic Hub: Greeting & Next Up (Top) + Motion Cards (Left) + Monthly Academic Calendar (Right) */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch max-w-full">
           
           {/* Left Section: Greeting + Rectangular Immediate Next Up (Top Right) + Motion Cards (xl:col-span-7) */}
@@ -282,10 +289,10 @@ export const HomeOverview: React.FC = () => {
 
         </div>
 
-        {/* 3. Today's Key Schedule Blocks (Redesigned high-contrast, crystal clear on scroll, zero white banner bug) */}
+        {/* 3. Today's Key Schedule Blocks (High contrast, schedule trigger, crystal clear) */}
         <div className="bg-stone-50/90 dark:bg-[#0c1017] border border-stone-200 dark:border-stone-800 rounded-3xl p-4 sm:p-6 shadow-sm space-y-4 max-w-full overflow-hidden">
           
-          {/* Header Banner with high contrast and clear title */}
+          {/* Header Banner with high contrast and clear buttons */}
           <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-stone-200/50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-stone-900/60 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
@@ -301,17 +308,30 @@ export const HomeOverview: React.FC = () => {
                 Dynamic Schedule Blocks
               </h3>
               <p className="text-xs text-stone-500 dark:text-stone-400 truncate">
-                Tap any circle to check off. Guilt-free auto-correction recalibrates if your lecture runs late.
+                Tap circle to mark done. Or schedule extra revision & lab blocks anytime.
               </p>
             </div>
 
-            <button
-              onClick={() => setActiveView('timeline')}
-              className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:border-emerald-500 text-stone-800 dark:text-stone-200 text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors shadow-2xs cursor-pointer self-start sm:self-auto"
-            >
-              <span>Full Routine View</span>
-              <ArrowRight className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            </button>
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {/* Prominent + Schedule Study Block Button */}
+              <button
+                type="button"
+                onClick={() => setIsScheduleModalOpen(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-stone-950 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+              >
+                <CalendarPlus className="w-3.5 h-3.5" />
+                <span>+ Schedule Block</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveView('timeline')}
+                className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:border-emerald-500 text-stone-800 dark:text-stone-200 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+              >
+                <span>Full Routine</span>
+                <ArrowRight className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              </button>
+            </div>
           </div>
 
           {/* Schedule Item Cards with clear borders & category strip */}
@@ -391,6 +411,12 @@ export const HomeOverview: React.FC = () => {
       <XpModal
         isOpen={isXpModalOpen}
         onClose={() => setIsXpModalOpen(false)}
+      />
+
+      {/* Schedule Study Block Modal */}
+      <ScheduleTaskModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
       />
     </>
   );

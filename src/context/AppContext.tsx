@@ -9,6 +9,8 @@ import {
   SubjectFolderData,
   FolderItem,
   DailyScheduledTask,
+  ItemCategory,
+  AuthUser,
 } from '../types';
 import {
   CURRICULUM_DATA,
@@ -76,6 +78,31 @@ interface AppContextType {
   toggleTaskForDate: (date: string, taskId: string) => void;
   deleteTaskForDate: (date: string, taskId: string) => void;
   getDateTaskStats: (dateStr: string) => { total: number; completed: number; percentage: number };
+  // Auth & Student Account
+  currentUser: AuthUser | null;
+  signUp: (userData: {
+    name: string;
+    email: string;
+    password?: string;
+    college: string;
+    branch: string;
+    semester: number;
+    rollNo?: string;
+    avatarUrl?: string;
+  }) => void;
+  signIn: (email: string, password?: string) => boolean;
+  signOut: () => void;
+  // Study Block Scheduling
+  scheduleStudyBlock: (block: {
+    title: string;
+    category: ItemCategory;
+    startTime: string;
+    endTime: string;
+    date: string;
+    subjectId?: string;
+    cognitiveWeight?: number;
+    notes?: string;
+  }) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -160,7 +187,7 @@ function generateDefaultScheduledTasks(): Record<string, DailyScheduledTask[]> {
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // 1. Profile State
   const [profile, setProfile] = useState<StudentProfile>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.PROFILE) || localStorage.getItem('scholarsync_profile_v3');
+    const saved = localStorage.getItem(STORAGE_KEYS.PROFILE) || localStorage.getItem('planzo_profile_v3');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -198,7 +225,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 2. Timetable State
   const [timetable, setTimetable] = useState<TimetableItem[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.TIMETABLE) || localStorage.getItem('scholarsync_timetable_v3');
+    const saved = localStorage.getItem(STORAGE_KEYS.TIMETABLE) || localStorage.getItem('planzo_timetable_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -207,7 +234,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 3. Subjects & Curriculum State
   const [subjects, setSubjects] = useState<SubjectCourse[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.SUBJECTS) || localStorage.getItem('scholarsync_subjects_v3');
+    const saved = localStorage.getItem(STORAGE_KEYS.SUBJECTS) || localStorage.getItem('planzo_subjects_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -216,7 +243,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 4. Daily Reflections State
   const [reflections, setReflections] = useState<ReflectionEntry[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.REFLECTIONS) || localStorage.getItem('scholarsync_reflections_v3');
+    const saved = localStorage.getItem(STORAGE_KEYS.REFLECTIONS) || localStorage.getItem('planzo_reflections_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -235,7 +262,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 5. 75% Attendance State
   const [attendance, setAttendance] = useState<SubjectAttendance[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.ATTENDANCE) || localStorage.getItem('scholarsync_attendance_v3');
+    const saved = localStorage.getItem(STORAGE_KEYS.ATTENDANCE) || localStorage.getItem('planzo_attendance_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -244,7 +271,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 6. Subject-Wise Folders State
   const [subjectFolders, setSubjectFolders] = useState<Record<string, SubjectFolderData>>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.FOLDERS) || localStorage.getItem('scholarsync_folders_v3');
+    const saved = localStorage.getItem(STORAGE_KEYS.FOLDERS) || localStorage.getItem('planzo_folders_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -694,6 +721,127 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setZenModeOpen(true);
   };
 
+  // Student Authentication State & Methods
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
+    const saved = localStorage.getItem('planzo_auth_user_v1');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.isAuthenticated) {
+          return parsed;
+        }
+      } catch (e) {}
+    }
+    // By default for a new user, start unauthenticated (null) so they see Login / Sign Up!
+    return null;
+  });
+
+  const signUp = (userData: {
+    name: string;
+    email: string;
+    password?: string;
+    college: string;
+    branch: string;
+    semester: number;
+    rollNo?: string;
+    avatarUrl?: string;
+  }) => {
+    const newUser: AuthUser = {
+      id: `usr-${Date.now()}`,
+      name: userData.name,
+      email: userData.email,
+      rollNo: userData.rollNo || '',
+      college: userData.college,
+      branch: userData.branch,
+      semester: userData.semester,
+      avatarUrl: userData.avatarUrl || profile.avatarUrl,
+      isAuthenticated: true,
+      joinedAt: 'Just now',
+    };
+    setCurrentUser(newUser);
+    localStorage.setItem('planzo_auth_user_v1', JSON.stringify(newUser));
+    updateProfile({
+      name: userData.name,
+      college: userData.college,
+      branch: userData.branch,
+      semester: userData.semester,
+      rollNo: userData.rollNo,
+      avatarUrl: userData.avatarUrl || profile.avatarUrl,
+    });
+    setRecalibrateNotice(`Welcome to PlanZo, ${userData.name}! Student workspace unlocked.`);
+  };
+
+  const signIn = (email: string, password?: string): boolean => {
+    const user: AuthUser = {
+      id: `usr-${Date.now()}`,
+      name: profile.name || 'Abhishek',
+      email: email,
+      rollNo: profile.rollNo || '0801CS221045',
+      college: profile.college || 'RGPV Bhopal (UIT)',
+      branch: profile.branch || 'B.Tech. Computer Science & Engineering',
+      semester: profile.semester || 4,
+      avatarUrl: profile.avatarUrl,
+      isAuthenticated: true,
+      joinedAt: 'Active Member',
+    };
+    setCurrentUser(user);
+    localStorage.setItem('planzo_auth_user_v1', JSON.stringify(user));
+    setRecalibrateNotice(`Welcome back, ${user.name}!`);
+    return true;
+  };
+
+  const signOut = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('planzo_auth_user_v1');
+    setRecalibrateNotice('You are now browsing as guest.');
+  };
+
+  const scheduleStudyBlock = (block: {
+    title: string;
+    category: ItemCategory;
+    startTime: string;
+    endTime: string;
+    date: string;
+    subjectId?: string;
+    cognitiveWeight?: number;
+    notes?: string;
+  }) => {
+    const taskId = `block-${Date.now()}`;
+    const newTask: DailyScheduledTask = {
+      id: taskId,
+      title: block.title,
+      category: block.category,
+      startTime: block.startTime,
+      endTime: block.endTime,
+      completed: false,
+      date: block.date,
+      cognitiveWeight: block.cognitiveWeight || 3,
+    };
+
+    // 1. Add to scheduledTasks
+    addTaskForDate(newTask);
+
+    // 2. If for today, also add to active timetable
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (block.date === todayStr) {
+      const timetableItem: TimetableItem = {
+        id: taskId,
+        title: block.title,
+        category: block.category,
+        startTime: block.startTime,
+        endTime: block.endTime,
+        completed: false,
+        cognitiveWeight: block.cognitiveWeight || 3,
+        notes: block.notes,
+        date: block.date,
+        subjectId: block.subjectId,
+      };
+      setTimetable((prev) => [...prev, timetableItem].sort((a, b) => a.startTime.localeCompare(b.startTime)));
+    }
+
+    setRecalibrateNotice(`Study block "${block.title}" scheduled for ${block.date} at ${block.startTime}!`);
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -744,6 +892,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleTaskForDate,
         deleteTaskForDate,
         getDateTaskStats,
+        // Auth
+        currentUser,
+        signUp,
+        signIn,
+        signOut,
+        // Study Block Scheduling
+        scheduleStudyBlock,
       }}
     >
       {children}

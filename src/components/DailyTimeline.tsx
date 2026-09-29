@@ -16,9 +16,11 @@ import {
   X,
   Play,
   RotateCcw,
+  CalendarPlus,
 } from 'lucide-react';
 import { playTaskCompleteSound } from '../utils/audioSynth';
 import { fireConfetti } from '../utils/audioVibes';
+import { ScheduleTaskModal } from './ScheduleTaskModal';
 
 export const DailyTimeline: React.FC = () => {
   const {
@@ -36,6 +38,7 @@ export const DailyTimeline: React.FC = () => {
 
   const [filter, setFilter] = useState<'all' | 'study' | 'habit' | 'chill'>('all');
   const [activeShiftMenuId, setActiveShiftMenuId] = useState<string | null>(null);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   const handleToggle = (item: TimetableItem) => {
     toggleItemComplete(item.id);
@@ -140,15 +143,26 @@ export const DailyTimeline: React.FC = () => {
           </button>
         </div>
 
-        {/* Global Recalibrate Button */}
-        <button
-          onClick={() => recalibrateSchedule()}
-          disabled={isRecalibrating}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 border border-stone-200 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
-        >
-          <RotateCcw className={`w-3.5 h-3.5 ${isRecalibrating ? 'animate-spin text-teal-600' : ''}`} />
-          <span>{isRecalibrating ? 'Recalculating Flow...' : 'Smooth Unfinished Tasks'}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Schedule Task Button */}
+          <button
+            onClick={() => setIsScheduleModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-stone-950 transition-colors shadow-2xs cursor-pointer"
+          >
+            <CalendarPlus className="w-3.5 h-3.5" />
+            <span>+ Schedule Task</span>
+          </button>
+
+          {/* Global Recalibrate Button */}
+          <button
+            onClick={() => recalibrateSchedule()}
+            disabled={isRecalibrating}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 border border-stone-200 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+          >
+            <RotateCcw className={`w-3.5 h-3.5 ${isRecalibrating ? 'animate-spin text-teal-600' : ''}`} />
+            <span className="hidden sm:inline">{isRecalibrating ? 'Recalculating Flow...' : 'Smooth Tasks'}</span>
+          </button>
+        </div>
 
       </div>
 
@@ -353,6 +367,12 @@ export const DailyTimeline: React.FC = () => {
           <p className="text-xs text-stone-500">No items match this filter.</p>
         </div>
       )}
+
+      {/* Schedule Study Block Modal */}
+      <ScheduleTaskModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+      />
 
     </div>
   );

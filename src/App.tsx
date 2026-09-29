@@ -12,10 +12,11 @@ import { OnboardingModal } from './components/OnboardingModal';
 import { ResourceModal } from './components/ResourceModal';
 import { SubjectAttendanceFolderModal } from './components/SubjectAttendanceFolderModal';
 import { AppSidebar } from './components/AppSidebar';
+import { AuthGatewayScreen } from './components/AuthGatewayScreen';
 import { ArrowLeft } from 'lucide-react';
 
-const ScholarSyncMain: React.FC = () => {
-  const { activeView, setActiveView, profile } = useApp();
+const PlanZoMain: React.FC = () => {
+  const { activeView, setActiveView, profile, currentUser } = useApp();
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('planzo_theme');
@@ -42,6 +43,17 @@ const ScholarSyncMain: React.FC = () => {
     month: 'short',
     day: 'numeric',
   }).format(new Date());
+
+  // GATEWAY AUTHENTICATION CHECK:
+  // For new users who haven't logged in, display the Login / Sign Up gateway by default!
+  // For existing users with an active session, opens directly to their dashboard.
+  if (!currentUser || !currentUser.isAuthenticated) {
+    return (
+      <div className={`${isDarkMode ? 'dark' : ''} min-h-screen w-full max-w-full overflow-x-hidden bg-stone-100/70 dark:bg-[#070b12] text-stone-900 dark:text-stone-100 font-sans transition-colors`}>
+        <AuthGatewayScreen isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+      </div>
+    );
+  }
 
   return (
     <div className={`${isDarkMode ? 'dark' : ''} min-h-screen w-full max-w-full overflow-x-hidden bg-stone-100/70 dark:bg-[#0b0f17] text-stone-900 dark:text-stone-100 font-sans transition-colors selection:bg-teal-500/20`}>
@@ -87,7 +99,7 @@ const ScholarSyncMain: React.FC = () => {
       <footer className="mt-16 border-t border-stone-200/80 dark:border-stone-800/80 py-8 bg-white/40 dark:bg-stone-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500 dark:text-stone-400">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-stone-800 dark:text-stone-200">ScholarSync</span>
+            <span className="font-semibold text-stone-800 dark:text-stone-200">PlanZo</span>
             <span>·</span>
             <span>Intelligent B.Tech Academic Planning & Dynamic Auto-Correction</span>
           </div>
@@ -120,7 +132,7 @@ const ScholarSyncMain: React.FC = () => {
 export default function App() {
   return (
     <AppProvider>
-      <ScholarSyncMain />
+      <PlanZoMain />
     </AppProvider>
   );
 }
