@@ -25,6 +25,8 @@ const WEEKDAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
 export const MonthlyAcademicCalendar: React.FC = () => {
   const {
+    profile,
+    currentUser,
     scheduledTasks,
     addTaskForDate,
     toggleTaskForDate,
@@ -94,13 +96,30 @@ export const MonthlyAcademicCalendar: React.FC = () => {
     const isPast = targetDate < todayDate;
     const isFuture = targetDate > todayDate;
 
+    // Account creation date boundary: everything before account creation is clean/neutral!
+    const creationDateStr = currentUser?.accountCreatedAt || profile.accountCreatedAt || todayKey;
+    const creationDate = new Date(creationDateStr + 'T00:00:00');
+    const isBeforeAccountCreation = targetDate < creationDate;
+
     const stats = getDateTaskStats(dateKey);
 
-    // If future
+    // 1. If date is before the user created their account: completely neutral, no green/red!
+    if (isBeforeAccountCreation) {
+      return {
+        bg: isSelected
+          ? 'bg-stone-200 dark:bg-stone-700 ring-2 ring-emerald-500'
+          : 'bg-stone-50/50 dark:bg-stone-900/20 text-stone-300 dark:text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-850/40',
+        text: 'text-stone-300 dark:text-stone-600 font-normal',
+        tooltip: 'Before account creation',
+        rate: null,
+      };
+    }
+
+    // 2. If future date
     if (isFuture) {
       return {
         bg: isSelected
-          ? 'bg-stone-200 dark:bg-stone-700 ring-2 ring-teal-500'
+          ? 'bg-stone-200 dark:bg-stone-700 ring-2 ring-emerald-500'
           : stats.total > 0
           ? 'bg-stone-50 dark:bg-stone-800/80 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/60 dark:border-stone-700/60'
           : 'bg-white/40 dark:bg-stone-900/40 hover:bg-stone-100 dark:hover:bg-stone-800/70 border border-stone-200/40 dark:border-stone-800/50',
@@ -110,11 +129,55 @@ export const MonthlyAcademicCalendar: React.FC = () => {
       };
     }
 
-    // If past or today with 0 tasks
+    // 3. If Today:
+    if (isToday) {
+      if (stats.total === 0) {
+        return {
+          bg: isSelected
+            ? 'bg-emerald-500/20 ring-2 ring-emerald-500 text-emerald-800 dark:text-emerald-200 font-bold'
+            : 'bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+          text: 'text-emerald-700 dark:text-emerald-300 font-bold',
+          tooltip: 'Today: Ready to schedule tasks',
+          rate: null,
+        };
+      }
+
+      if (stats.percentage >= 70) {
+        return {
+          bg: isSelected
+            ? 'bg-[#22c55e] text-white ring-2 ring-stone-900 dark:ring-white scale-105 shadow-md'
+            : 'bg-[#22c55e] hover:bg-[#16a34a] text-white shadow-xs hover:scale-105',
+          text: 'text-white font-bold',
+          tooltip: `Today: ${stats.completed}/${stats.total} followed (${stats.percentage}%)`,
+          rate: stats.percentage,
+        };
+      } else if (stats.percentage >= 35) {
+        return {
+          bg: isSelected
+            ? 'bg-[#fb923c] text-white ring-2 ring-stone-900 dark:ring-white scale-105 shadow-md'
+            : 'bg-[#fb923c] hover:bg-[#f97316] text-white shadow-xs hover:scale-105',
+          text: 'text-white font-bold',
+          tooltip: `Today: ${stats.completed}/${stats.total} followed (${stats.percentage}%)`,
+          rate: stats.percentage,
+        };
+      } else {
+        // Today in progress - NOT RED!
+        return {
+          bg: isSelected
+            ? 'bg-emerald-500/25 ring-2 ring-emerald-500 text-emerald-800 dark:text-emerald-200 font-bold'
+            : 'bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+          text: 'text-emerald-700 dark:text-emerald-300 font-bold',
+          tooltip: `Today: ${stats.total} tasks planned (In Progress)`,
+          rate: stats.percentage,
+        };
+      }
+    }
+
+    // 4. Past days between account creation and yesterday
     if (stats.total === 0) {
       return {
         bg: isSelected
-          ? 'bg-stone-200 dark:bg-stone-700 ring-2 ring-teal-500'
+          ? 'bg-stone-200 dark:bg-stone-700 ring-2 ring-emerald-500'
           : 'bg-stone-100/60 dark:bg-stone-850/60 text-stone-400 dark:text-stone-500 hover:bg-stone-200/60',
         text: 'text-stone-400 dark:text-stone-500',
         tooltip: 'Free / Rest day',
@@ -124,10 +187,7 @@ export const MonthlyAcademicCalendar: React.FC = () => {
 
     const rate = stats.percentage;
 
-    // 3 Clear Categorical Colors:
-    // 🟢 Green = Followed area (>=70% completion)
-    // 🟠 Little Orange = ~50% work done (35% - 69% completion)
-    // 🔴 Red = Missed area (<35% completion or 0%)
+    // Followed, ~50%, or Missed
     if (rate >= 70) {
       return {
         bg: isSelected
@@ -147,7 +207,6 @@ export const MonthlyAcademicCalendar: React.FC = () => {
         rate,
       };
     } else {
-      // Missed area (0% or low completion)
       return {
         bg: isSelected
           ? 'bg-[#ef4444] text-white ring-2 ring-stone-900 dark:ring-white scale-105 shadow-md'

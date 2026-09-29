@@ -13,10 +13,18 @@ import { ResourceModal } from './components/ResourceModal';
 import { SubjectAttendanceFolderModal } from './components/SubjectAttendanceFolderModal';
 import { AppSidebar } from './components/AppSidebar';
 import { AuthGatewayScreen } from './components/AuthGatewayScreen';
+import { PersonalizationSetupWizard } from './components/PersonalizationSetupWizard';
 import { ArrowLeft } from 'lucide-react';
 
 const PlanZoMain: React.FC = () => {
-  const { activeView, setActiveView, profile, currentUser } = useApp();
+  const {
+    activeView,
+    setActiveView,
+    profile,
+    currentUser,
+    isPersonalizationWizardOpen,
+    setIsPersonalizationWizardOpen,
+  } = useApp();
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('planzo_theme');
@@ -118,6 +126,10 @@ const PlanZoMain: React.FC = () => {
       />
       <ResourceModal />
       <SubjectAttendanceFolderModal />
+      <PersonalizationSetupWizard
+        isOpen={isPersonalizationWizardOpen}
+        onClose={() => setIsPersonalizationWizardOpen(false)}
+      />
 
       {/* Floating Left-Bottom Sidebar Button & Popover */}
       <AppSidebar

@@ -21,6 +21,10 @@ import {
   INITIAL_ATTENDANCE_DATA,
   SUBJECT_FOLDERS_DATA,
 } from '../data/btechData';
+import {
+  SATI_SUBJECT_FOLDERS_DATA,
+  getCurriculumForSatiSemester,
+} from '../data/satiVidishaData';
 
 export interface BunkCalculation {
   percentage: number;
@@ -62,6 +66,8 @@ interface AppContextType {
   setIsSidebarOpen: (open: boolean) => void;
   selectedResourceForModal: any | null;
   setSelectedResourceForModal: (resource: any | null) => void;
+  isPersonalizationWizardOpen: boolean;
+  setIsPersonalizationWizardOpen: (open: boolean) => void;
   // 75% Attendance Feature
   attendance: SubjectAttendance[];
   markAttendance: (subjectId: string, status: 'present' | 'absent') => void;
@@ -78,6 +84,10 @@ interface AppContextType {
   toggleTaskForDate: (date: string, taskId: string) => void;
   deleteTaskForDate: (date: string, taskId: string) => void;
   getDateTaskStats: (dateStr: string) => { total: number; completed: number; percentage: number };
+  // XP & Day Streak Feature
+  userXp: number;
+  userStreak: number;
+  awardXp: (amount: number, reason: string) => void;
   // Auth & Student Account
   currentUser: AuthUser | null;
   signUp: (userData: {
@@ -118,70 +128,9 @@ const STORAGE_KEYS = {
 };
 
 function generateDefaultScheduledTasks(): Record<string, DailyScheduledTask[]> {
-  const tasksByDate: Record<string, DailyScheduledTask[]> = {};
-
-  const sampleTasksPool = [
-    { title: 'DSA: Binary Search Trees & AVL Traversals', category: 'study' as const, startTime: '09:30', endTime: '10:30' },
-    { title: 'Operating Systems: Process Sync & Semaphores', category: 'lecture' as const, startTime: '10:45', endTime: '11:45' },
-    { title: 'Database Systems: SQL Normalization & Joins', category: 'study' as const, startTime: '12:00', endTime: '13:00' },
-    { title: 'Web Development Lab: React Component Architecture', category: 'lab' as const, startTime: '14:30', endTime: '16:00' },
-    { title: 'Computer Networks Assignment: TCP Handshake Analysis', category: 'assignment' as const, startTime: '17:00', endTime: '18:00' },
-    { title: 'LeetCode Daily Problem: Two Pointer & Sliding Window', category: 'study' as const, startTime: '20:30', endTime: '21:30' },
-  ];
-
-  // Rhythm of completion for past days of Sept 2026 up to today (2026-09-25)
-  // PERFECTLY SYNCHRONIZED WITH THE 14-DAY STREAK:
-  // Days 12 to 25 are 14 unbroken consecutive days of >=75% green completion (Followed Area)!
-  // Days 9 & 11 show Red (Missed) to demonstrate previous streak break and full 3-color legend.
-  const completionRhythm = [
-    { total: 4, completed: 4 }, // Day 1: 100% (Green)
-    { total: 3, completed: 3 }, // Day 2: 100% (Green)
-    { total: 4, completed: 3 }, // Day 3: 75%  (Green)
-    { total: 5, completed: 4 }, // Day 4: 80%  (Green)
-    { total: 4, completed: 2 }, // Day 5: 50%  (Little Orange)
-    { total: 3, completed: 3 }, // Day 6: 100% (Green)
-    { total: 4, completed: 2 }, // Day 7: 50%  (Little Orange)
-    { total: 4, completed: 3 }, // Day 8: 75%  (Green)
-    { total: 4, completed: 1 }, // Day 9: 25%  (Red - Missed)
-    { total: 4, completed: 4 }, // Day 10: 100% (Green)
-    { total: 3, completed: 0 }, // Day 11: 0%   (Red - Missed, previous streak reset)
-    // --- START OF CURRENT ACTIVE 14-DAY UNBROKEN STREAK (Days 12-25) ---
-    { total: 4, completed: 4 }, // Day 12: 100% (Green - Streak Day 1)
-    { total: 3, completed: 3 }, // Day 13: 100% (Green - Streak Day 2)
-    { total: 4, completed: 3 }, // Day 14: 75%  (Green - Streak Day 3)
-    { total: 4, completed: 4 }, // Day 15: 100% (Green - Streak Day 4)
-    { total: 4, completed: 4 }, // Day 16: 100% (Green - Streak Day 5)
-    { total: 4, completed: 3 }, // Day 17: 75%  (Green - Streak Day 6)
-    { total: 4, completed: 4 }, // Day 18: 100% (Green - Streak Day 7)
-    { total: 5, completed: 4 }, // Day 19: 80%  (Green - Streak Day 8)
-    { total: 4, completed: 4 }, // Day 20: 100% (Green - Streak Day 9)
-    { total: 4, completed: 4 }, // Day 21: 100% (Green - Streak Day 10)
-    { total: 4, completed: 3 }, // Day 22: 75%  (Green - Streak Day 11)
-    { total: 4, completed: 4 }, // Day 23: 100% (Green - Streak Day 12)
-    { total: 4, completed: 4 }, // Day 24: 100% (Green - Streak Day 13)
-    { total: 4, completed: 4 }, // Day 25: 100% (Green - Streak Day 14 / Today!)
-  ];
-
-  completionRhythm.forEach((rhythm, idx) => {
-    const day = idx + 1;
-    const dateStr = `2026-09-${day.toString().padStart(2, '0')}`;
-    const dayTasks: DailyScheduledTask[] = [];
-    for (let i = 0; i < rhythm.total; i++) {
-      const template = sampleTasksPool[i % sampleTasksPool.length];
-      dayTasks.push({
-        id: `task-${dateStr}-${i}`,
-        title: template.title,
-        category: template.category,
-        startTime: template.startTime,
-        endTime: template.endTime,
-        completed: i < rhythm.completed,
-        date: dateStr,
-      });
-    }
-    tasksByDate[dateStr] = dayTasks;
-  });
-
-  return tasksByDate;
+  // A fresh account starts with a clean calendar (0 tasks) from the day of account creation!
+  // XP points, streak, and completed tasks all start at zero.
+  return {};
 }
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -193,33 +142,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const parsed = JSON.parse(saved);
         return {
           name: parsed.name || 'Abhishek',
-          avatarUrl: parsed.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=256&q=80',
+          avatarUrl: parsed.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=CyberArchitect&colors=emerald,cyan,teal',
           college: parsed.college && COLLEGES_LIST.includes(parsed.college) ? parsed.college : COLLEGES_LIST[0],
-          customCollege: parsed.customCollege || '',
-          branch: parsed.branch && BRANCHES_LIST.includes(parsed.branch) ? parsed.branch : BRANCHES_LIST[1],
-          semester: parsed.semester || 4,
+          customCollege: parsed.customCollege || 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
+          branch: parsed.branch && BRANCHES_LIST.includes(parsed.branch) ? parsed.branch : BRANCHES_LIST[0],
+          semester: parsed.semester || 1,
           wakeTime: parsed.wakeTime || '07:00',
           sleepTime: parsed.sleepTime || '23:30',
-          collegeStart: parsed.collegeStart || '09:00',
-          collegeEnd: parsed.collegeEnd || '16:30',
+          collegeStart: '10:30', // SATI Vidisha Fixed 10:30 AM
+          collegeEnd: '17:30',   // SATI Vidisha Fixed 5:30 PM
           selectedHabits: parsed.selectedHabits || [DEFAULT_HABITS[0], DEFAULT_HABITS[1], DEFAULT_HABITS[2]],
           onboarded: parsed.onboarded !== undefined ? parsed.onboarded : true,
+          accountCreatedAt: parsed.accountCreatedAt || new Date().toISOString().split('T')[0],
         };
       } catch (e) {}
     }
     return {
       name: 'Abhishek',
-      avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=256&q=80',
-      college: COLLEGES_LIST[0], // RGPV Bhopal default
-      customCollege: '',
-      branch: BRANCHES_LIST[1],  // B.Tech. Computer Science & Engineering
-      semester: 4,
+      avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=CyberArchitect&colors=emerald,cyan,teal',
+      college: 'SATI VIDISHA',
+      customCollege: 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
+      branch: 'B.Tech. Computer Science & Engineering',
+      semester: 1,
       wakeTime: '07:00',
       sleepTime: '23:30',
-      collegeStart: '09:00',
-      collegeEnd: '16:30',
+      collegeStart: '10:30', // SATI Vidisha Fixed 10:30 AM
+      collegeEnd: '17:30',   // SATI Vidisha Fixed 5:30 PM
       selectedHabits: [DEFAULT_HABITS[0], DEFAULT_HABITS[1], DEFAULT_HABITS[2]],
       onboarded: true,
+      accountCreatedAt: new Date().toISOString().split('T')[0],
     };
   });
 
@@ -229,53 +180,147 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return INITIAL_TIMETABLE;
+    return [
+      {
+        id: 'routine-1',
+        title: 'Morning Kickoff & LeetCode Daily Problem',
+        category: 'habit',
+        startTime: '07:30',
+        endTime: '08:30',
+        completed: false,
+        cognitiveWeight: 2,
+      },
+      {
+        id: 'routine-2',
+        title: 'Breakfast & Commute to SATI Vidisha Campus',
+        category: 'chill',
+        startTime: '08:45',
+        endTime: '10:15',
+        completed: false,
+        cognitiveWeight: 1,
+      },
+      {
+        id: 'routine-3',
+        title: 'CS–701: Deep Learning (Backpropagation & CNNs)',
+        category: 'lecture',
+        startTime: '10:30',
+        endTime: '12:00',
+        completed: false,
+        cognitiveWeight: 4,
+        subjectId: 'cs701',
+      },
+      {
+        id: 'routine-4',
+        title: 'CS-702(A): OOAD (Design Patterns & UML)',
+        category: 'lecture',
+        startTime: '12:00',
+        endTime: '13:30',
+        completed: false,
+        cognitiveWeight: 3,
+        subjectId: 'cs702a',
+      },
+      {
+        id: 'routine-5',
+        title: 'SATI Canteen Lunch Break & Peer Discussion',
+        category: 'chill',
+        startTime: '13:30',
+        endTime: '14:15',
+        completed: false,
+        cognitiveWeight: 1,
+      },
+      {
+        id: 'routine-6',
+        title: 'CS–706: Programming Lab IV (Department Practicals)',
+        category: 'lab',
+        startTime: '14:15',
+        endTime: '17:30',
+        completed: false,
+        cognitiveWeight: 4,
+        subjectId: 'cs706',
+      },
+      {
+        id: 'routine-7',
+        title: 'Campus Departure & Evening Chai Break',
+        category: 'chill',
+        startTime: '17:30',
+        endTime: '18:30',
+        completed: false,
+        cognitiveWeight: 1,
+      },
+      {
+        id: 'routine-8',
+        title: 'Evening Focus: Major Project Prelim (CS-705) Review',
+        category: 'study',
+        startTime: '19:00',
+        endTime: '21:00',
+        completed: false,
+        cognitiveWeight: 4,
+        subjectId: 'cs705',
+      },
+      {
+        id: 'routine-9',
+        title: 'Dinner, Family & Mental Decompression',
+        category: 'chill',
+        startTime: '21:00',
+        endTime: '22:00',
+        completed: false,
+        cognitiveWeight: 1,
+      },
+      {
+        id: 'routine-10',
+        title: 'Day Wrap-Up & Tomorrow Timetable Sync',
+        category: 'habit',
+        startTime: '22:30',
+        endTime: '23:30',
+        completed: false,
+        cognitiveWeight: 1,
+      },
+    ];
   });
 
-  // 3. Subjects & Curriculum State
+  // 3. Subjects & Curriculum State (SATI Vidisha B.Tech CSE Official Syllabus)
   const [subjects, setSubjects] = useState<SubjectCourse[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.SUBJECTS) || localStorage.getItem('planzo_subjects_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return CURRICULUM_DATA['B.Tech. Computer Science & Engineering'] || Object.values(CURRICULUM_DATA)[0];
+    return getCurriculumForSatiSemester(1);
   });
 
-  // 4. Daily Reflections State
+  // 4. Daily Reflections State (Starts clean for new user)
   const [reflections, setReflections] = useState<ReflectionEntry[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.REFLECTIONS) || localStorage.getItem('planzo_reflections_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return [
-      {
-        id: 'ref-yesterday',
-        date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-        energyLevel: 4,
-        focusLevel: 4,
-        stressLevel: 2,
-        note: 'Algorithms lab went well; proxy successfully marked in morning lecture!',
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-      },
-    ];
+    return [];
   });
 
-  // 5. 75% Attendance State
+  // 5. 75% Attendance State (Starts at 0 attended, 0 conducted for fresh tracking)
   const [attendance, setAttendance] = useState<SubjectAttendance[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.ATTENDANCE) || localStorage.getItem('planzo_attendance_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return INITIAL_ATTENDANCE_DATA;
+    const defaultSubs = getCurriculumForSatiSemester(1);
+    return defaultSubs.map((sub) => ({
+      subjectId: sub.id,
+      subjectCode: sub.code,
+      subjectName: sub.name,
+      attendedClasses: 0,
+      totalClasses: 0,
+      isLab: sub.name.toLowerCase().includes('lab'),
+      professorName: 'SATI Vidisha Faculty',
+    }));
   });
 
-  // 6. Subject-Wise Folders State
+  // 6. Subject-Wise Folders State (Official SATI Notes, PYQs, Lab Viva, Assignments)
   const [subjectFolders, setSubjectFolders] = useState<Record<string, SubjectFolderData>>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.FOLDERS) || localStorage.getItem('planzo_folders_v3');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return SUBJECT_FOLDERS_DATA;
+    return SATI_SUBJECT_FOLDERS_DATA;
   });
 
   // 7. Monthly Calendar Scheduled Tasks State
@@ -295,8 +340,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [zenModeOpen, setZenModeOpen] = useState(false);
   const [activeZenTask, setActiveZenTask] = useState<TimetableItem | null>(null);
   const [selectedResourceForModal, setSelectedResourceForModal] = useState<any | null>(null);
+  const [isPersonalizationWizardOpen, setIsPersonalizationWizardOpen] = useState(false);
   const [isRecalibrating, setIsRecalibrating] = useState(false);
   const [recalibrateNotice, setRecalibrateNotice] = useState<string | null>(null);
+
+  // User XP and Streak State - START AT ZERO for fresh account!
+  const [userXp, setUserXp] = useState<number>(() => {
+    const saved = localStorage.getItem('planzo_user_xp_v5');
+    return saved ? parseInt(saved, 10) : 0;
+  });
+
+  const [userStreak, setUserStreak] = useState<number>(() => {
+    const saved = localStorage.getItem('planzo_user_streak_v5');
+    return saved ? parseInt(saved, 10) : 0;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('planzo_user_xp_v5', userXp.toString());
+  }, [userXp]);
+
+  useEffect(() => {
+    localStorage.setItem('planzo_user_streak_v5', userStreak.toString());
+  }, [userStreak]);
+
+  const awardXp = (amount: number, reason: string) => {
+    setUserXp((prev) => prev + amount);
+    setRecalibrateNotice(`+${amount} XP Earned! ${reason}`);
+  };
 
   // Sync to localStorage
   useEffect(() => {
@@ -340,7 +410,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const toggleItemComplete = (id: string) => {
     setTimetable((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, completed: !item.completed } : item))
+      prev.map((item) => {
+        if (item.id === id) {
+          const next = !item.completed;
+          if (next) {
+            awardXp(25, `Completed: ${item.title}`);
+            setUserStreak((s) => (s === 0 ? 1 : s));
+          }
+          return { ...item, completed: next };
+        }
+        return item;
+      })
     );
   };
 
@@ -492,6 +572,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const targetSub = attendance.find((s) => s.subjectId === subjectId);
     if (status === 'present') {
+      awardXp(15, `Attendance Marked: ${targetSub?.subjectCode || 'lecture'}`);
       setRecalibrateNotice(`Marked Present in ${targetSub?.subjectCode || 'lecture'}! 75% attendance boosted.`);
     } else {
       setRecalibrateNotice(`Marked Bunk / Absent in ${targetSub?.subjectCode || 'lecture'}. Attendance formula recalculated.`);
@@ -616,7 +697,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleTaskForDate = (date: string, taskId: string) => {
     setScheduledTasks((prev) => {
       const existing = prev[date] || [];
-      const updated = existing.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t));
+      const updated = existing.map((t) => {
+        if (t.id === taskId) {
+          const next = !t.completed;
+          if (next) {
+            awardXp(20, `Task Completed: ${t.title}`);
+            setUserStreak((s) => (s === 0 ? 1 : s));
+          }
+          return { ...t, completed: next };
+        }
+        return t;
+      });
       return { ...prev, [date]: updated };
     });
 
@@ -746,43 +837,84 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     rollNo?: string;
     avatarUrl?: string;
   }) => {
+    const todayStr = new Date().toISOString().split('T')[0];
     const newUser: AuthUser = {
       id: `usr-${Date.now()}`,
       name: userData.name,
       email: userData.email,
       rollNo: userData.rollNo || '',
-      college: userData.college,
-      branch: userData.branch,
-      semester: userData.semester,
+      college: userData.college || 'SATI VIDISHA',
+      branch: userData.branch || 'B.Tech. Computer Science & Engineering',
+      semester: userData.semester || 1,
       avatarUrl: userData.avatarUrl || profile.avatarUrl,
       isAuthenticated: true,
       joinedAt: 'Just now',
+      accountCreatedAt: todayStr,
     };
     setCurrentUser(newUser);
     localStorage.setItem('planzo_auth_user_v1', JSON.stringify(newUser));
+
+    // Reset starting state for newly created account: 0 XP, 0 Streak, clean calendar!
+    setUserXp(0);
+    setUserStreak(0);
+    localStorage.setItem('planzo_user_xp_v5', '0');
+    localStorage.setItem('planzo_user_streak_v5', '0');
+
+    // Clean scheduled tasks (0 tasks to begin with)
+    const freshTasks: Record<string, DailyScheduledTask[]> = {};
+    setScheduledTasks(freshTasks);
+    localStorage.setItem(STORAGE_KEYS.SCHEDULED_TASKS, JSON.stringify(freshTasks));
+
+    // Clean initial subjects and 0/0 attendance for selected semester
+    const targetSem = userData.semester || 1;
+    const semSubjects = getCurriculumForSatiSemester(targetSem);
+    setSubjects(semSubjects);
+    localStorage.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(semSubjects));
+
+    const cleanAttendance: SubjectAttendance[] = semSubjects.map((sub) => ({
+      subjectId: sub.id,
+      subjectCode: sub.code,
+      subjectName: sub.name,
+      attendedClasses: 0,
+      totalClasses: 0,
+      isLab: sub.name.toLowerCase().includes('lab'),
+      professorName: 'SATI Vidisha Faculty',
+    }));
+    setAttendance(cleanAttendance);
+    localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(cleanAttendance));
+
+    setReflections([]);
+    localStorage.setItem(STORAGE_KEYS.REFLECTIONS, JSON.stringify([]));
+
     updateProfile({
       name: userData.name,
-      college: userData.college,
-      branch: userData.branch,
-      semester: userData.semester,
-      rollNo: userData.rollNo,
+      college: 'SATI VIDISHA',
+      customCollege: 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
+      branch: userData.branch || 'B.Tech. Computer Science & Engineering',
+      semester: targetSem,
+      rollNo: userData.rollNo || '',
+      collegeStart: '10:30', // SATI Fixed
+      collegeEnd: '17:30',   // SATI Fixed
+      accountCreatedAt: todayStr,
       avatarUrl: userData.avatarUrl || profile.avatarUrl,
     });
     setRecalibrateNotice(`Welcome to PlanZo, ${userData.name}! Student workspace unlocked.`);
   };
 
   const signIn = (email: string, password?: string): boolean => {
+    const todayStr = new Date().toISOString().split('T')[0];
     const user: AuthUser = {
       id: `usr-${Date.now()}`,
       name: profile.name || 'Abhishek',
       email: email,
-      rollNo: profile.rollNo || '0801CS221045',
-      college: profile.college || 'RGPV Bhopal (UIT)',
+      rollNo: profile.rollNo || '0108CS211045',
+      college: profile.college || 'SATI VIDISHA',
       branch: profile.branch || 'B.Tech. Computer Science & Engineering',
-      semester: profile.semester || 4,
+      semester: profile.semester || 1,
       avatarUrl: profile.avatarUrl,
       isAuthenticated: true,
       joinedAt: 'Active Member',
+      accountCreatedAt: profile.accountCreatedAt || todayStr,
     };
     setCurrentUser(user);
     localStorage.setItem('planzo_auth_user_v1', JSON.stringify(user));
@@ -876,6 +1008,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsSidebarOpen,
         selectedResourceForModal,
         setSelectedResourceForModal,
+        isPersonalizationWizardOpen,
+        setIsPersonalizationWizardOpen,
         // Attendance
         attendance,
         markAttendance,
@@ -892,6 +1026,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleTaskForDate,
         deleteTaskForDate,
         getDateTaskStats,
+        // XP & Day Streak Feature
+        userXp,
+        userStreak,
+        awardXp,
         // Auth
         currentUser,
         signUp,

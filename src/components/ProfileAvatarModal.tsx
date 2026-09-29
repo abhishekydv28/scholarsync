@@ -98,10 +98,10 @@ export const ProfileAvatarModal: React.FC<ProfileAvatarModalProps> = ({ isOpen, 
 
   const [name, setName] = useState(profile.name || 'Abhishek');
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl || TECH_PRESET_AVATARS[0].url);
-  const [college, setCollege] = useState(profile.college || COLLEGES_LIST[0]);
-  const [branch, setBranch] = useState(profile.branch || BRANCHES_LIST[1]);
-  const [semester, setSemester] = useState(profile.semester || 4);
-  const [rollNo, setRollNo] = useState(profile.rollNo || '0801CS221045');
+  const [college, setCollege] = useState(profile.college || 'SATI VIDISHA');
+  const [branch, setBranch] = useState(profile.branch || BRANCHES_LIST[0]);
+  const [semester, setSemester] = useState(profile.semester || 1);
+  const [rollNo, setRollNo] = useState(profile.rollNo || '0108CS211045');
   const [isSavedNotice, setIsSavedNotice] = useState(false);
   const [activeTab, setActiveTab] = useState<'presets' | 'upload'>('presets');
 
@@ -111,7 +111,6 @@ export const ProfileAvatarModal: React.FC<ProfileAvatarModalProps> = ({ isOpen, 
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('Please choose an image under 5MB.');
         return;
       }
       const reader = new FileReader();

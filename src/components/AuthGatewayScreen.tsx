@@ -30,7 +30,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
   isDarkMode,
   setIsDarkMode,
 }) => {
-  const { signUp, signIn } = useApp();
+  const { signUp, signIn, setIsPersonalizationWizardOpen } = useApp();
   const [tab, setTab] = useState<'signin' | 'signup'>('signin');
 
   // Form states
@@ -38,9 +38,9 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
-  const [college, setCollege] = useState(COLLEGES_LIST[0]);
-  const [branch, setBranch] = useState(BRANCHES_LIST[1]);
-  const [semester, setSemester] = useState(4);
+  const [college, setCollege] = useState('Samrat Ashok Technological Institute (SATI), Vidisha M.P.');
+  const [branch, setBranch] = useState(BRANCHES_LIST[0]);
+  const [semester, setSemester] = useState(1);
   const [rollNo, setRollNo] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -106,7 +106,10 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
       rollNo: rollNo.trim(),
     });
 
-    setSuccessMsg('Account created successfully! Entering workspace...');
+    setSuccessMsg('Account created successfully! Launching personalization wizard...');
+    setTimeout(() => {
+      setIsPersonalizationWizardOpen(true);
+    }, 300);
   };
 
   const handleQuickDemoLogin = () => {
@@ -383,12 +386,12 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                     </label>
                     <select
                       value={semester}
-                      onChange={(e) => setSemester(parseInt(e.target.value) || 4)}
+                      onChange={(e) => setSemester(parseInt(e.target.value) || 1)}
                       className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 cursor-pointer"
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
                         <option key={s} value={s}>
-                          Sem {s}
+                          Semester {s} ({s <= 2 ? '1st Year' : s <= 4 ? '2nd Year' : s <= 6 ? '3rd Year' : 'Final Year'})
                         </option>
                       ))}
                     </select>

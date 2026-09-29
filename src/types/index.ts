@@ -13,7 +13,7 @@ export interface SyllabusModule {
   id: string;
   title: string;
   topics: { id: string; name: string; completed: boolean }[];
-  recommendedResource: ResourceLink;
+  recommendedResource?: ResourceLink;
   weightagePercentage: number;
 }
 
@@ -22,7 +22,7 @@ export interface SubjectCourse {
   name: string;
   code: string;
   credits: number;
-  examDate: string;
+  examDate?: string;
   color: string; // Tailwind color token or hex
   modules: SyllabusModule[];
   standardTextbook: string;
@@ -70,6 +70,7 @@ export interface StudentProfile {
   selectedHabits: string[];
   onboarded: boolean;
   rollNo?: string;
+  accountCreatedAt?: string; // YYYY-MM-DD
 }
 
 export interface AuthUser {
@@ -83,6 +84,7 @@ export interface AuthUser {
   avatarUrl?: string;
   isAuthenticated: boolean;
   joinedAt: string;
+  accountCreatedAt?: string; // YYYY-MM-DD
 }
 
 export interface MentalBandwidthState {

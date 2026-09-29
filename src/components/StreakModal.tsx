@@ -19,27 +19,11 @@ interface StreakModalProps {
 }
 
 export const StreakModal: React.FC<StreakModalProps> = ({ isOpen, onClose }) => {
-  const { scheduledTasks, getDateTaskStats } = useApp();
+  const { userStreak, scheduledTasks, getDateTaskStats, profile } = useApp();
 
   if (!isOpen) return null;
 
-  // Active 14-Day Unbroken Streak Log (Sept 12 to Sept 25, 2026)
-  const streakHistory = [
-    { day: 25, dateStr: '2026-09-25', label: 'Today (Day 14)', hours: '3.5h', tasks: '4/4', status: 'Conquered 🔥', multiplier: '1.5x' },
-    { day: 24, dateStr: '2026-09-24', label: 'Day 13', hours: '4.0h', tasks: '4/4', status: 'Followed', multiplier: '1.5x' },
-    { day: 23, dateStr: '2026-09-23', label: 'Day 12', hours: '4.5h', tasks: '4/4', status: 'Followed', multiplier: '1.5x' },
-    { day: 22, dateStr: '2026-09-22', label: 'Day 11', hours: '3.0h', tasks: '3/4', status: 'Followed', multiplier: '1.5x' },
-    { day: 21, dateStr: '2026-09-21', label: 'Day 10', hours: '5.0h', tasks: '4/4', status: 'Followed', multiplier: '1.4x' },
-    { day: 20, dateStr: '2026-09-20', label: 'Day 9', hours: '4.0h', tasks: '4/4', status: 'Followed', multiplier: '1.4x' },
-    { day: 19, dateStr: '2026-09-19', label: 'Day 8', hours: '3.5h', tasks: '4/5', status: 'Followed', multiplier: '1.3x' },
-    { day: 18, dateStr: '2026-09-18', label: 'Day 7', hours: '4.5h', tasks: '4/4', status: 'Followed', multiplier: '1.3x' },
-    { day: 17, dateStr: '2026-09-17', label: 'Day 6', hours: '3.0h', tasks: '3/4', status: 'Followed', multiplier: '1.2x' },
-    { day: 16, dateStr: '2026-09-16', label: 'Day 5', hours: '4.0h', tasks: '4/4', status: 'Followed', multiplier: '1.2x' },
-    { day: 15, dateStr: '2026-09-15', label: 'Day 4', hours: '4.5h', tasks: '4/4', status: 'Followed', multiplier: '1.1x' },
-    { day: 14, dateStr: '2026-09-14', label: 'Day 3', hours: '3.0h', tasks: '3/4', status: 'Followed', multiplier: '1.1x' },
-    { day: 13, dateStr: '2026-09-13', label: 'Day 2', hours: '3.5h', tasks: '3/3', status: 'Followed', multiplier: '1.0x' },
-    { day: 12, dateStr: '2026-09-12', label: 'Day 1', hours: '4.0h', tasks: '4/4', status: 'Started Streak', multiplier: '1.0x' },
-  ];
+  const todayStr = new Date().toISOString().split('T')[0];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-950/70 backdrop-blur-md animate-fadeIn">
@@ -55,7 +39,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({ isOpen, onClose }) => 
               <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
                 <span>Academic Streak Intelligence</span>
                 <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/30">
-                  14 Days Active
+                  {userStreak} {userStreak === 1 ? 'Day' : 'Days'} Active
                 </span>
               </h2>
               <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -65,7 +49,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({ isOpen, onClose }) => 
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -80,11 +64,13 @@ export const StreakModal: React.FC<StreakModalProps> = ({ isOpen, onClose }) => 
                 <span>Current Winning Streak</span>
               </div>
               <div className="text-3xl sm:text-4xl font-extrabold font-mono text-stone-900 dark:text-white flex items-baseline gap-2">
-                <span>14</span>
+                <span>{userStreak}</span>
                 <span className="text-base sm:text-lg text-stone-500 dark:text-stone-400 font-normal">consecutive days</span>
               </div>
               <p className="text-xs text-stone-600 dark:text-stone-300">
-                You've followed all study and lecture blocks from <strong className="text-emerald-600 dark:text-emerald-400">Sept 12 to Sept 25</strong> without skipping!
+                {userStreak > 0
+                  ? `You've maintained an unbroken academic rhythm for ${userStreak} consecutive days!`
+                  : `Your streak tracker starts from today (${todayStr})! Complete today's planned tasks to ignite your Day 1 streak.`}
               </p>
             </div>
 
@@ -102,7 +88,9 @@ export const StreakModal: React.FC<StreakModalProps> = ({ isOpen, onClose }) => 
                 <TrendingUp className="w-4 h-4 text-emerald-500" />
                 <div>
                   <div className="text-[10px] text-stone-400 uppercase font-mono">XP Multiplier</div>
-                  <div className="font-bold text-emerald-600 dark:text-emerald-400">1.5x Active</div>
+                  <div className="font-bold text-emerald-600 dark:text-emerald-400">
+                    {userStreak >= 10 ? '1.5x' : userStreak >= 5 ? '1.2x' : '1.0x'} Active
+                  </div>
                 </div>
               </div>
             </div>
@@ -111,58 +99,63 @@ export const StreakModal: React.FC<StreakModalProps> = ({ isOpen, onClose }) => 
           {/* Next Milestone Progress */}
           <div className="pt-2 border-t border-orange-500/20 space-y-1.5">
             <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-stone-600 dark:text-stone-400">Next Tier: 21 Days (Habit Master)</span>
-              <span className="font-bold text-orange-600 dark:text-orange-400">7 Days to go (66%)</span>
+              <span className="text-stone-600 dark:text-stone-400">
+                {userStreak < 7 ? 'Next Tier: 7 Days (Fortnight Spark)' : 'Next Tier: 21 Days (Habit Master)'}
+              </span>
+              <span className="font-bold text-orange-600 dark:text-orange-400">
+                {userStreak < 7 ? `${7 - userStreak} Days to go` : `${21 - userStreak} Days to go`}
+              </span>
             </div>
             <div className="w-full h-2 rounded-full bg-stone-200 dark:bg-stone-800 overflow-hidden">
-              <div className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400 w-2/3 transition-all" />
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-300"
+                style={{ width: `${Math.min(100, Math.round(((userStreak % 7) / 7) * 100))}%` }}
+              />
             </div>
           </div>
         </div>
 
-        {/* 14-Day Calendar Verification Breakdown */}
+        {/* Activity Feed */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
             <span className="font-mono font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
-              14-Day Consecutive Activity Feed
+              Streak Activity Log
             </span>
             <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
-              All 14 Days = Green (Followed)
+              Live Tracker
             </span>
           </div>
 
-          <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
-            {streakHistory.map((item) => (
-              <div
-                key={item.dateStr}
-                className="p-2.5 sm:p-3 rounded-xl border border-stone-200/70 dark:border-stone-800/80 bg-stone-50/70 dark:bg-stone-900/40 flex items-center justify-between text-xs gap-2 transition-all hover:border-emerald-500/50"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-6 h-6 rounded-lg bg-[#22c55e] text-white flex items-center justify-center font-mono font-bold text-xs shrink-0 shadow-2xs">
-                    ✓
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                      <span>{item.label}</span>
-                      <span className="text-[10px] text-stone-400 font-mono">({item.dateStr})</span>
-                    </div>
-                    <div className="text-[11px] text-stone-500 dark:text-stone-400">
-                      {item.hours} logged · {item.tasks} tasks completed
-                    </div>
-                  </div>
+          {userStreak === 0 ? (
+            <div className="p-4 rounded-xl border border-dashed border-stone-300 dark:border-stone-800 text-center space-y-2 bg-stone-50/50 dark:bg-stone-900/20">
+              <Flame className="w-6 h-6 text-orange-400 mx-auto opacity-75" />
+              <div className="text-xs font-semibold text-stone-700 dark:text-stone-300">
+                No Streak History Recorded Yet
+              </div>
+              <p className="text-[11px] text-stone-500 dark:text-stone-400 max-w-sm mx-auto">
+                Your streak begins on the day of account creation ({profile.accountCreatedAt || todayStr}). As you complete your scheduled daily study and lecture blocks, each successful day will be recorded here!
+              </p>
+            </div>
+          ) : (
+            <div className="p-3 rounded-xl border border-stone-200/70 dark:border-stone-800/80 bg-stone-50/70 dark:bg-stone-900/40 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-[#22c55e] text-white flex items-center justify-center font-mono font-bold text-xs shrink-0">
+                  ✓
                 </div>
-
-                <div className="flex items-center gap-2 shrink-0 font-mono text-right">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
-                    {item.multiplier} XP
-                  </span>
-                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hidden xs:inline">
-                    {item.status}
-                  </span>
+                <div>
+                  <div className="font-bold text-stone-900 dark:text-stone-100">
+                    Day {userStreak} Conquered 🔥
+                  </div>
+                  <div className="text-[11px] text-stone-500 dark:text-stone-400">
+                    Active streak maintained on {todayStr}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
+                Followed
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Engineering Consistency Wisdom */}

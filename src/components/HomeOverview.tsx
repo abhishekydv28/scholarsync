@@ -30,11 +30,15 @@ export const HomeOverview: React.FC = () => {
   const {
     profile,
     timetable,
+    subjects,
     overallAttendancePercentage,
     setActiveView,
     setIsAttendanceModalOpen,
     startZenMode,
     toggleItemComplete,
+    setIsPersonalizationWizardOpen,
+    userXp,
+    userStreak,
   } = useApp();
 
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
@@ -42,6 +46,14 @@ export const HomeOverview: React.FC = () => {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   const isAttendanceSafe = overallAttendancePercentage >= 75;
+
+  const getScholarRank = (xp: number) => {
+    if (xp >= 2000) return 'Level 5 Semester Demon';
+    if (xp >= 1200) return 'Level 4 Code & Theory Scholar';
+    if (xp >= 700) return 'Level 3 Academic Sprint Pro';
+    if (xp >= 300) return 'Level 2 Campus Navigator';
+    return 'Level 1 Freshman Explorer';
+  };
 
   // Find next or active class
   const activeOrUpcomingItem = timetable.find((item) => !item.completed) || timetable[0];
@@ -77,10 +89,10 @@ export const HomeOverview: React.FC = () => {
                 <button
                   onClick={() => setIsStreakModalOpen(true)}
                   className="flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full hover:bg-emerald-500/20 transition-all cursor-pointer active:scale-95"
-                  title="Click to view 14-Day Streak Details"
+                  title={`Click to view ${userStreak}-Day Streak Details`}
                 >
                   <Flame className="w-3.5 h-3.5 text-orange-400 fill-current animate-pulse" />
-                  <span>Semester Grind Mode</span>
+                  <span>{userStreak > 0 ? `${userStreak}d Streak Active` : 'Day 0 · Ready to Grind'}</span>
                 </button>
                 <span className="text-stone-500">·</span>
                 {/* Clickable Rank / XP trigger */}
@@ -89,7 +101,7 @@ export const HomeOverview: React.FC = () => {
                   className="text-xs font-mono text-cyan-300 hover:text-cyan-200 transition-colors cursor-pointer hover:underline"
                   title="Click to view Level & XP Matrix"
                 >
-                  Level 4 Code & Theory Scholar
+                  {getScholarRank(userXp)}
                 </button>
               </div>
 
@@ -109,7 +121,7 @@ export const HomeOverview: React.FC = () => {
               >
                 <Trophy className="w-3.5 h-3.5 text-amber-400" />
                 <span className="text-stone-300">XP:</span>
-                <span className="font-bold text-amber-300">1,450 pts</span>
+                <span className="font-bold text-amber-300">{userXp} pts</span>
               </button>
 
               <button
@@ -153,6 +165,43 @@ export const HomeOverview: React.FC = () => {
 
         {/* 1. Energetic Motivational Quotes Banner (By Successful People) */}
         <MotivationalQuoteBanner />
+
+        {/* 1.5 SATI Vidisha Official Syllabus & Personalization Banner */}
+        <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 border border-emerald-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
+          <div className="space-y-1 max-w-2xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>SATI Vidisha B.Tech CSE Syllabus Engine</span>
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold">
+                Sem {profile.semester} Active · {subjects.length} Courses
+              </span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100">
+              Personalized for: {profile.name || 'Abhishek'} · SATI Vidisha (Autonomous)
+            </h3>
+            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
+              Units I-V, 11 lab experiments, Topper notes, and viva questions from the official SATI syllabus are loaded. College timing: {profile.collegeStart} to {profile.collegeEnd}.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setIsPersonalizationWizardOpen(true)}
+              className="px-4 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95 shadow-xs cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Personalize Electives & Plan ⚡</span>
+            </button>
+            <button
+              onClick={() => setActiveView('academic')}
+              className="px-3.5 py-2.5 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-200 font-semibold text-xs hover:border-emerald-500 transition-colors cursor-pointer"
+            >
+              Subject Folders
+            </button>
+          </div>
+        </div>
         
         {/* 2. Calm Academic Hub: Greeting & Next Up (Top) + Motion Cards (Left) + Monthly Academic Calendar (Right) */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch max-w-full">

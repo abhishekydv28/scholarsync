@@ -31,6 +31,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
     profile,
     setIsSidebarOpen,
     currentUser,
+    setIsPersonalizationWizardOpen,
+    userStreak,
   } = useApp();
 
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
@@ -122,9 +124,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
               </div>
             </div>
 
-            {/* Right: Actions (Schedule Block, Auth Portal, Streak, Lo-Fi, Workspaces & Theme) */}
+            {/* Right: Actions (Personalize SATI, Schedule Block, Auth Portal, Streak, Lo-Fi, Workspaces & Theme) */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               
+              {/* Personalize SATI Plan Button */}
+              <button
+                onClick={() => setIsPersonalizationWizardOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-cyan-500/15 hover:from-emerald-500/25 hover:to-cyan-500/25 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
+                title="Personalize SATI Vidisha Electives, Semester & Daily Timetable"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="hidden sm:inline">Personalize SATI Plan</span>
+              </button>
+
               {/* + Schedule Study Block Button */}
               <button
                 onClick={() => setIsScheduleModalOpen(true)}
@@ -162,10 +174,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
               <button
                 onClick={() => setIsStreakModalOpen(true)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-600 dark:text-orange-400 text-xs font-mono font-bold cursor-pointer select-none shadow-2xs hover:scale-105 active:scale-95 transition-all"
-                title="Click to view 14-Day Academic Streak History & Shields"
+                title={`Current Academic Streak: ${userStreak} Days`}
               >
                 <Flame className="w-3.5 h-3.5 fill-current animate-pulse text-orange-500" />
-                <span>14d</span>
+                <span>{userStreak}d</span>
               </button>
 
               {/* Quick Lo-Fi Focus Audio Synthesizer */}

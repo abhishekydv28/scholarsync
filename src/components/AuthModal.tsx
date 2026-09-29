@@ -31,9 +31,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [college, setCollege] = useState(COLLEGES_LIST[0]);
-  const [branch, setBranch] = useState(BRANCHES_LIST[1]);
-  const [semester, setSemester] = useState(4);
+  const [college, setCollege] = useState('SATI VIDISHA');
+  const [branch, setBranch] = useState(BRANCHES_LIST[0]);
+  const [semester, setSemester] = useState(1);
   const [rollNo, setRollNo] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -262,12 +262,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
                   </label>
                   <select
                     value={semester}
-                    onChange={(e) => setSemester(parseInt(e.target.value) || 4)}
+                    onChange={(e) => setSemester(parseInt(e.target.value) || 1)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-medium transition-all cursor-pointer"
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
                       <option key={s} value={s}>
-                        Semester {s}
+                        Semester {s} ({s <= 2 ? '1st Year' : s <= 4 ? '2nd Year' : s <= 6 ? '3rd Year' : 'Final Year'})
                       </option>
                     ))}
                   </select>

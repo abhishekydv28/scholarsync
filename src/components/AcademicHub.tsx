@@ -23,9 +23,11 @@ import {
 import { FolderItem } from '../types';
 import { playTaskCompleteSound } from '../utils/audioSynth';
 import { fireConfetti } from '../utils/audioVibes';
+import { getCurriculumForSatiSemester } from '../data/satiVidishaData';
 
 export const AcademicHub: React.FC = () => {
   const {
+    profile,
     subjects,
     subjectFolders,
     toggleAssignmentStatus,
@@ -33,7 +35,13 @@ export const AcademicHub: React.FC = () => {
     setSelectedResourceForModal,
   } = useApp();
 
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(subjects[0]?.id || 'cs401');
+  const [browsingSemester, setBrowsingSemester] = useState<number | null>(null);
+
+  const activeSemesterSubjects = browsingSemester !== null
+    ? getCurriculumForSatiSemester(browsingSemester)
+    : subjects;
+
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(subjects[0]?.id || 'cs101');
   const [activeFolderTab, setActiveFolderTab] = useState<'notes' | 'pyq' | 'viva' | 'assignments' | 'syllabus'>('notes');
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [selectedVivaQuestion, setSelectedVivaQuestion] = useState<any | null>(null);
@@ -45,13 +53,62 @@ export const AcademicHub: React.FC = () => {
   const [newNoteSummary, setNewNoteSummary] = useState('');
   const [newNoteTags, setNewNoteTags] = useState('Unit 3, Formulae');
 
-  const activeSubject = subjects.find((s) => s.id === selectedSubjectId) || subjects[0];
-  const activeFolder = subjectFolders[selectedSubjectId] || {
-    subjectId: selectedSubjectId,
-    topperNotes: [],
-    previousYearQuestions: [],
-    labVivaQuestions: [],
-    assignments: [],
+  const currentSubId = activeSemesterSubjects.some((s) => s.id === selectedSubjectId)
+    ? selectedSubjectId
+    : activeSemesterSubjects[0]?.id || 'cs101';
+  const activeSubject = activeSemesterSubjects.find((s) => s.id === currentSubId) || activeSemesterSubjects[0] || {
+    id: 'cs101',
+    code: 'CS-101',
+    name: 'Applied Physics & Programming',
+    credits: 4,
+    color: 'emerald',
+    modules: [],
+    standardTextbook: 'SATI Vidisha CSE Official Curriculum',
+    pyqPaperAvailable: true,
+  };
+
+  const activeFolder = subjectFolders[currentSubId] || {
+    subjectId: currentSubId,
+    topperNotes: [
+      {
+        id: `${currentSubId}-note1`,
+        title: `${activeSubject.name} Units I-V Comprehensive Notes`,
+        type: 'notes',
+        dateAdded: 'SATI Vidisha CSE',
+        fileSizeOrPages: '28 Pages · PDF',
+        summary: `Complete handwritten lecture and unit notes covering all 5 syllabus modules for ${activeSubject.name}.`,
+        tags: ['Units 1-5', 'SATI Vidisha', 'Exam Notes'],
+      },
+    ],
+    previousYearQuestions: [
+      {
+        id: `${currentSubId}-pyq1`,
+        title: `SATI Vidisha 2024 End-Sem: ${activeSubject.code} Paper (Solved)`,
+        type: 'pyq',
+        dateAdded: 'Dec 2024 Exam',
+        fileSizeOrPages: 'Full Paper · With Solutions',
+        summary: `Official end-semester question paper with model answers and marks distribution for ${activeSubject.code}.`,
+        tags: ['End-Sem 2024', 'SATI Autonomous'],
+        solved: true,
+      },
+    ],
+    labVivaQuestions: [
+      {
+        id: `${currentSubId}-viva1`,
+        question: `What are the core fundamentals and industrial applications of ${activeSubject.name}?`,
+        answer: `As per the SATI Vidisha B.Tech CSE syllabus, it covers foundational theory, computational complexity, design patterns, and deployment in production systems.`,
+        importance: 'Guaranteed Viva Question',
+      },
+    ],
+    assignments: [
+      {
+        id: `${currentSubId}-asg1`,
+        title: `Assignment 1: Unit Problem Set & Implementation`,
+        dueDate: 'Next Monday, 4:30 PM',
+        completed: false,
+        maxMarks: 10,
+      },
+    ],
   };
 
   const handleCreateNote = (e: React.FormEvent) => {
@@ -101,31 +158,88 @@ export const AcademicHub: React.FC = () => {
           </button>
         </div>
 
+        {/* Semester Navigator: All 8 Semesters in Ascending Order */}
+        <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800/80 space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-stone-700 dark:text-stone-300">
+              Select Semester Curriculum (All 8 Semesters in Ascending Order):
+            </span>
+            {browsingSemester !== null && (
+              <button
+                onClick={() => {
+                  setBrowsingSemester(null);
+                  if (subjects[0]) setSelectedSubjectId(subjects[0].id);
+                }}
+                className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold hover:underline cursor-pointer"
+              >
+                ← Back to My Registered Subjects (Sem {profile.semester})
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            <button
+              onClick={() => {
+                setBrowsingSemester(null);
+                if (subjects[0]) setSelectedSubjectId(subjects[0].id);
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all border cursor-pointer ${
+                browsingSemester === null
+                  ? 'border-emerald-500 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-bold shadow-2xs'
+                  : 'border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:border-emerald-500/30'
+              }`}
+            >
+              ⭐ My Enrolled (Sem {profile.semester})
+            </button>
+
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => {
+              const isSelected = browsingSemester === s;
+              return (
+                <button
+                  key={s}
+                  onClick={() => {
+                    setBrowsingSemester(s);
+                    const semSubs = getCurriculumForSatiSemester(s);
+                    if (semSubs[0]) setSelectedSubjectId(semSubs[0].id);
+                  }}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-medium shrink-0 transition-all border cursor-pointer ${
+                    isSelected
+                      ? 'border-emerald-500 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-bold shadow-2xs'
+                      : 'border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:border-emerald-500/30'
+                  }`}
+                >
+                  Sem {s} {s <= 2 ? '(1st Yr)' : s <= 4 ? '(2nd Yr)' : s <= 6 ? '(3rd Yr)' : '(Final)'}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Tactile Subject Folder Selectors (Binder Tabs) */}
-        <div className="mt-5 pt-4 border-t border-stone-100 dark:border-stone-800/80 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {subjects.map((sub) => {
+        <div className="mt-3 pt-3 border-t border-stone-100 dark:border-stone-800/80 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {activeSemesterSubjects.map((sub) => {
             const isSelected = sub.id === selectedSubjectId;
-            const folderCount = subjectFolders[sub.id]?.topperNotes.length || 0;
+            const folderCount = subjectFolders[sub.id]?.topperNotes?.length || 3;
 
             return (
               <button
                 key={sub.id}
                 onClick={() => setSelectedSubjectId(sub.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium shrink-0 transition-all border ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium shrink-0 transition-all border cursor-pointer ${
                   isSelected
-                    ? 'border-teal-700/80 bg-teal-50 dark:bg-teal-950/60 text-teal-950 dark:text-teal-100 shadow-xs'
+                    ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-100 shadow-xs'
                     : 'border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800'
                 }`}
               >
                 {isSelected ? (
-                  <FolderOpen className="w-4 h-4 text-teal-700 dark:text-teal-400" />
+                  <FolderOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 ) : (
                   <Folder className="w-4 h-4 text-stone-400" />
                 )}
                 <span className="font-bold">{sub.code}:</span>
                 <span className="truncate max-w-[150px]">{sub.name.split(':')[0].split('&')[0]}</span>
                 <span className="px-1.5 py-0.5 rounded-md bg-stone-200/60 dark:bg-stone-800 text-[10px] font-mono text-stone-500">
-                  {folderCount + 4} files
+                  {folderCount + 2} files
                 </span>
               </button>
             );

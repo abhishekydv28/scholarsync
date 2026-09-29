@@ -1,27 +1,26 @@
 import { SubjectCourse, TimetableItem } from '../types';
 
 export const COLLEGES_LIST = [
+  'SATI VIDISHA',
   'RGPV Bhopal',
   'SGSITS',
   'IET DAVV',
-  'SATI VIDISHA',
   'MEDICAPS UNIVERSITY',
   'OTHERS',
 ];
 
 export const BRANCHES_LIST = [
-  'B.Tech. Civil Engineering',
   'B.Tech. Computer Science & Engineering',
+  'B.Tech. Information Technology',
+  'B.Tech. AI & Robotics',
   'B.Tech. Electronics & Telecommunication Engineering',
   'B.Tech. Electrical Engineering',
   'B.Tech. Mechanical Engineering',
-  'B.Tech. Information Technology',
+  'B.Tech. Civil Engineering',
   'B.Tech. Electronics & Instrumentation Engineering',
   'B.Tech. Biomedical Engineering',
-  'B. Pharma',
   'B.Tech Industrial & Production Engineering',
-  'B.Tech. Civil Engineering (Hindi)',
-  'B.Tech. AI & Robotics',
+  'B. Pharma',
   'B.Des. Bachelor of Design',
 ];
 
