@@ -101,20 +101,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 shadow-xs">
+            <div className="w-10 h-10 rounded-2xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-center font-bold text-sm shadow-xs">
               <GraduationCap className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                <span>{mode === 'signup' ? 'Create Student Account' : 'Student Sign In'}</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                  {mode === 'signup' ? 'Join Portal' : 'Workspace'}
+                <span>{currentUser?.isAuthenticated ? 'Student Account & Session' : mode === 'signup' ? 'Create Student Account' : 'Student Sign In'}</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-500/30">
+                  {currentUser?.isAuthenticated ? 'Active' : mode === 'signup' ? 'New User' : 'Sign In'}
                 </span>
               </h2>
               <p className="text-xs text-stone-500 dark:text-stone-400">
-                {mode === 'signup'
-                  ? 'Sync your 14-day streaks, attendance & exam syllabus across devices.'
-                  : 'Access your saved timetable, subject folders & habit records.'}
+                {currentUser?.isAuthenticated
+                  ? 'Your active PlanZo session synchronized with SATI Vidisha.'
+                  : 'Access your timetable, attendance records, and syllabus.'}
               </p>
             </div>
           </div>
@@ -126,35 +126,80 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
           </button>
         </div>
 
+        {/* If Currently Logged In: Show Account Summary */}
+        {currentUser && currentUser.isAuthenticated && (
+          <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/80 dark:bg-[#0c1017] space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-center font-bold text-base font-mono">
+                  {currentUser.name ? currentUser.name[0].toUpperCase() : 'S'}
+                </div>
+                <div>
+                  <div className="font-bold text-stone-900 dark:text-stone-100 text-sm">
+                    {currentUser.name}
+                  </div>
+                  <div className="text-[11px] text-stone-500 font-mono">
+                    {currentUser.email}
+                  </div>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold">
+                Logged In
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-1 text-stone-600 dark:text-stone-400">
+              <div>Semester: <strong className="text-stone-900 dark:text-stone-100">Semester {currentUser.semester}</strong></div>
+              <div>Roll No: <strong className="text-stone-900 dark:text-stone-100">{currentUser.rollNo || '0108CS211045'}</strong></div>
+              <div className="col-span-2 truncate">College: <strong className="text-stone-900 dark:text-stone-100">{currentUser.college}</strong></div>
+            </div>
+
+            <div className="pt-2 border-t border-stone-200/80 dark:border-stone-800 flex items-center justify-between">
+              <span className="text-xs text-stone-500">Need to switch accounts?</span>
+              <button
+                type="button"
+                onClick={() => {
+                  signOut();
+                  setSuccessMsg('Signed out successfully.');
+                  setTimeout(() => setSuccessMsg(''), 1000);
+                }}
+                className="px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold cursor-pointer transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Tab Switcher: Sign Up vs Sign In */}
-        <div className="grid grid-cols-2 p-1 bg-stone-100 dark:bg-stone-900 rounded-2xl gap-1 border border-stone-200/80 dark:border-stone-800">
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signup');
-              setErrorMsg('');
-            }}
-            className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-              mode === 'signup'
-                ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-xs'
-                : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
-            }`}
-          >
-            Create Account
-          </button>
+        <div className="grid grid-cols-2 p-1 bg-stone-100 dark:bg-stone-900 rounded-xl gap-1 border border-stone-200/80 dark:border-stone-800">
           <button
             type="button"
             onClick={() => {
               setMode('signin');
               setErrorMsg('');
             }}
-            className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               mode === 'signin'
                 ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-xs'
                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
             }`}
           >
-            Sign In
+            Sign In / Switch
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode('signup');
+              setErrorMsg('');
+            }}
+            className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+              mode === 'signup'
+                ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-xs'
+                : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
+            }`}
+          >
+            Create New Account
           </button>
         </div>
 
