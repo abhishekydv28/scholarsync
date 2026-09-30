@@ -134,89 +134,84 @@ export const AcademicHub: React.FC = () => {
   return (
     <div className="space-y-6">
       
-      {/* Top Banner: Subject Folders Binder */}
-      <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white/80 dark:bg-stone-900/80 p-5 shadow-xs backdrop-blur-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <FolderOpen className="w-5 h-5 text-teal-700 dark:text-teal-400" />
-              <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-                Subject-Wise Academic Folders
-              </h2>
-            </div>
-            <p className="text-xs text-stone-600 dark:text-stone-300">
-              Complete semester briefcase: Topper handwritten notes, 5-year PYQs, lab viva cheat-sheets, and assignment trackers for every course.
-            </p>
-          </div>
-
-          <button
-            onClick={() => setIsAddingNote(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-stone-900 text-stone-100 hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200 transition-colors shadow-xs shrink-0"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>+ Add Note to {activeSubject.code}</span>
-          </button>
+      {/* 1. Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-stone-200/80 dark:border-stone-800">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
+            Courses, Syllabi & Study Vault
+          </h1>
+          <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-0.5">
+            SATI Vidisha B.Tech CSE Curriculum: Unit modules, lecture notes, solved PYQs, and lab manuals.
+          </p>
         </div>
 
-        {/* Semester Navigator: All 8 Semesters in Ascending Order */}
-        <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800/80 space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-stone-700 dark:text-stone-300">
-              Select Semester Curriculum (All 8 Semesters in Ascending Order):
-            </span>
-            {browsingSemester !== null && (
-              <button
-                onClick={() => {
-                  setBrowsingSemester(null);
-                  if (subjects[0]) setSelectedSubjectId(subjects[0].id);
-                }}
-                className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold hover:underline cursor-pointer"
-              >
-                ← Back to My Registered Subjects (Sem {profile.semester})
-              </button>
-            )}
-          </div>
+        <button
+          onClick={() => setIsAddingNote(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-semibold transition-colors shadow-xs shrink-0 cursor-pointer"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>+ Add Note</span>
+        </button>
+      </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+      {/* 2. Semester Switcher: Semesters 1 to 8 (Ascending Order) */}
+      <div className="p-3 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017] space-y-2.5 shadow-xs">
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-semibold text-stone-700 dark:text-stone-300">
+            Select Semester Curriculum:
+          </span>
+          {browsingSemester !== null && (
             <button
               onClick={() => {
                 setBrowsingSemester(null);
                 if (subjects[0]) setSelectedSubjectId(subjects[0].id);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all border cursor-pointer ${
-                browsingSemester === null
-                  ? 'border-emerald-500 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-bold shadow-2xs'
-                  : 'border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:border-emerald-500/30'
-              }`}
+              className="text-xs text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-medium underline cursor-pointer"
             >
-              ⭐ My Enrolled (Sem {profile.semester})
+              Back to My Enrolled Courses (Sem {profile.semester})
             </button>
-
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => {
-              const isSelected = browsingSemester === s;
-              return (
-                <button
-                  key={s}
-                  onClick={() => {
-                    setBrowsingSemester(s);
-                    const semSubs = getCurriculumForSatiSemester(s);
-                    if (semSubs[0]) setSelectedSubjectId(semSubs[0].id);
-                  }}
-                  className={`px-2.5 py-1.5 rounded-xl text-xs font-medium shrink-0 transition-all border cursor-pointer ${
-                    isSelected
-                      ? 'border-emerald-500 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-bold shadow-2xs'
-                      : 'border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:border-emerald-500/30'
-                  }`}
-                >
-                  Sem {s} {s <= 2 ? '(1st Yr)' : s <= 4 ? '(2nd Yr)' : s <= 6 ? '(3rd Yr)' : '(Final)'}
-                </button>
-              );
-            })}
-          </div>
+          )}
         </div>
 
-        {/* Tactile Subject Folder Selectors (Binder Tabs) */}
-        <div className="mt-3 pt-3 border-t border-stone-100 dark:border-stone-800/80 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+          <button
+            onClick={() => {
+              setBrowsingSemester(null);
+              if (subjects[0]) setSelectedSubjectId(subjects[0].id);
+            }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-colors cursor-pointer ${
+              browsingSemester === null
+                ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 font-semibold shadow-xs'
+                : 'bg-stone-100 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+            }`}
+          >
+            My Semester ({profile.semester})
+          </button>
+
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => {
+            const isSelected = browsingSemester === s;
+            return (
+              <button
+                key={s}
+                onClick={() => {
+                  setBrowsingSemester(s);
+                  const semSubs = getCurriculumForSatiSemester(s);
+                  if (semSubs[0]) setSelectedSubjectId(semSubs[0].id);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-colors cursor-pointer ${
+                  isSelected
+                    ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 font-semibold shadow-xs'
+                    : 'bg-stone-100 dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+                }`}
+              >
+                Semester {s}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Course Filter Tabs for Active Semester */}
+        <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {activeSemesterSubjects.map((sub) => {
             const isSelected = sub.id === selectedSubjectId;
             const folderCount = subjectFolders[sub.id]?.topperNotes?.length || 3;
@@ -225,21 +220,16 @@ export const AcademicHub: React.FC = () => {
               <button
                 key={sub.id}
                 onClick={() => setSelectedSubjectId(sub.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium shrink-0 transition-all border cursor-pointer ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium shrink-0 transition-colors border cursor-pointer ${
                   isSelected
-                    ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-100 shadow-xs'
-                    : 'border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800'
+                    ? 'border-stone-900 bg-stone-900 text-white dark:border-stone-100 dark:bg-stone-100 dark:text-stone-950 shadow-xs'
+                    : 'border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800'
                 }`}
               >
-                {isSelected ? (
-                  <FolderOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                ) : (
-                  <Folder className="w-4 h-4 text-stone-400" />
-                )}
-                <span className="font-bold">{sub.code}:</span>
-                <span className="truncate max-w-[150px]">{sub.name.split(':')[0].split('&')[0]}</span>
-                <span className="px-1.5 py-0.5 rounded-md bg-stone-200/60 dark:bg-stone-800 text-[10px] font-mono text-stone-500">
-                  {folderCount + 2} files
+                <span className="font-mono font-bold">{sub.code}</span>
+                <span className="truncate max-w-[140px]">{sub.name.split(':')[0]}</span>
+                <span className={`text-[10px] font-mono px-1 rounded ${isSelected ? 'bg-white/20 dark:bg-black/20' : 'bg-stone-100 dark:bg-stone-800 text-stone-500'}`}>
+                  {sub.credits}c
                 </span>
               </button>
             );

@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import {
-  GraduationCap,
-  Sparkles,
   Lock,
   Mail,
   User,
@@ -10,16 +8,14 @@ import {
   Check,
   Eye,
   EyeOff,
-  Flame,
-  Clock,
-  BookOpen,
-  Headphones,
   Sun,
   Moon,
-  Zap,
+  BookOpen,
+  Clock,
+  GraduationCap,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { COLLEGES_LIST, BRANCHES_LIST } from '../data/btechData';
+import { BRANCHES_LIST } from '../data/btechData';
 
 interface AuthGatewayScreenProps {
   isDarkMode: boolean;
@@ -38,7 +34,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
-  const [college, setCollege] = useState('Samrat Ashok Technological Institute (SATI), Vidisha M.P.');
+  const [college] = useState('Samrat Ashok Technological Institute (SATI), Vidisha M.P.');
   const [branch, setBranch] = useState(BRANCHES_LIST[0]);
   const [semester, setSemester] = useState(1);
   const [rollNo, setRollNo] = useState('');
@@ -74,7 +70,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
     }
 
     signIn(email, password);
-    setSuccessMsg('Welcome back! Loading your workspace...');
+    setSuccessMsg('Signing in to your student workspace...');
   };
 
   const handleSignUp = (e: React.FormEvent) => {
@@ -87,7 +83,7 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
     }
 
     if (!email || !email.includes('@')) {
-      setErrorMsg('Please enter a valid student email.');
+      setErrorMsg('Please enter a valid email address.');
       return;
     }
 
@@ -106,33 +102,33 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
       rollNo: rollNo.trim(),
     });
 
-    setSuccessMsg('Account created successfully! Launching personalization wizard...');
+    setSuccessMsg('Account created successfully. Initializing your workspace...');
     setTimeout(() => {
       setIsPersonalizationWizardOpen(true);
-    }, 300);
+    }, 200);
   };
 
   const handleQuickDemoLogin = () => {
-    signIn('abhishek.cse@uitrgpv.ac.in', 'demo1234');
-    setSuccessMsg('Entering as Verified Student: Abhishek (B.Tech CSE)...');
+    signIn('student.cse@satiengg.in', 'sati2026');
+    setSuccessMsg('Signed in as Abhishek Yadav (B.Tech CSE)...');
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between bg-stone-100/80 dark:bg-[#070b12] text-stone-900 dark:text-stone-100 transition-colors selection:bg-emerald-500/20">
+    <div className="min-h-screen w-full flex flex-col justify-between bg-stone-50 dark:bg-[#070b12] text-stone-900 dark:text-stone-100 transition-colors">
       
-      {/* Top Navigation Bar */}
-      <header className="w-full border-b border-stone-200/80 dark:border-stone-800/80 bg-white/80 dark:bg-[#0b0f17]/90 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 text-stone-950 flex items-center justify-center font-bold font-mono shadow-sm shadow-emerald-500/20">
-              <GraduationCap className="w-5 h-5 text-white" />
+      {/* Top Header */}
+      <header className="w-full border-b border-stone-200/80 dark:border-stone-800 bg-white/90 dark:bg-[#0b0f17]/90 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-950 flex items-center justify-center font-bold text-xs">
+              P
             </div>
             <div>
-              <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-cyan-400 bg-clip-text text-transparent">
+              <span className="font-bold text-sm tracking-tight text-stone-900 dark:text-stone-100">
                 PlanZo
               </span>
-              <span className="text-[10px] font-mono text-stone-400 block -mt-1">
-                B.Tech Academic & Habit Companion
+              <span className="text-[11px] text-stone-500 dark:text-stone-400 ml-2">
+                SATI Vidisha Engineering Portal
               </span>
             </div>
           </div>
@@ -140,86 +136,80 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800/80 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 transition-colors cursor-pointer"
               aria-label="Toggle theme"
             >
-              {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Content: Split Grid Hero + Login/Signup Card */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      {/* Main Split Grid */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         
-        {/* Left Side: Value Props & Student Motivation */}
-        <div className="lg:col-span-7 space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400 text-xs font-mono font-bold">
-            <Flame className="w-3.5 h-3.5 text-orange-500 fill-current animate-pulse" />
-            <span>Built Specifically for Indian Engineering Students</span>
+        {/* Left Column: Purpose & Institutional Grounding */}
+        <div className="lg:col-span-6 space-y-6">
+          <div className="inline-flex items-center gap-2 text-xs font-mono text-stone-600 dark:text-stone-400">
+            <span>Samrat Ashok Technological Institute (Autonomous)</span>
+            <span>·</span>
+            <span>Est. 1960</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-stone-900 dark:text-white leading-[1.15]">
-            Master Your Semester.{' '}
-            <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 bg-clip-text text-transparent">
-              Zero Guilt. Max Consistency.
-            </span>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 leading-tight">
+            Academic Schedule & Syllabus Workspace for B.Tech CSE
           </h1>
 
-          <p className="text-sm sm:text-base text-stone-600 dark:text-stone-300 leading-relaxed max-w-xl">
-            Never worry about the 75% attendance debar criteria, late syllabus scrambles, or broken study habits again. Your personalized engineering co-pilot keeps you on track.
+          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-lg">
+            Manage your daily routine around the official 10:30 AM – 5:30 PM college timetable, track the 75% autonomous attendance threshold, and access full syllabi and notes for all 8 semesters.
           </p>
 
-          {/* 4 Feature Badges */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 max-w-xl">
-            <div className="p-3.5 rounded-2xl bg-white/90 dark:bg-stone-900/60 border border-stone-200/90 dark:border-stone-800 flex items-start gap-3 shadow-2xs">
-              <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
-                <Flame className="w-4 h-4 fill-current" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-bold text-xs text-stone-900 dark:text-stone-100">14-Day Streak Engine</div>
-                <div className="text-[11px] text-stone-500 dark:text-stone-400">Calendar synced, streak freeze shields & XP multipliers.</div>
-              </div>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-white/90 dark:bg-stone-900/60 border border-stone-200/90 dark:border-stone-800 flex items-start gap-3 shadow-2xs">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-bold text-xs text-stone-900 dark:text-stone-100">75% Attendance Guard</div>
-                <div className="text-[11px] text-stone-500 dark:text-stone-400">Live canteen bunk simulator & safety margins.</div>
+          {/* Key Feature Rows */}
+          <div className="space-y-3 pt-2 max-w-lg">
+            <div className="flex items-start gap-3 p-3 rounded-lg border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-[#0c1017]">
+              <Clock className="w-4 h-4 text-stone-500 mt-0.5 shrink-0" />
+              <div>
+                <div className="text-xs font-semibold text-stone-900 dark:text-stone-100">
+                  Fixed 10:30 AM – 5:30 PM College Timetable
+                </div>
+                <div className="text-[11px] text-stone-500 mt-0.5">
+                  Synchronized around SATI theory lectures and department practical laboratories.
+                </div>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-white/90 dark:bg-stone-900/60 border border-stone-200/90 dark:border-stone-800 flex items-start gap-3 shadow-2xs">
-              <div className="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center shrink-0">
-                <Headphones className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-bold text-xs text-stone-900 dark:text-stone-100">Focus Audio & Flute</div>
-                <div className="text-[11px] text-stone-500 dark:text-stone-400">Raag Yaman flute, Vedic Om chimes & device upload.</div>
+            <div className="flex items-start gap-3 p-3 rounded-lg border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-[#0c1017]">
+              <ShieldCheck className="w-4 h-4 text-stone-500 mt-0.5 shrink-0" />
+              <div>
+                <div className="text-xs font-semibold text-stone-900 dark:text-stone-100">
+                  75% Attendance & Debarment Monitor
+                </div>
+                <div className="text-[11px] text-stone-500 mt-0.5">
+                  Calculates exact classes needed to maintain eligibility and avoid exam debarment.
+                </div>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-white/90 dark:bg-stone-900/60 border border-stone-200/90 dark:border-stone-800 flex items-start gap-3 shadow-2xs">
-              <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-600 flex items-center justify-center shrink-0">
-                <Clock className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-bold text-xs text-stone-900 dark:text-stone-100">Dynamic Auto-Recalibration</div>
-                <div className="text-[11px] text-stone-500 dark:text-stone-400">Routine adjusts smoothly when lectures run overtime.</div>
+            <div className="flex items-start gap-3 p-3 rounded-lg border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-[#0c1017]">
+              <BookOpen className="w-4 h-4 text-stone-500 mt-0.5 shrink-0" />
+              <div>
+                <div className="text-xs font-semibold text-stone-900 dark:text-stone-100">
+                  All 8 Semesters Curricula & PYQs
+                </div>
+                <div className="text-[11px] text-stone-500 mt-0.5">
+                  Official course modules, handwritten topper notes, lab viva manuals, and exam papers.
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Side: Gateway Authentication Card */}
-        <div className="lg:col-span-5 w-full max-w-md mx-auto">
-          <div className="bg-white dark:bg-[#0e1422] border border-stone-200 dark:border-stone-800/90 rounded-3xl p-6 sm:p-7 shadow-2xl shadow-black/10 space-y-5">
+        {/* Right Column: Authentication Card */}
+        <div className="lg:col-span-6 w-full max-w-md mx-auto">
+          <div className="bg-white dark:bg-[#0c1017] border border-stone-200 dark:border-stone-800 rounded-xl p-6 sm:p-7 shadow-xs space-y-5">
             
             {/* Tab Switcher */}
-            <div className="grid grid-cols-2 p-1 bg-stone-100 dark:bg-stone-900 rounded-2xl gap-1 border border-stone-200/80 dark:border-stone-800">
+            <div className="grid grid-cols-2 p-1 bg-stone-100 dark:bg-stone-850 rounded-lg gap-1 border border-stone-200/60 dark:border-stone-750">
               <button
                 type="button"
                 onClick={() => {
@@ -227,10 +217,10 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                className={`py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                   tab === 'signin'
-                    ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-xs'
-                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
+                    ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-2xs'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
                 }`}
               >
                 Sign In
@@ -242,237 +232,217 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                className={`py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
                   tab === 'signup'
-                    ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-xs'
-                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
+                    ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-2xs'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
                 }`}
               >
-                New Student? Sign Up
+                Create Account
               </button>
             </div>
 
-            {/* Title */}
             <div>
-              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">
-                {tab === 'signin' ? 'Sign In to Your Workspace' : 'Create Your Student Account'}
+              <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
+                {tab === 'signin' ? 'Sign in to PlanZo' : 'Register New Student Account'}
               </h2>
-              <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+              <p className="text-xs text-stone-500 mt-0.5">
                 {tab === 'signin'
-                  ? 'Access your timetable, enrolled syllabus & habit streaks.'
-                  : 'Start your consistent semester journey with PlanZo.'}
+                  ? 'Enter your credentials to access your academic dashboard.'
+                  : 'Start with a clean calendar, zero baseline, and customized timetable.'}
               </p>
             </div>
 
-            {/* Feedback Messages */}
+            {/* Status Messages */}
             {errorMsg && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-medium animate-fadeIn">
+              <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-xs text-rose-700 dark:text-rose-300">
                 {errorMsg}
               </div>
             )}
-
             {successMsg && (
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-medium flex items-center gap-1.5 animate-fadeIn">
-                <Check className="w-4 h-4" />
-                <span>{successMsg}</span>
+              <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-xs text-emerald-700 dark:text-emerald-300">
+                {successMsg}
               </div>
             )}
 
-            {/* Form */}
-            {tab === 'signin' ? (
-              <form onSubmit={handleSignIn} className="space-y-3.5 text-xs">
-                <div className="space-y-1.5">
-                  <label className="font-semibold text-stone-700 dark:text-stone-300">
-                    Student Email
+            {/* Sign In Form */}
+            {tab === 'signin' && (
+              <form onSubmit={handleSignIn} className="space-y-3.5">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-stone-700 dark:text-stone-300">
+                    Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. abhishek@college.edu or gmail.com"
+                      placeholder="student@satiengg.in"
                       required
-                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-medium transition-all"
+                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 text-xs focus:outline-hidden focus:ring-1 focus:ring-stone-900 dark:focus:ring-stone-100"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="font-semibold text-stone-700 dark:text-stone-300">
-                    Password
-                  </label>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <label className="font-medium text-stone-700 dark:text-stone-300">
+                      Password
+                    </label>
+                  </div>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       required
-                      className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-medium transition-all"
+                      className="w-full pl-9 pr-9 py-2 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 text-xs focus:outline-hidden focus:ring-1 focus:ring-stone-900 dark:focus:ring-stone-100"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 cursor-pointer"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 cursor-pointer"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold flex items-center justify-center gap-2 transition-all active:scale-98 shadow-sm cursor-pointer mt-2"
+                  className="w-full py-2.5 rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950 font-semibold text-xs transition-colors shadow-xs cursor-pointer mt-1"
                 >
-                  <span>Sign In to Workspace</span>
-                  <ArrowRight className="w-4 h-4" />
+                  Sign In to Workspace
                 </button>
+
+                <div className="pt-2 border-t border-stone-100 dark:border-stone-800">
+                  <button
+                    type="button"
+                    onClick={handleQuickDemoLogin}
+                    className="w-full py-2 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-850 text-stone-700 dark:text-stone-300 text-xs font-medium transition-colors cursor-pointer"
+                  >
+                    Quick Student Demo (Abhishek · CSE)
+                  </button>
+                </div>
               </form>
-            ) : (
-              <form onSubmit={handleSignUp} className="space-y-3 text-xs">
+            )}
+
+            {/* Sign Up Form */}
+            {tab === 'signup' && (
+              <form onSubmit={handleSignUp} className="space-y-3">
                 <div className="space-y-1">
-                  <label className="font-semibold text-stone-700 dark:text-stone-300">
+                  <label className="text-xs font-medium text-stone-700 dark:text-stone-300">
                     Full Name
                   </label>
                   <div className="relative">
-                    <User className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <User className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="e.g. Abhishek Yadav"
                       required
-                      className="w-full pl-10 pr-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-medium transition-all"
+                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 text-xs focus:outline-hidden focus:ring-1 focus:ring-stone-900 dark:focus:ring-stone-100"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-semibold text-stone-700 dark:text-stone-300">
-                    Student Email
+                  <label className="text-xs font-medium text-stone-700 dark:text-stone-300">
+                    Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. abhishek@college.ac.in"
+                      placeholder="student@satiengg.in"
                       required
-                      className="w-full pl-10 pr-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-medium transition-all"
+                      className="w-full pl-9 pr-3 py-2 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 text-xs focus:outline-hidden focus:ring-1 focus:ring-stone-900 dark:focus:ring-stone-100"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5">
                   <div className="space-y-1">
-                    <label className="font-semibold text-stone-700 dark:text-stone-300">
-                      Roll No / USN
+                    <label className="text-xs font-medium text-stone-700 dark:text-stone-300">
+                      Semester (1 to 8)
+                    </label>
+                    <select
+                      value={semester}
+                      onChange={(e) => setSemester(parseInt(e.target.value) || 1)}
+                      className="w-full px-2.5 py-2 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 text-xs focus:outline-hidden focus:ring-1 focus:ring-stone-900 cursor-pointer"
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                        <option key={s} value={s}>
+                          Semester {s} ({s <= 2 ? '1st Yr' : s <= 4 ? '2nd Yr' : s <= 6 ? '3rd Yr' : 'Final'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-stone-700 dark:text-stone-300">
+                      Roll No. / USN
                     </label>
                     <input
                       type="text"
                       value={rollNo}
                       onChange={(e) => setRollNo(e.target.value)}
-                      placeholder="0801CS221045"
-                      className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 font-mono text-xs focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
+                      placeholder="0108CS211045"
+                      className="w-full px-2.5 py-2 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 text-xs font-mono focus:outline-hidden focus:ring-1 focus:ring-stone-900"
                     />
                   </div>
-
-                  <div className="space-y-1">
-                    <label className="font-semibold text-stone-700 dark:text-stone-300">
-                      Semester
-                    </label>
-                    <select
-                      value={semester}
-                      onChange={(e) => setSemester(parseInt(e.target.value) || 1)}
-                      className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 cursor-pointer"
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                        <option key={s} value={s}>
-                          Semester {s} ({s <= 2 ? '1st Year' : s <= 4 ? '2nd Year' : s <= 6 ? '3rd Year' : 'Final Year'})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-semibold text-stone-700 dark:text-stone-300">
-                    Branch
-                  </label>
-                  <select
-                    value={branch}
-                    onChange={(e) => setBranch(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 truncate cursor-pointer"
-                  >
-                    {BRANCHES_LIST.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-semibold text-stone-700 dark:text-stone-300">
+                  <label className="text-xs font-medium text-stone-700 dark:text-stone-300">
                     Create Password
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       required
-                      className="w-full pl-10 pr-10 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-medium transition-all"
+                      className="w-full pl-9 pr-9 py-2 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 text-xs focus:outline-hidden focus:ring-1 focus:ring-stone-900 dark:focus:ring-stone-100"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 cursor-pointer"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 cursor-pointer"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold flex items-center justify-center gap-2 transition-all active:scale-98 shadow-sm cursor-pointer mt-2"
+                  className="w-full py-2.5 rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950 font-semibold text-xs transition-colors shadow-xs cursor-pointer mt-2"
                 >
-                  <span>Create Account & Enter</span>
-                  <ArrowRight className="w-4 h-4" />
+                  Create Account & Initialize
                 </button>
               </form>
             )}
-
-            {/* Fast 1-Click Demo Login Divider */}
-            <div className="pt-2 border-t border-stone-100 dark:border-stone-800 space-y-2">
-              <div className="text-[11px] text-stone-400 text-center uppercase font-mono tracking-wider">
-                Instant Access
-              </div>
-
-              <button
-                type="button"
-                onClick={handleQuickDemoLogin}
-                className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-cyan-500/15 hover:from-emerald-500/25 hover:to-cyan-500/25 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98"
-              >
-                <Sparkles className="w-4 h-4 text-emerald-500" />
-                <span>1-Click Verified Student Demo Login</span>
-              </button>
-            </div>
 
           </div>
         </div>
 
       </main>
 
-      {/* Footer */}
-      <footer className="w-full border-t border-stone-200/80 dark:border-stone-800/80 py-4 text-center text-xs text-stone-500">
-        PlanZo · Calm & Intelligent B.Tech Academic Companion · Built for consistency
+      {/* Clean Footer */}
+      <footer className="w-full border-t border-stone-200/80 dark:border-stone-800 py-4 bg-white/50 dark:bg-[#070b12]/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between text-xs text-stone-400">
+          <div>PlanZo · Autonomous Engineering Academic Planner</div>
+          <div>Samrat Ashok Technological Institute, Vidisha (M.P.)</div>
+        </div>
       </footer>
 
     </div>

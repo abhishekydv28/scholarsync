@@ -3,19 +3,19 @@ import { useApp } from '../context/AppContext';
 import {
   Sun,
   Moon,
-  Pencil,
-  Menu,
-  Flame,
-  Headphones,
-  Sparkles,
-  Camera,
   CalendarPlus,
-  UserCheck,
-  LogIn,
+  Sliders,
+  LogOut,
+  User,
+  GraduationCap,
+  BookOpen,
+  Calendar,
+  Clock,
+  ShieldCheck,
+  BarChart3,
+  Menu,
+  X,
 } from 'lucide-react';
-import { getAmbientStatus } from '../utils/audioSynth';
-import { FocusAudioModal } from './FocusAudioModal';
-import { StreakModal } from './StreakModal';
 import { ProfileAvatarModal } from './ProfileAvatarModal';
 import { AuthModal } from './AuthModal';
 import { ScheduleTaskModal } from './ScheduleTaskModal';
@@ -28,21 +28,21 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, setIsDarkMode }) => {
   const {
+    activeView,
+    setActiveView,
     profile,
-    setIsSidebarOpen,
     currentUser,
+    signOut,
     setIsPersonalizationWizardOpen,
     userStreak,
+    overallAttendancePercentage,
   } = useApp();
 
-  const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
-  const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-
-  const ambientStatus = getAmbientStatus();
-  const isAudioPlaying = ambientStatus.isPlaying;
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const toggleTheme = () => {
     const nextMode = !isDarkMode;
@@ -56,214 +56,233 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
     }
   };
 
+  const navLinks = [
+    { id: 'home', label: 'Overview', icon: BarChart3 },
+    { id: 'timeline', label: 'Timetable', icon: Clock },
+    { id: 'academic', label: 'Courses & Syllabus', icon: BookOpen },
+    { id: 'attendance', label: 'Attendance', icon: ShieldCheck },
+  ] as const;
+
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-stone-200/80 bg-white/90 dark:border-stone-800/80 dark:bg-[#0b0f17]/90 backdrop-blur-xl transition-all">
-        {/* Top subtle futuristic gradient glow line */}
-        <div className="h-[2px] w-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-teal-600 opacity-80" />
-
-        <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 gap-2">
+      <header className="sticky top-0 z-30 border-b border-stone-200/90 dark:border-stone-800 bg-white/95 dark:bg-[#0c1017]/95 backdrop-blur-md transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-15 gap-4">
             
-            {/* Left: Brand & Student Avatar Context */}
-            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            {/* Zone 1: Clean Wordmark Brand */}
+            <div className="flex items-center gap-3 shrink-0">
               <button
-                onClick={() => setIsProfileModalOpen(true)}
-                className="relative group w-9 h-9 sm:w-10 sm:h-10 rounded-2xl overflow-hidden border-2 border-emerald-500/40 hover:border-emerald-500 transition-all active:scale-95 shrink-0 shadow-xs cursor-pointer bg-stone-100 dark:bg-stone-800"
-                title="Click to customize profile picture, archetype, or device photo"
+                onClick={() => {
+                  setActiveView('home');
+                  setIsMobileNavOpen(false);
+                }}
+                className="flex items-center gap-2 text-left cursor-pointer group"
               >
-                {profile.avatarUrl ? (
-                  <img
-                    src={profile.avatarUrl}
-                    alt={profile.name || 'Scholar'}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-emerald-600 to-teal-800 text-white flex items-center justify-center font-bold text-base font-mono">
-                    {profile.name ? profile.name.trim()[0].toUpperCase() : 'S'}
+                <div className="w-8 h-8 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-950 flex items-center justify-center font-bold text-sm tracking-tight shadow-xs">
+                  P
+                </div>
+                <div>
+                  <div className="text-base font-bold tracking-tight text-stone-900 dark:text-stone-100 leading-none">
+                    PlanZo
                   </div>
-                )}
-                
-                {/* Camera icon hover overlay */}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
-                  <Camera className="w-3.5 h-3.5" />
+                  <div className="text-[11px] text-stone-500 dark:text-stone-400 leading-tight mt-0.5">
+                    SATI Vidisha · CSE
+                  </div>
                 </div>
-
-                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-white dark:border-[#0b0f17] animate-pulse" />
               </button>
-
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <button
-                    onClick={() => setIsProfileModalOpen(true)}
-                    className="font-bold text-stone-900 dark:text-stone-100 text-sm sm:text-base tracking-tight hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1.5 text-left truncate cursor-pointer"
-                    title="Click to customize student profile"
-                  >
-                    <span className="truncate max-w-[100px] xs:max-w-[140px] sm:max-w-[190px]">
-                      {profile.name || 'Scholar'}
-                    </span>
-                    <Pencil className="w-3 h-3 text-stone-400 hover:text-emerald-500 shrink-0" />
-                  </button>
-
-                  <span className="text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 rounded-lg bg-stone-100 dark:bg-stone-800/90 text-stone-700 dark:text-stone-300 font-mono font-semibold border border-stone-200/60 dark:border-stone-700/60 shrink-0">
-                    Sem {profile.semester}
-                  </span>
-                </div>
-
-                <button
-                  onClick={onOpenOnboarding}
-                  className="text-[11px] sm:text-xs text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-colors flex items-center gap-1 text-left truncate max-w-[110px] xs:max-w-[160px] sm:max-w-md"
-                  title="Change university, branch, or routine hours"
-                >
-                  <span className="font-semibold text-emerald-700 dark:text-emerald-400 truncate">
-                    {profile.college === 'OTHERS' && profile.customCollege ? profile.customCollege : profile.college}
-                  </span>
-                  <span>·</span>
-                  <span className="truncate">{profile.branch}</span>
-                </button>
-              </div>
             </div>
 
-            {/* Right: Actions (Personalize SATI, Schedule Block, Auth Portal, Streak, Lo-Fi, Workspaces & Theme) */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Zone 2: Clean Navigation Links (Center) */}
+            <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
+              {navLinks.map((item) => {
+                const isActive = activeView === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveView(item.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+                      isActive
+                        ? 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
+                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800/50'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Zone 3: Primary Actions (Right) */}
+            <div className="flex items-center gap-2 shrink-0">
               
-              {/* Personalize SATI Plan Button */}
+              {/* Personalize SATI Routine */}
               <button
                 onClick={() => setIsPersonalizationWizardOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-cyan-500/15 hover:from-emerald-500/25 hover:to-cyan-500/25 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
-                title="Personalize SATI Vidisha Electives, Semester & Daily Timetable"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600 bg-white dark:bg-stone-850 text-stone-700 dark:text-stone-300 text-xs font-medium transition-colors cursor-pointer"
+                title="Change Semester, Electives, or Routine Hours"
               >
-                <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="hidden sm:inline">Personalize SATI Plan</span>
+                <Sliders className="w-3.5 h-3.5" />
+                <span>Customize Plan</span>
               </button>
 
-              {/* + Schedule Study Block Button */}
+              {/* + Schedule Task */}
               <button
                 onClick={() => setIsScheduleModalOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-stone-950 text-xs font-bold transition-all shadow-xs cursor-pointer"
-                title="Schedule a new study block or routine task"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-semibold transition-colors shadow-xs cursor-pointer"
+                title="Add task or study block"
               >
                 <CalendarPlus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Schedule</span>
-              </button>
-
-              {/* Sign In / Account Button */}
-              <button
-                onClick={() => setIsAuthModalOpen(true)}
-                className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-                  currentUser?.isAuthenticated
-                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
-                    : 'border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/80'
-                }`}
-                title={currentUser?.isAuthenticated ? `Logged in as ${currentUser.name} (${currentUser.email})` : 'Sign Up or Sign In'}
-              >
-                {currentUser?.isAuthenticated ? (
-                  <>
-                    <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span className="hidden md:inline text-[11px] truncate max-w-[90px]">Account</span>
-                  </>
-                ) : (
-                  <>
-                    <LogIn className="w-3.5 h-3.5" />
-                    <span className="hidden xs:inline">Sign In</span>
-                  </>
-                )}
-              </button>
-
-              {/* Live Academic Streak Badge */}
-              <button
-                onClick={() => setIsStreakModalOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-600 dark:text-orange-400 text-xs font-mono font-bold cursor-pointer select-none shadow-2xs hover:scale-105 active:scale-95 transition-all"
-                title={`Current Academic Streak: ${userStreak} Days`}
-              >
-                <Flame className="w-3.5 h-3.5 fill-current animate-pulse text-orange-500" />
-                <span>{userStreak}d</span>
-              </button>
-
-              {/* Quick Lo-Fi Focus Audio Synthesizer */}
-              <button
-                onClick={() => setIsAudioModalOpen(true)}
-                className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
-                  isAudioPlaying
-                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                    : 'border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800/80'
-                }`}
-                title="Open Focus Audio Hub: Indian Flute, Melodies & Hindu Rituals, Lo-Fi, or Device Audio"
-              >
-                {isAudioPlaying ? (
-                  <div className="flex items-center gap-0.5">
-                    <span className="w-0.5 h-3 bg-emerald-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-0.5 h-2 bg-emerald-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-0.5 h-3 bg-emerald-500 animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                ) : (
-                  <Headphones className="w-3.5 h-3.5 text-stone-500" />
-                )}
-                <span className="hidden md:inline text-[11px]">
-                  {isAudioPlaying
-                    ? ambientStatus.currentSoundType === 'flute'
-                      ? 'Flute'
-                      : ambientStatus.currentSoundType === 'rituals'
-                      ? 'Rituals'
-                      : ambientStatus.currentSoundType === 'instrumental'
-                      ? 'Tune'
-                      : ambientStatus.currentSoundType === 'custom'
-                      ? 'Audio'
-                      : 'Lo-Fi'
-                    : 'Lo-Fi'}
-                </span>
-              </button>
-
-              {/* Workspaces Drawer Trigger */}
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/80 transition-colors cursor-pointer"
-                title="Open 5 Academic Folders & Tools (⌘K)"
-              >
-                <Menu className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span className="hidden xs:inline">Workspaces</span>
+                <span className="hidden xs:inline">Add Task</span>
               </button>
 
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-xl text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800/80 transition-colors cursor-pointer"
-                aria-label="Toggle theme"
+                className="p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
                 title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                aria-label="Toggle Theme"
               >
-                {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
+
+              {/* User Profile Pill / Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-lg border border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600 bg-stone-50 dark:bg-stone-850 transition-colors cursor-pointer text-left"
+                >
+                  <div className="w-6 h-6 rounded-md bg-stone-800 dark:bg-stone-200 text-white dark:text-stone-900 flex items-center justify-center font-bold text-xs">
+                    {profile.name ? profile.name.trim()[0].toUpperCase() : 'S'}
+                  </div>
+                  <div className="hidden sm:block text-left">
+                    <div className="text-xs font-semibold text-stone-900 dark:text-stone-100 leading-none truncate max-w-[100px]">
+                      {profile.name || 'Scholar'}
+                    </div>
+                    <div className="text-[10px] text-stone-500 dark:text-stone-400 leading-tight">
+                      Sem {profile.semester}
+                    </div>
+                  </div>
+                </button>
+
+                {/* Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div
+                    className="absolute right-0 mt-2 w-56 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-1.5 shadow-lg space-y-1 text-xs z-50 animate-fadeIn"
+                    onMouseLeave={() => setIsUserMenuOpen(false)}
+                  >
+                    <div className="px-3 py-2 border-b border-stone-100 dark:border-stone-800">
+                      <div className="font-semibold text-stone-900 dark:text-stone-100">
+                        {profile.name || 'Student'}
+                      </div>
+                      <div className="text-[11px] text-stone-500 font-mono truncate">
+                        {profile.rollNo || currentUser?.email || '0108CS211045'}
+                      </div>
+                      <div className="text-[11px] text-stone-500 mt-0.5">
+                        Semester {profile.semester} · B.Tech CSE
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        setIsProfileModalOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 text-left transition-colors cursor-pointer"
+                    >
+                      <User className="w-3.5 h-3.5" />
+                      <span>Edit Student Profile</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        setIsPersonalizationWizardOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 text-left transition-colors cursor-pointer"
+                    >
+                      <Sliders className="w-3.5 h-3.5" />
+                      <span>Configure Electives & Hours</span>
+                    </button>
+
+                    <div className="border-t border-stone-100 dark:border-stone-800 my-1" />
+
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        signOut();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer font-medium"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile Menu Hamburger */}
+              <button
+                onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+                className="md:hidden p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                aria-label="Toggle Navigation"
+              >
+                {isMobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              </button>
+
             </div>
 
           </div>
+
+          {/* Mobile Navigation Drawer */}
+          {isMobileNavOpen && (
+            <div className="md:hidden py-3 border-t border-stone-200 dark:border-stone-800 space-y-1">
+              {navLinks.map((item) => {
+                const isActive = activeView === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveView(item.id);
+                      setIsMobileNavOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                      isActive
+                        ? 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
+                        : 'text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-850'
+                    }`}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+              <div className="pt-2 border-t border-stone-100 dark:border-stone-800">
+                <button
+                  onClick={() => {
+                    setIsMobileNavOpen(false);
+                    setIsPersonalizationWizardOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850"
+                >
+                  <Sliders className="w-4 h-4" />
+                  <span>Customize Plan & Electives</span>
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
       </header>
 
-      {/* Focus Audio Hub Modal */}
-      <FocusAudioModal
-        isOpen={isAudioModalOpen}
-        onClose={() => setIsAudioModalOpen(false)}
-      />
-
-      {/* 14-Day Streak Intelligence Modal */}
-      <StreakModal
-        isOpen={isStreakModalOpen}
-        onClose={() => setIsStreakModalOpen(false)}
-      />
-
-      {/* Profile & Avatar Customizer Modal */}
+      {/* Profile and Scheduling Modals */}
       <ProfileAvatarModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
       />
-
-      {/* Student Authentication Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
       />
-
-      {/* Schedule Study Block Modal */}
       <ScheduleTaskModal
         isOpen={isScheduleModalOpen}
         onClose={() => setIsScheduleModalOpen(false)}

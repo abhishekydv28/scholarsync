@@ -249,49 +249,43 @@ export const MonthlyAcademicCalendar: React.FC = () => {
   const selectedStats = getDateTaskStats(selectedDateStr);
 
   return (
-    <div className="bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800 rounded-3xl p-3.5 sm:p-5 shadow-xs flex flex-col justify-between h-full max-w-full overflow-hidden">
+    <div className="bg-white dark:bg-[#0c1017] flex flex-col justify-between h-full max-w-full overflow-hidden">
       
       {/* Top Header: Month & Year Picker + Plus Button */}
       <div className="flex items-center justify-between gap-1 sm:gap-2 pb-3 border-b border-stone-100 dark:border-stone-800 min-w-0">
         
         {/* Month & Year Navigation with Year Selector */}
-        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-teal-50 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 flex items-center justify-center shrink-0">
-            <CalendarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-7 h-7 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 flex items-center justify-center shrink-0">
+            <CalendarIcon className="w-3.5 h-3.5" />
           </div>
 
-          <div className="min-w-0">
-            <div className="flex items-center gap-1 min-w-0">
-              <span className="font-bold text-stone-900 dark:text-stone-100 text-xs sm:text-base leading-none truncate">
-                {MONTH_NAMES[currentMonth]}
-              </span>
+          <div className="min-w-0 flex items-center gap-1.5">
+            <span className="font-bold text-stone-900 dark:text-stone-100 text-sm sm:text-base leading-none">
+              {MONTH_NAMES[currentMonth]}
+            </span>
 
-              {/* Year Selector (Supports changing any year 2024 to 2030) */}
-              <select
-                value={currentYear}
-                onChange={(e) => setCurrentYear(Number(e.target.value))}
-                className="bg-transparent font-bold text-stone-900 dark:text-stone-100 text-xs sm:text-base cursor-pointer focus:outline-hidden hover:text-teal-700 dark:hover:text-teal-400 font-mono shrink-0"
-                title="Change Year"
-              >
-                {[2024, 2025, 2026, 2027, 2028, 2029, 2030].map((yr) => (
-                  <option key={yr} value={yr} className="bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100">
-                    {yr}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <p className="text-[10px] text-stone-400 dark:text-stone-500 font-medium truncate">
-              Task Follow-up Rhythm
-            </p>
+            {/* Year Selector */}
+            <select
+              value={currentYear}
+              onChange={(e) => setCurrentYear(Number(e.target.value))}
+              className="bg-transparent font-bold text-stone-700 dark:text-stone-300 text-xs sm:text-sm cursor-pointer focus:outline-hidden hover:text-stone-900 dark:hover:text-stone-100 font-mono shrink-0"
+              title="Change Year"
+            >
+              {[2024, 2025, 2026, 2027, 2028, 2029, 2030].map((yr) => (
+                <option key={yr} value={yr} className="bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100">
+                  {yr}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
         {/* Action Controls: Previous/Next Month & + Add Task */}
-        <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
-          
+        <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={handleTodayJump}
-            className="hidden sm:inline-flex px-2 py-1 text-[11px] font-mono font-semibold rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
+            className="px-2 py-1 text-xs font-mono font-medium rounded-md bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
             title="Jump to today"
           >
             Today
@@ -299,32 +293,30 @@ export const MonthlyAcademicCalendar: React.FC = () => {
 
           <button
             onClick={handlePrevMonth}
-            className="p-1 sm:p-1.5 rounded-lg text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="p-1.5 rounded-md text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             aria-label="Previous month"
             title="Previous month"
           >
-            <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <ChevronLeft className="w-4 h-4" />
           </button>
 
           <button
             onClick={handleNextMonth}
-            className="p-1 sm:p-1.5 rounded-lg text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="p-1.5 rounded-md text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             aria-label="Next month"
             title="Next month"
           >
-            <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <ChevronRight className="w-4 h-4" />
           </button>
 
-          {/* Plus Icon: Add Task / Schedule New Routine Block */}
           <button
             onClick={() => handleOpenAddForDate()}
-            className="ml-0.5 sm:ml-1 flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-teal-800 hover:bg-teal-700 active:scale-95 text-stone-100 text-xs font-semibold shadow-xs transition-all shrink-0"
-            title="Add new task or schedule for calendar"
+            className="ml-1 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-medium transition-colors shadow-xs shrink-0"
+            title="Add task for selected date"
           >
-            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span className="hidden min-[400px]:inline text-[11px]">Add Task</span>
+            <Plus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Add</span>
           </button>
-
         </div>
       </div>
 

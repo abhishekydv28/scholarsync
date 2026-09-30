@@ -3,18 +3,13 @@ import { useApp } from '../context/AppContext';
 import {
   ShieldAlert,
   ShieldCheck,
-  CheckCircle,
+  CheckCircle2,
   XCircle,
   AlertTriangle,
   RotateCcw,
   Plus,
-  Users,
-  Coffee,
-  HelpCircle,
-  Flame,
-  Percent,
   Sliders,
-  Sparkles,
+  Info,
 } from 'lucide-react';
 import { playTaskCompleteSound } from '../utils/audioSynth';
 
@@ -32,7 +27,6 @@ export const AttendanceTracker: React.FC = () => {
 
   const targetThreshold = medicalBuffer ? 65 : 75;
 
-  // Calculate simulated overall attendance
   const totalAttended = attendance.reduce((sum, a) => sum + a.attendedClasses, 0);
   const totalConducted = attendance.reduce((sum, a) => sum + a.totalClasses, 0);
   const simulatedConducted = totalConducted + simulatedBunks;
@@ -52,255 +46,240 @@ export const AttendanceTracker: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6">
       
-      {/* Top Banner: 75% Attendance War Room with College Banter */}
-      <div className="rounded-3xl border border-stone-200/90 dark:border-stone-800 bg-white/90 dark:bg-[#0c1017] p-5 sm:p-6 shadow-sm backdrop-blur-md">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-          
-          <div className="space-y-1.5 max-w-xl">
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                <Flame className="w-3.5 h-3.5 fill-current animate-pulse text-orange-500" />
-                <span>75% Attendance War Room</span>
-              </span>
-              <span className="text-stone-300 dark:text-stone-700">•</span>
-              <span className="text-xs font-mono text-stone-500 dark:text-stone-400">Survival Calculator</span>
-            </div>
-
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 tracking-tight">
-              Canteen vs. Classroom Radar
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
-              "Engineering me aaye aur 75% attendance ke peeche na bhaage toh kya engineering ki!"
-              Know exactly which lectures you can safely skip for coding sprints or canteen chai without getting debarred by the HOD.
-            </p>
-          </div>
-
-          {/* Aggregate Attendance Ring & Tagline */}
-          <div className="flex items-center gap-4 shrink-0 bg-stone-50 dark:bg-[#0e141f] p-4 rounded-2xl border border-stone-200/80 dark:border-stone-800">
-            <div className="text-right">
-              <div className="text-[11px] uppercase font-mono tracking-wider text-stone-500 dark:text-stone-400 font-semibold">
-                {simulatedBunks > 0 ? 'Simulated Score' : 'Aggregate Score'}
-              </div>
-              <div className="text-3xl font-extrabold font-mono tracking-tight flex items-baseline justify-end gap-1">
-                <span className={isOverallSafe ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
-                  {simulatedBunks > 0 ? simulatedPercentage : overallAttendancePercentage}%
-                </span>
-                <span className="text-xs text-stone-400 font-normal">/ {targetThreshold}%</span>
-              </div>
-            </div>
-
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-sm shadow-xs ${
-              isOverallSafe
-                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300/40'
-                : 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300/40'
-            }`}>
-              {isOverallSafe ? <ShieldCheck className="w-6 h-6" /> : <ShieldAlert className="w-6 h-6" />}
-            </div>
-          </div>
-
+      {/* 1. Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-stone-200/80 dark:border-stone-800">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
+            Attendance & Debarment Risk Tracker
+          </h1>
+          <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-0.5">
+            SATI Autonomous regulations: Minimum 75% attendance required in theory & laboratory sessions.
+          </p>
         </div>
 
-        {/* Interactive What-If Bunk Simulator Bar */}
-        <div className="mt-5 p-4 rounded-2xl bg-gradient-to-r from-stone-50 via-emerald-50/30 to-stone-50 dark:from-[#0f1522] dark:via-[#0c1822] dark:to-[#0f1522] border border-stone-200/80 dark:border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Sliders className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                <span>"What If I Bunk?" Simulator</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold">Live</span>
-              </div>
-              <p className="text-[11px] text-stone-500 dark:text-stone-400">
-                Simulate missing upcoming lectures to test if your score stays safely above 75%.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-mono font-semibold text-stone-600 dark:text-stone-300 shrink-0">
-              Skip {simulatedBunks} classes:
-            </span>
-            <input
-              type="range"
-              min="0"
-              max="8"
-              value={simulatedBunks}
-              onChange={(e) => setSimulatedBunks(Number(e.target.value))}
-              className="w-28 sm:w-36 accent-emerald-600 cursor-pointer"
-            />
-            {simulatedBunks > 0 && (
-              <button
-                onClick={() => setSimulatedBunks(0)}
-                className="text-[10px] font-mono text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 underline cursor-pointer"
-              >
-                Reset
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Options Row: Medical Buffer Toggle & Quick Relatable Tips */}
-        <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
-          
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setMedicalBuffer(!medicalBuffer)}
-              className={`px-3 py-1.5 rounded-xl border font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
-                medicalBuffer
-                  ? 'border-amber-500 bg-amber-50 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200'
-                  : 'border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800'
-              }`}
-            >
-              <span>Medical / Cultural Fest Buffer (65% Criterion)</span>
-              {medicalBuffer && <span className="font-mono text-[10px] bg-amber-200/80 dark:bg-amber-900 px-1.5 py-0.5 rounded-sm">Active</span>}
-            </button>
-          </div>
-
-          <div className="text-stone-500 dark:text-stone-400 text-xs italic">
-            {isOverallSafe
-              ? '✨ Chill zone safe! Canteen samosa khane jaa sakte ho, par labs mat chhodna.'
-              : '🚨 Debar danger! HOD ki red list se bachne ke liye agle 3-4 lectures attend karo.'}
-          </div>
-
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setMedicalBuffer(!medicalBuffer)}
+            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+              medicalBuffer
+                ? 'border-amber-500/80 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200'
+                : 'border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-850 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800'
+            }`}
+          >
+            <span>Medical / Fest Buffer (65%)</span>
+            {medicalBuffer && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
+          </button>
         </div>
       </div>
 
-      {/* Subject-Wise Attendance Cards Grid */}
+      {/* 2. Aggregate Metric Summary (Single Elevation) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        
+        {/* Metric 1: Aggregate Percentage */}
+        <div className="p-4 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017] shadow-xs">
+          <div className="text-xs text-stone-500 dark:text-stone-400 flex items-center justify-between">
+            <span>Overall Attendance</span>
+            {isOverallSafe ? (
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            ) : (
+              <ShieldAlert className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+            )}
+          </div>
+          <div className="text-2xl font-bold font-mono text-stone-900 dark:text-stone-100 mt-1 tabular-nums">
+            {simulatedBunks > 0 ? simulatedPercentage : overallAttendancePercentage}%
+          </div>
+          <div className="text-[11px] text-stone-400 mt-1 font-mono">
+            Target: ≥{targetThreshold}% Threshold
+          </div>
+        </div>
+
+        {/* Metric 2: Classes Attended */}
+        <div className="p-4 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017] shadow-xs">
+          <div className="text-xs text-stone-500 dark:text-stone-400">Classes Attended</div>
+          <div className="text-2xl font-bold font-mono text-stone-900 dark:text-stone-100 mt-1 tabular-nums">
+            {totalAttended}
+          </div>
+          <div className="text-[11px] text-stone-400 mt-1 font-mono">
+            Across {attendance.length} enrolled subjects
+          </div>
+        </div>
+
+        {/* Metric 3: Total Conducted */}
+        <div className="p-4 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017] shadow-xs">
+          <div className="text-xs text-stone-500 dark:text-stone-400">Total Conducted</div>
+          <div className="text-2xl font-bold font-mono text-stone-900 dark:text-stone-100 mt-1 tabular-nums">
+            {totalConducted}
+          </div>
+          <div className="text-[11px] text-stone-400 mt-1 font-mono">
+            {totalConducted === 0 ? 'Fresh semester start' : `${totalConducted - totalAttended} missed`}
+          </div>
+        </div>
+
+        {/* Metric 4: Debar Status */}
+        <div className="p-4 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017] shadow-xs">
+          <div className="text-xs text-stone-500 dark:text-stone-400">Exam Eligibility</div>
+          <div className={`text-base font-bold mt-1.5 ${isOverallSafe ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
+            {isOverallSafe ? 'Eligible for End-Sem' : 'Debar Risk Warning'}
+          </div>
+          <div className="text-[11px] text-stone-400 mt-1">
+            {isOverallSafe ? 'Safe to sit for examinations' : 'Attend upcoming lectures immediately'}
+          </div>
+        </div>
+
+      </div>
+
+      {/* 3. Projection & Bunk Simulation Tool */}
+      <div className="p-4 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-stone-50/60 dark:bg-[#0e141f] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 flex items-center justify-center shrink-0">
+            <Sliders className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-stone-900 dark:text-stone-100">
+              Absence Impact Simulator
+            </div>
+            <p className="text-[11px] text-stone-500 dark:text-stone-400">
+              Test how missing upcoming lectures will affect your aggregate percentage.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-mono text-stone-600 dark:text-stone-300 whitespace-nowrap">
+            Simulate skipping {simulatedBunks} classes:
+          </span>
+          <input
+            type="range"
+            min="0"
+            max="12"
+            value={simulatedBunks}
+            onChange={(e) => setSimulatedBunks(Number(e.target.value))}
+            className="w-32 sm:w-40 accent-stone-900 dark:accent-stone-100 cursor-pointer"
+          />
+          {simulatedBunks > 0 && (
+            <button
+              onClick={() => setSimulatedBunks(0)}
+              className="text-xs text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 underline cursor-pointer"
+            >
+              Reset
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* 4. Subject-Wise Attendance Table / Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {attendance.map((sub) => {
           const calc = calculateBunkStatus(sub.attendedClasses, sub.totalClasses, targetThreshold);
           const isDanger = !calc.isSafe;
-          const isBorderline = calc.isSafe && calc.safeToBunk === 0;
 
           return (
             <div
               key={sub.subjectId}
-              className={`rounded-3xl border p-5 transition-all shadow-xs flex flex-col justify-between ${
+              className={`rounded-xl border p-4 transition-all shadow-xs flex flex-col justify-between ${
                 isDanger
-                  ? 'border-rose-300/80 bg-rose-50/40 dark:border-rose-900/60 dark:bg-rose-950/20'
-                  : isBorderline
-                  ? 'border-amber-300/80 bg-amber-50/30 dark:border-amber-900/50 dark:bg-amber-950/20'
-                  : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-[#0c1017] hover:border-emerald-500/40'
+                  ? 'border-rose-300/80 bg-rose-50/20 dark:border-rose-900/50 dark:bg-rose-950/10'
+                  : 'border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017]'
               }`}
             >
-              
               {/* Card Header */}
               <div>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400 mb-1">
-                      <span className="font-mono font-bold text-stone-800 dark:text-stone-200">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 text-xs font-mono text-stone-500 mb-0.5">
+                      <span className="font-bold text-stone-800 dark:text-stone-200">
                         {sub.subjectCode}
                       </span>
                       {sub.isLab && (
                         <>
-                          <span aria-hidden="true">·</span>
-                          <span className="text-cyan-600 dark:text-cyan-400 font-medium">Lab Viva Eligible</span>
+                          <span>·</span>
+                          <span className="text-stone-600 dark:text-stone-400">Practical Lab</span>
                         </>
                       )}
                     </div>
-                    <h3 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100">
+                    <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100 truncate">
                       {sub.subjectName}
                     </h3>
                     {sub.professorName && (
-                      <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5 font-mono">
+                      <p className="text-[11px] text-stone-400 font-mono mt-0.5">
                         Faculty: {sub.professorName}
                       </p>
                     )}
                   </div>
 
-                  {/* Percentage badge */}
                   <div className="text-right shrink-0">
-                    <div className={`text-2xl font-extrabold font-mono tracking-tight ${
-                      isDanger
-                        ? 'text-rose-600 dark:text-rose-400'
-                        : isBorderline
-                        ? 'text-amber-600 dark:text-amber-400'
-                        : 'text-emerald-600 dark:text-emerald-400'
+                    <div className={`text-xl font-bold font-mono tabular-nums ${
+                      isDanger ? 'text-rose-600 dark:text-rose-400' : 'text-stone-900 dark:text-stone-100'
                     }`}>
                       {calc.percentage}%
                     </div>
-                    <div className="text-[11px] text-stone-500 dark:text-stone-400 font-mono font-medium">
-                      {sub.attendedClasses}/{sub.totalClasses} Classes
+                    <div className="text-[11px] text-stone-400 font-mono">
+                      {sub.attendedClasses}/{sub.totalClasses} classes
                     </div>
                   </div>
                 </div>
 
-                {/* Progress Bar with 75% indicator line */}
-                <div className="relative mt-3 h-2.5 w-full bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden p-0.5">
+                {/* Minimal Progress Bar */}
+                <div className="mt-3 h-1.5 w-full bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      isDanger
-                        ? 'bg-rose-500'
-                        : isBorderline
-                        ? 'bg-amber-500'
-                        : 'bg-emerald-500'
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      isDanger ? 'bg-rose-500' : 'bg-stone-900 dark:bg-stone-100'
                     }`}
                     style={{ width: `${Math.min(100, calc.percentage)}%` }}
                   />
                 </div>
 
-                {/* Bunk Status Message */}
-                <div className="mt-3 flex items-center gap-1.5 text-xs">
+                {/* Status Message */}
+                <div className="mt-2.5 flex items-center gap-1.5 text-xs">
                   {isDanger ? (
                     <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
-                  ) : isBorderline ? (
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                   ) : (
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   )}
-                  <span className={`font-semibold ${
-                    isDanger ? 'text-rose-700 dark:text-rose-300' : isBorderline ? 'text-amber-700 dark:text-amber-300' : 'text-emerald-700 dark:text-emerald-300'
-                  }`}>
+                  <span className={isDanger ? 'text-rose-700 dark:text-rose-300 font-medium' : 'text-stone-600 dark:text-stone-400'}>
                     {calc.statusLabel}
                   </span>
                 </div>
               </div>
 
-              {/* Bottom Quick Controls: Attended (+) vs Bunked (-) */}
+              {/* Bottom Quick Controls */}
               <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800/80 flex items-center justify-between gap-2">
                 
-                {/* Manual Adjust Buttons */}
+                {/* Manual Adjustments */}
                 <div className="flex items-center gap-1 text-xs text-stone-500">
-                  <span className="font-mono text-[11px]">Adjust:</span>
+                  <span className="text-[11px]">Edit:</span>
                   <button
                     onClick={() => adjustAttendanceCount(sub.subjectId, sub.attendedClasses - 1, sub.totalClasses - 1)}
                     disabled={sub.attendedClasses <= 0}
-                    className="w-6 h-6 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center font-bold text-stone-700 dark:text-stone-300 disabled:opacity-40 cursor-pointer"
-                    title="Undo 1 class"
+                    className="w-6 h-6 rounded border border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 flex items-center justify-center font-mono font-bold text-xs disabled:opacity-30 cursor-pointer"
+                    title="Subtract 1 attended"
                   >
                     -
                   </button>
                   <button
                     onClick={() => adjustAttendanceCount(sub.subjectId, sub.attendedClasses + 1, sub.totalClasses + 1)}
-                    className="w-6 h-6 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center font-bold text-stone-700 dark:text-stone-300 cursor-pointer"
-                    title="Add 1 class"
+                    className="w-6 h-6 rounded border border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 flex items-center justify-center font-mono font-bold text-xs cursor-pointer"
+                    title="Add 1 attended"
                   >
                     +
                   </button>
                 </div>
 
-                {/* Main Action Buttons */}
+                {/* Action Buttons */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleMarkAbsent(sub.subjectId)}
-                    className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-colors border border-rose-200 dark:border-rose-900/60 flex items-center gap-1 cursor-pointer"
-                    title="Missed / Bunked this class"
+                    className="px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600 text-stone-700 dark:text-stone-300 text-xs font-medium transition-colors cursor-pointer"
                   >
-                    <XCircle className="w-3.5 h-3.5" />
-                    <span>Bunked</span>
+                    Missed (+0)
                   </button>
-
                   <button
                     onClick={() => handleMarkPresent(sub.subjectId)}
-                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-emerald-600 dark:hover:bg-emerald-500 transition-all shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer"
-                    title="Attended lecture / Proxy marked"
+                    className="px-3 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-semibold transition-colors shadow-xs cursor-pointer"
                   >
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-200" />
-                    <span>Attended (+1)</span>
+                    Attended (+1)
                   </button>
                 </div>
 
@@ -311,38 +290,15 @@ export const AttendanceTracker: React.FC = () => {
         })}
       </div>
 
-      {/* Engineering Attendance Golden Rules */}
-      <div className="rounded-3xl border border-stone-200 dark:border-stone-800 bg-stone-50/80 dark:bg-[#0c1017] p-5 space-y-3">
-        <div className="flex items-center gap-2 text-stone-800 dark:text-stone-200 font-bold text-xs uppercase font-mono tracking-wider">
-          <Coffee className="w-4 h-4 text-emerald-600" />
-          <span>B.Tech Campus Wisdom: The 75% Formula Hacks</span>
+      {/* 5. Institutional Attendance Policy Notes */}
+      <div className="rounded-xl border border-stone-200/90 dark:border-stone-800 bg-stone-50/40 dark:bg-[#0c1017] p-4 text-xs text-stone-600 dark:text-stone-400 space-y-2">
+        <div className="flex items-center gap-2 text-stone-800 dark:text-stone-200 font-semibold">
+          <Info className="w-4 h-4 text-stone-500" />
+          <span>SATI Vidisha Attendance Regulations</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-stone-600 dark:text-stone-300">
-          <div className="p-3.5 rounded-2xl bg-white dark:bg-[#0e141f] border border-stone-200/60 dark:border-stone-800 space-y-1">
-            <span className="font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1">
-              <span>1. Lab Sessions are Sacred</span>
-            </span>
-            <p className="text-[11px] text-stone-500 dark:text-stone-400">
-              Lab credits carry heavy internal marks and external viva weightage. Never bunk practicals.
-            </p>
-          </div>
-          <div className="p-3.5 rounded-2xl bg-white dark:bg-[#0e141f] border border-stone-200/60 dark:border-stone-800 space-y-1">
-            <span className="font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1">
-              <span>2. Keep a 3-Lecture Cushion</span>
-            </span>
-            <p className="text-[11px] text-stone-500 dark:text-stone-400">
-              Don't sit exactly at 75.0%. Keep 78-80% so unexpected illness or placement drives don't debar you.
-            </p>
-          </div>
-          <div className="p-3.5 rounded-2xl bg-white dark:bg-[#0e141f] border border-stone-200/60 dark:border-stone-800 space-y-1">
-            <span className="font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1">
-              <span>3. College Fest Buffer</span>
-            </span>
-            <p className="text-[11px] text-stone-500 dark:text-stone-400">
-              Check if your university allows 65% with official medical or cultural committee certificates.
-            </p>
-          </div>
-        </div>
+        <p className="leading-relaxed">
+          Students falling below 75% in any course at the time of examination form submission are listed under the Debarment Notice. In genuine medical cases or authorized participation in institute cultural/sports events, the Academic Council may grant condonation up to 10% (reducing threshold to 65%), subject to submission of valid documents within 3 working days.
+        </p>
       </div>
 
     </div>

@@ -304,37 +304,37 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-stone-950/80 backdrop-blur-md animate-fadeIn">
-      <div className="bg-white dark:bg-[#0c121e] border border-stone-200/90 dark:border-stone-800 rounded-3xl p-5 sm:p-7 w-full max-w-2xl shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-stone-950/70 backdrop-blur-xs animate-fadeIn">
+      <div className="bg-white dark:bg-[#0c1017] border border-stone-200 dark:border-stone-800 rounded-2xl p-5 sm:p-6 w-full max-w-2xl shadow-xl space-y-5 max-h-[92vh] overflow-y-auto">
         
         {/* Wizard Top Step Indicator */}
         <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 text-stone-950 flex items-center justify-center font-bold">
-              <GraduationCap className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-950 flex items-center justify-center font-bold text-xs">
+              <GraduationCap className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                <span>Personalize Your PlanZo Workspace</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30">
+              <h2 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <span>Configure Curriculum & Routine</span>
+                <span className="text-[11px] font-mono text-stone-500">
                   Step {step} of 5
                 </span>
               </h2>
               <p className="text-xs text-stone-500 dark:text-stone-400">
-                Configure your real university, semester electives, and daily routine.
+                SATI Vidisha B.Tech CSE · Semesters 1 to 8 Official Syllabus
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
-            <span>{Math.round((step / 5) * 100)}%</span>
+          <div className="text-xs font-mono font-bold text-stone-500">
+            {Math.round((step / 5) * 100)}%
           </div>
         </div>
 
         {/* Step Progress Line */}
-        <div className="w-full h-1.5 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
+        <div className="w-full h-1 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-300"
+            className="h-full bg-stone-900 dark:bg-stone-100 transition-all duration-300"
             style={{ width: `${(step / 5) * 100}%` }}
           />
         </div>
@@ -344,16 +344,11 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
         {/* ---------------------------------------------------- */}
         {step === 1 && (
           <div className="space-y-4 animate-fadeIn text-xs">
-            <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center gap-3">
-              <Sparkles className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <div>
-                <strong className="text-emerald-800 dark:text-emerald-300 text-xs block">
-                  Official Syllabus Engine: SATI Vidisha (Autonomous)
-                </strong>
-                <span className="text-[11px] text-stone-600 dark:text-stone-300">
-                  Full syllabi, units, lab experiments, and marking schemes from Samrat Ashok Technological Institute Department of CSE are natively loaded!
-                </span>
-              </div>
+            <div className="p-3 rounded-lg border border-stone-200 dark:border-stone-800 bg-stone-50/60 dark:bg-stone-900/40 text-stone-600 dark:text-stone-400">
+              <span className="font-semibold text-stone-900 dark:text-stone-100">
+                Autonomous Syllabus Engine Loaded:
+              </span>{' '}
+              Official courses, 5 syllabus units, and marking schemes for all 8 semesters are mapped for Samrat Ashok Technological Institute (SATI Vidisha).
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -919,18 +914,15 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
               type="button"
               onClick={handleFinalizePlan}
               disabled={isGenerating}
-              className="px-7 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-stone-950 font-extrabold text-xs flex items-center gap-2 cursor-pointer transition-all active:scale-95 shadow-lg shadow-emerald-500/20"
+              className="px-5 py-2.5 rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950 font-semibold text-xs flex items-center gap-2 cursor-pointer transition-colors shadow-xs"
             >
               {isGenerating ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-stone-950 border-t-transparent rounded-full animate-spin" />
-                  <span>Synthesizing SATI Vidisha Plan...</span>
+                  <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <span>Configuring Timetable...</span>
                 </>
               ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  <span>Launch My Personalized PlanZo Workspace</span>
-                </>
+                <span>Save & Activate Plan</span>
               )}
             </button>
           )}

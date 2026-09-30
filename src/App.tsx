@@ -7,11 +7,9 @@ import { AcademicHub } from './components/AcademicHub';
 import { AttendanceTracker } from './components/AttendanceTracker';
 import { AnalyticsView } from './components/AnalyticsView';
 import { ZenModeModal } from './components/ZenModeModal';
-import { AiCoachDrawer } from './components/AiCoachDrawer';
 import { OnboardingModal } from './components/OnboardingModal';
 import { ResourceModal } from './components/ResourceModal';
 import { SubjectAttendanceFolderModal } from './components/SubjectAttendanceFolderModal';
-import { AppSidebar } from './components/AppSidebar';
 import { AuthGatewayScreen } from './components/AuthGatewayScreen';
 import { PersonalizationSetupWizard } from './components/PersonalizationSetupWizard';
 import { ArrowLeft } from 'lucide-react';
@@ -103,23 +101,22 @@ const PlanZoMain: React.FC = () => {
 
       </main>
 
-      {/* Quiet Footer */}
-      <footer className="mt-16 border-t border-stone-200/80 dark:border-stone-800/80 py-8 bg-white/40 dark:bg-stone-900/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500 dark:text-stone-400">
+      {/* Clean Academic Footer */}
+      <footer className="mt-16 border-t border-stone-200/80 dark:border-stone-800 py-6 bg-white/40 dark:bg-stone-900/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500 dark:text-stone-400">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-stone-800 dark:text-stone-200">PlanZo</span>
             <span>·</span>
-            <span>Intelligent B.Tech Academic Planning & Dynamic Auto-Correction</span>
+            <span>Samrat Ashok Technological Institute (Autonomous), Vidisha (M.P.)</span>
           </div>
-          <div className="flex items-center gap-1 text-[11px] font-mono">
-            <span>Built for B.Tech engineers · Consistency without burnout</span>
+          <div className="text-[11px] font-mono">
+            B.Tech Computer Science & Engineering Academic Workspace
           </div>
         </div>
       </footer>
 
-      {/* Floating Modals and Drawers */}
+      {/* Functional Modals */}
       <ZenModeModal />
-      <AiCoachDrawer />
       <OnboardingModal
         isOpen={isOnboardingOpen}
         onClose={() => setIsOnboardingOpen(false)}
@@ -129,13 +126,6 @@ const PlanZoMain: React.FC = () => {
       <PersonalizationSetupWizard
         isOpen={isPersonalizationWizardOpen}
         onClose={() => setIsPersonalizationWizardOpen(false)}
-      />
-
-      {/* Floating Left-Bottom Sidebar Button & Popover */}
-      <AppSidebar
-        onOpenProfile={() => setIsOnboardingOpen(true)}
-        isDarkMode={isDarkMode}
-        setIsDarkMode={setIsDarkMode}
       />
     </div>
   );

@@ -26,7 +26,6 @@ export const SubjectAttendanceFolderModal: React.FC = () => {
     adjustAttendanceCount,
     calculateBunkStatus,
     overallAttendancePercentage,
-    setIsAiDrawerOpen,
   } = useApp();
 
   const [medicalBuffer, setMedicalBuffer] = useState(false);
@@ -414,23 +413,19 @@ export const SubjectAttendanceFolderModal: React.FC = () => {
           )}
         </div>
 
-        {/* Modal Footer with Senior Mentor Prompt */}
+        {/* Modal Footer */}
         <div className="p-4 sm:p-5 border-t border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400">
-            <Coffee className="w-4 h-4 text-teal-700 shrink-0" />
+            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>Attendance changes auto-recalculate your safe bunks in real-time.</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => {
-                setIsAttendanceModalOpen(false);
-                setIsAiDrawerOpen(true);
-              }}
-              className="px-3.5 py-2 rounded-xl bg-teal-800 dark:bg-teal-700 text-stone-100 hover:bg-teal-700 font-medium transition-colors flex items-center gap-1.5"
+              onClick={() => setIsAttendanceModalOpen(false)}
+              className="px-4 py-2 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-950 font-medium transition-colors cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5 text-teal-300" />
-              <span>Ask Senior Mentor Advice</span>
+              Done
             </button>
           </div>
         </div>

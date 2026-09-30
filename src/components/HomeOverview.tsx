@@ -5,467 +5,407 @@ import {
   ArrowRight,
   CheckCircle2,
   Circle,
-  Play,
-  Zap,
-  Percent,
-  Flame,
-  Sparkles,
-  Trophy,
-  ShieldCheck,
-  ShieldAlert,
   Calendar,
   CalendarPlus,
   BookOpen,
-  Laptop,
+  Sliders,
+  ShieldCheck,
+  ShieldAlert,
+  Flame,
+  CheckSquare,
+  Square,
+  ChevronRight,
+  GraduationCap,
+  FileText,
 } from 'lucide-react';
 import { MonthlyAcademicCalendar } from './MonthlyAcademicCalendar';
-import { playTaskCompleteSound } from '../utils/audioSynth';
-import { fireConfetti } from '../utils/audioVibes';
+import { ScheduleTaskModal } from './ScheduleTaskModal';
 import { StreakModal } from './StreakModal';
 import { XpModal } from './XpModal';
-import { MotivationalQuoteBanner } from './MotivationalQuoteBanner';
-import { ScheduleTaskModal } from './ScheduleTaskModal';
 
 export const HomeOverview: React.FC = () => {
   const {
     profile,
     timetable,
     subjects,
+    attendance,
     overallAttendancePercentage,
     setActiveView,
-    setIsAttendanceModalOpen,
-    startZenMode,
     toggleItemComplete,
     setIsPersonalizationWizardOpen,
-    userXp,
     userStreak,
+    userXp,
   } = useApp();
 
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
   const [isXpModalOpen, setIsXpModalOpen] = useState(false);
-  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+
+  const completedCount = timetable.filter((item) => item.completed).length;
+  const totalCount = timetable.length;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  // College hours items (10:30 - 17:30)
+  const collegeItems = timetable.filter((t) => t.category === 'lecture' || t.category === 'lab');
 
   const isAttendanceSafe = overallAttendancePercentage >= 75;
 
-  const getScholarRank = (xp: number) => {
-    if (xp >= 2000) return 'Level 5 Semester Demon';
-    if (xp >= 1200) return 'Level 4 Code & Theory Scholar';
-    if (xp >= 700) return 'Level 3 Academic Sprint Pro';
-    if (xp >= 300) return 'Level 2 Campus Navigator';
-    return 'Level 1 Freshman Explorer';
-  };
-
-  // Find next or active class
-  const activeOrUpcomingItem = timetable.find((item) => !item.completed) || timetable[0];
-  const completedCount = timetable.filter((item) => item.completed).length;
-  const progressPercent = timetable.length > 0 ? Math.round((completedCount / timetable.length) * 100) : 0;
-
-  const handleTaskCheck = (id: string, currentlyCompleted: boolean) => {
-    toggleItemComplete(id);
-    if (!currentlyCompleted) {
-      playTaskCompleteSound();
-      if (completedCount + 1 >= timetable.length) {
-        fireConfetti(90);
-      } else {
-        fireConfetti(35);
-      }
-    }
-  };
+  const totalAttended = attendance.reduce((acc, a) => acc + a.attendedClasses, 0);
+  const totalConducted = attendance.reduce((acc, a) => acc + a.totalClasses, 0);
 
   return (
     <>
-      <div className="space-y-6 animate-fadeIn max-w-full overflow-x-hidden">
+      <div className="space-y-6">
 
-        {/* 0. Top Gen-Z Academic Momentum & XP Ribbon */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-stone-900 via-stone-900 to-teal-950 dark:from-[#0c121d] dark:via-[#0e1626] dark:to-[#091b22] text-white p-4 sm:p-5 border border-stone-800 dark:border-teal-500/20 shadow-lg shadow-black/10">
-          {/* Subtle decorative background ambient glow */}
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                {/* Clickable Semester Grind / Streak trigger */}
-                <button
-                  onClick={() => setIsStreakModalOpen(true)}
-                  className="flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full hover:bg-emerald-500/20 transition-all cursor-pointer active:scale-95"
-                  title={`Click to view ${userStreak}-Day Streak Details`}
-                >
-                  <Flame className="w-3.5 h-3.5 text-orange-400 fill-current animate-pulse" />
-                  <span>{userStreak > 0 ? `${userStreak}d Streak Active` : 'Day 0 · Ready to Grind'}</span>
-                </button>
-                <span className="text-stone-500">·</span>
-                {/* Clickable Rank / XP trigger */}
-                <button
-                  onClick={() => setIsXpModalOpen(true)}
-                  className="text-xs font-mono text-cyan-300 hover:text-cyan-200 transition-colors cursor-pointer hover:underline"
-                  title="Click to view Level & XP Matrix"
-                >
-                  {getScholarRank(userXp)}
-                </button>
-              </div>
-
-              {/* User greeting */}
-              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                <span>{profile.name ? `Hey, ${profile.name}` : 'Welcome back, Scholar'}</span>
-              </h1>
-            </div>
-
-            {/* Quick Stat Badges */}
-            <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-              {/* Clickable XP Pill */}
-              <button
-                onClick={() => setIsXpModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-white/10 dark:bg-stone-800/80 backdrop-blur-md border border-white/10 hover:border-amber-400/50 flex items-center gap-2 transition-all cursor-pointer hover:scale-105 active:scale-95"
-                title="Click to view XP Breakdown & Activity Log"
-              >
-                <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-stone-300">XP:</span>
-                <span className="font-bold text-amber-300">{userXp} pts</span>
-              </button>
-
-              <button
-                onClick={() => setIsAttendanceModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-white/10 dark:bg-stone-800/80 backdrop-blur-md border border-white/10 hover:border-emerald-500/50 flex items-center gap-2 transition-colors cursor-pointer"
-              >
-                {isAttendanceSafe ? (
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                ) : (
-                  <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-                )}
-                <span className="text-stone-300">Bunk Safety:</span>
-                <span className={`font-bold ${isAttendanceSafe ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {overallAttendancePercentage}%
-                </span>
-              </button>
-
-              <button
-                onClick={() => setActiveView('timeline')}
-                className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold flex items-center gap-1.5 transition-all active:scale-95 shadow-xs cursor-pointer"
-              >
-                <Zap className="w-3.5 h-3.5 fill-current" />
-                <span>{completedCount}/{timetable.length} Done</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-3">
-            <div className="flex-1 h-2 rounded-full bg-white/10 dark:bg-stone-800 overflow-hidden p-0.5">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 transition-all duration-500 shadow-sm"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <span className="text-[11px] font-mono font-semibold text-stone-300 shrink-0">
-              {progressPercent}% Today Completed
-            </span>
-          </div>
-        </div>
-
-        {/* 1. Energetic Motivational Quotes Banner (By Successful People) */}
-        <MotivationalQuoteBanner />
-
-        {/* 1.5 SATI Vidisha Official Syllabus & Personalization Banner */}
-        <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 border border-emerald-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
-          <div className="space-y-1 max-w-2xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>SATI Vidisha B.Tech CSE Syllabus Engine</span>
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold">
-                Sem {profile.semester} Active · {subjects.length} Courses
-              </span>
-            </div>
-            <h3 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100">
-              Personalized for: {profile.name || 'Abhishek'} · SATI Vidisha (Autonomous)
-            </h3>
-            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-              Units I-V, 11 lab experiments, Topper notes, and viva questions from the official SATI syllabus are loaded. College timing: {profile.collegeStart} to {profile.collegeEnd}.
+        {/* 1. Page Header (Clean, Authentic Academic Dashboard) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-stone-200/80 dark:border-stone-800">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
+              {profile.name ? `Welcome, ${profile.name}` : 'Student Academic Overview'}
+            </h1>
+            <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-0.5">
+              Semester {profile.semester} · B.Tech Computer Science & Engineering · SATI Vidisha (Autonomous)
             </p>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setIsPersonalizationWizardOpen(true)}
-              className="px-4 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95 shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-850 hover:bg-stone-50 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-medium transition-colors cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Personalize Electives & Plan ⚡</span>
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Customize Plan</span>
             </button>
             <button
-              onClick={() => setActiveView('academic')}
-              className="px-3.5 py-2.5 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-200 font-semibold text-xs hover:border-emerald-500 transition-colors cursor-pointer"
+              onClick={() => setIsScheduleModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-semibold transition-colors shadow-xs cursor-pointer"
             >
-              Subject Folders
+              <CalendarPlus className="w-3.5 h-3.5" />
+              <span>+ Add Task</span>
             </button>
           </div>
         </div>
-        
-        {/* 2. Calm Academic Hub: Greeting & Next Up (Top) + Motion Cards (Left) + Monthly Academic Calendar (Right) */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch max-w-full">
-          
-          {/* Left Section: Greeting + Rectangular Immediate Next Up (Top Right) + Motion Cards (xl:col-span-7) */}
-          <div className="xl:col-span-7 flex flex-col justify-between gap-5 bg-white dark:bg-[#0c1017] border border-stone-200/90 dark:border-stone-800/80 p-4 sm:p-6 rounded-3xl shadow-xs max-w-full overflow-hidden">
-            
-            {/* Top Row: Greeting Context (Left) & Immediate Current/Next Up Rectangular Block (Right) */}
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 max-w-full min-w-0">
-              <div className="space-y-1.5 max-w-sm min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono uppercase tracking-wider text-emerald-700 dark:text-emerald-400 font-bold">
-                    Calm Academic Hub
-                  </span>
-                  <span className="text-stone-300 dark:text-stone-700">•</span>
-                  <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
-                    {new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).format(new Date())}
-                  </span>
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100 truncate">
-                  Engineering Routine
-                </h2>
-                <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed line-clamp-2">
-                  No guilt-tripping or notification overload. Dynamic auto-correction protects your sleep rhythm.
-                </p>
-              </div>
 
-              {/* Immediate Upcoming / Current Class */}
-              {activeOrUpcomingItem && (
-                <div className="w-full md:w-64 p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-cyan-500/10 border border-emerald-500/25 space-y-2 shrink-0">
-                  <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-emerald-700 dark:text-emerald-300">
-                    <span className="uppercase tracking-wider flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-emerald-500" />
-                      Next Up
-                    </span>
-                    <span>{activeOrUpcomingItem.startTime}</span>
-                  </div>
-                  <div className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">
-                    {activeOrUpcomingItem.title}
-                  </div>
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/80 dark:bg-stone-800 font-mono text-stone-600 dark:text-stone-300 capitalize font-medium">
-                      {activeOrUpcomingItem.category}
-                    </span>
-                    <button
-                      onClick={() => startZenMode(activeOrUpcomingItem)}
-                      className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                      <span>Focus Now</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
+        {/* 2. Key Metrics Row (Clean, single elevation, tabular numbers) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          
+          {/* Card 1: Attendance */}
+          <div
+            onClick={() => setActiveView('attendance')}
+            className="p-4 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0e141f] transition-all hover:border-stone-300 dark:hover:border-stone-700 cursor-pointer shadow-xs"
+          >
+            <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 mb-1">
+              <span>Attendance Rate</span>
+              {isAttendanceSafe ? (
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              ) : (
+                <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               )}
             </div>
-
-            {/* Bottom Row: 2 Big Motion Cards (75% Attendance & Today's Rhythm) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full pt-1">
-              
-              {/* 75% Attendance Safe Card */}
-              <button
-                type="button"
-                onClick={() => setIsAttendanceModalOpen(true)}
-                className="group relative p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#0e141f] border border-stone-200/90 dark:border-stone-800 shadow-sm transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.03] active:scale-95 hover:bg-[#4ade80] dark:hover:bg-[#22c55e] hover:border-[#22c55e] hover:shadow-xl hover:shadow-green-500/25 text-left flex flex-col justify-between w-full min-w-0 cursor-pointer focus:outline-hidden"
-                title="Click to view full 75% Attendance Bunk Simulator & details"
-              >
-                {/* Top row: Icon & Status Dot */}
-                <div className="flex items-center justify-between gap-2 w-full">
-                  <div className="w-9 h-9 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 group-hover:bg-white text-emerald-800 dark:text-emerald-300 group-hover:text-stone-900 flex items-center justify-center transition-colors shadow-xs">
-                    <Percent className="w-4 h-4" />
-                  </div>
-                  <span className={`w-2.5 h-2.5 rounded-full ${isAttendanceSafe ? 'bg-emerald-500 group-hover:bg-stone-900' : 'bg-rose-500 group-hover:bg-stone-900'} animate-pulse`} />
-                </div>
-
-                {/* Middle: Big Percentage */}
-                <div className="py-2">
-                  <div className="text-[11px] uppercase font-mono tracking-wider text-stone-500 dark:text-stone-400 group-hover:text-stone-900/80 font-bold transition-colors">
-                    75% Attendance Safe
-                  </div>
-                  <div className="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-stone-900 dark:text-stone-100 group-hover:text-stone-950 transition-colors">
-                    {overallAttendancePercentage}%
-                  </div>
-                </div>
-
-                {/* Bottom: Action Line */}
-                <div className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 group-hover:text-stone-950 transition-colors flex items-center gap-1">
-                  <span>{isAttendanceSafe ? 'Safe to chill at canteen' : 'Debar danger! Attend classes'}</span>
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                </div>
-              </button>
-
-              {/* Today's Rhythm Card */}
-              <button
-                type="button"
-                onClick={() => setActiveView('timeline')}
-                className="group relative p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#0e141f] border border-stone-200/90 dark:border-stone-800 shadow-sm transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.03] active:scale-95 hover:bg-[#4ade80] dark:hover:bg-[#22c55e] hover:border-[#22c55e] hover:shadow-xl hover:shadow-green-500/25 text-left flex flex-col justify-between w-full min-w-0 cursor-pointer focus:outline-hidden"
-                title="Click to view full Daily Routine schedule"
-              >
-                {/* Top row: Icon */}
-                <div className="flex items-center justify-between gap-2 w-full">
-                  <div className="w-9 h-9 rounded-2xl bg-amber-50 dark:bg-amber-950/80 group-hover:bg-white text-amber-800 dark:text-amber-300 group-hover:text-stone-900 flex items-center justify-center transition-colors shadow-xs">
-                    <CheckCircle2 className="w-4 h-4" />
-                  </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-stone-100 dark:bg-stone-800 group-hover:bg-white/80 text-stone-600 dark:text-stone-300 group-hover:text-stone-900 font-bold transition-colors">
-                    Daily Habit
-                  </span>
-                </div>
-
-                {/* Middle: Big Rhythm Count */}
-                <div className="py-2">
-                  <div className="text-[11px] uppercase font-mono tracking-wider text-stone-500 dark:text-stone-400 group-hover:text-stone-900/80 font-bold transition-colors">
-                    Today's Rhythm
-                  </div>
-                  <div className="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-stone-900 dark:text-stone-100 group-hover:text-stone-950 transition-colors">
-                    {completedCount}
-                    <span className="text-xl text-stone-400 group-hover:text-stone-800 font-normal">/{timetable.length}</span>
-                  </div>
-                </div>
-
-                {/* Bottom: Action Line */}
-                <div className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 group-hover:text-stone-950 transition-colors flex items-center gap-1">
-                  <span>{completedCount === timetable.length ? 'All blocks conquered 🎉' : `${timetable.length - completedCount} tasks remaining`}</span>
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                </div>
-              </button>
-
+            <div className="flex items-baseline gap-1.5 mt-0.5">
+              <span className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100 font-mono tabular-nums">
+                {overallAttendancePercentage}%
+              </span>
+              <span className="text-xs text-stone-400 font-mono">
+                ({totalAttended}/{totalConducted} classes)
+              </span>
+            </div>
+            <div className="mt-2 text-[11px] text-stone-500 dark:text-stone-400 flex items-center justify-between">
+              <span>{isAttendanceSafe ? 'Eligible for End-Sem' : '75% Criteria Warning'}</span>
+              <span className="text-stone-400 font-mono">≥75% Required</span>
             </div>
           </div>
 
-          {/* Right Section: Monthly Academic Calendar (xl:col-span-5) */}
-          <div className="xl:col-span-5 max-w-full min-w-0 overflow-hidden">
-            <MonthlyAcademicCalendar />
+          {/* Card 2: College Hours */}
+          <div className="p-4 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0e141f] shadow-xs">
+            <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 mb-1">
+              <span>Institute Schedule</span>
+              <Clock className="w-4 h-4 text-stone-400" />
+            </div>
+            <div className="flex items-baseline gap-1.5 mt-0.5">
+              <span className="text-xl font-bold tracking-tight text-stone-900 dark:text-stone-100 font-mono">
+                10:30 – 17:30
+              </span>
+            </div>
+            <div className="mt-2 text-[11px] text-stone-500 dark:text-stone-400 flex items-center justify-between">
+              <span>SATI Vidisha Fixed Hours</span>
+              <span className="text-stone-400 font-mono">{collegeItems.length} Sessions Today</span>
+            </div>
+          </div>
+
+          {/* Card 3: Today's Tasks */}
+          <div
+            onClick={() => setActiveView('timeline')}
+            className="p-4 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0e141f] transition-all hover:border-stone-300 dark:hover:border-stone-700 cursor-pointer shadow-xs"
+          >
+            <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 mb-1">
+              <span>Today's Progress</span>
+              <CheckCircle2 className="w-4 h-4 text-stone-400" />
+            </div>
+            <div className="flex items-baseline gap-1.5 mt-0.5">
+              <span className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100 font-mono tabular-nums">
+                {completedCount}/{totalCount}
+              </span>
+              <span className="text-xs text-stone-400 font-mono">Completed</span>
+            </div>
+            <div className="mt-2.5">
+              <div className="w-full h-1.5 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
+                <div
+                  className="h-full bg-stone-900 dark:bg-stone-100 transition-all duration-300"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Academic Streak */}
+          <div
+            onClick={() => setIsStreakModalOpen(true)}
+            className="p-4 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0e141f] transition-all hover:border-stone-300 dark:hover:border-stone-700 cursor-pointer shadow-xs"
+          >
+            <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 mb-1">
+              <span>Day Streak</span>
+              <Flame className="w-4 h-4 text-orange-500" />
+            </div>
+            <div className="flex items-baseline gap-1.5 mt-0.5">
+              <span className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100 font-mono tabular-nums">
+                {userStreak} {userStreak === 1 ? 'Day' : 'Days'}
+              </span>
+            </div>
+            <div className="mt-2 text-[11px] text-stone-500 dark:text-stone-400 flex items-center justify-between">
+              <span>{userStreak > 0 ? 'Active consistent study' : 'Starts on account creation'}</span>
+              <span className="text-stone-400 font-mono text-[10px]">Tracked daily</span>
+            </div>
           </div>
 
         </div>
 
-        {/* 3. Today's Key Schedule Blocks (High contrast, schedule trigger, crystal clear) */}
-        <div className="bg-stone-50/90 dark:bg-[#0c1017] border border-stone-200 dark:border-stone-800 rounded-3xl p-4 sm:p-6 shadow-sm space-y-4 max-w-full overflow-hidden">
+        {/* 3. Main Dashboard Layout (2 Columns: 7/12 left, 5/12 right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* Header Banner with high contrast and clear buttons */}
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-stone-200/50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-stone-900/60 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                  <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>Today's Daily Schedule & Quests</span>
-                </span>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">
-                  {completedCount}/{timetable.length} Conquered
-                </span>
-              </div>
-              <h3 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 truncate mt-0.5">
-                Dynamic Schedule Blocks
-              </h3>
-              <p className="text-xs text-stone-500 dark:text-stone-400 truncate">
-                Tap circle to mark done. Or schedule extra revision & lab blocks anytime.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
-              {/* Prominent + Schedule Study Block Button */}
-              <button
-                type="button"
-                onClick={() => setIsScheduleModalOpen(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-stone-950 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-              >
-                <CalendarPlus className="w-3.5 h-3.5" />
-                <span>+ Schedule Block</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveView('timeline')}
-                className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:border-emerald-500 text-stone-800 dark:text-stone-200 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
-              >
-                <span>Full Routine</span>
-                <ArrowRight className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              </button>
-            </div>
-          </div>
-
-          {/* Schedule Item Cards with clear borders & category strip */}
-          <div className="space-y-2.5 max-w-full">
-            {timetable.map((item) => {
-              const categoryColor =
-                item.category === 'study'
-                  ? 'border-l-emerald-500 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60'
-                  : item.category === 'lab'
-                  ? 'border-l-indigo-500 text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60'
-                  : item.category === 'lecture'
-                  ? 'border-l-sky-500 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60'
-                  : 'border-l-amber-500 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60';
-
-              return (
-                <div
-                  key={item.id}
-                  className={`group p-3 sm:p-3.5 rounded-2xl border border-l-4 flex items-center justify-between text-xs transition-all gap-2 min-w-0 max-w-full ${
-                    item.completed
-                      ? 'border-stone-200/60 dark:border-stone-800/60 bg-stone-100/50 dark:bg-stone-900/30 text-stone-400 opacity-75'
-                      : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-[#111722] hover:border-emerald-500/50 shadow-xs hover:shadow-md'
-                  } ${categoryColor.split(' ')[0]}`}
-                >
-                  <div className="flex items-center gap-2 sm:gap-3 truncate min-w-0 flex-1">
-                    <button
-                      onClick={() => handleTaskCheck(item.id, !!item.completed)}
-                      className="text-stone-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:scale-110 active:scale-95 shrink-0 transition-transform cursor-pointer p-0.5"
-                      title={item.completed ? 'Mark incomplete' : 'Mark complete'}
-                    >
-                      {item.completed ? (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                      ) : (
-                        <Circle className="w-5 h-5 hover:stroke-emerald-500 stroke-stone-400 dark:stroke-stone-600" />
-                      )}
-                    </button>
-
-                    <div className="font-mono text-stone-700 dark:text-stone-300 shrink-0 font-bold text-[11px] sm:text-xs px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800">
-                      {item.startTime} - {item.endTime}
-                    </div>
-
-                    <span className={`font-semibold truncate min-w-0 text-xs sm:text-sm ${
-                      item.completed ? 'line-through text-stone-400 dark:text-stone-500' : 'text-stone-900 dark:text-stone-100'
-                    }`}>
-                      {item.title}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                    <span className={`text-[10px] sm:text-[11px] px-2 py-0.5 rounded-lg capitalize font-mono font-medium ${categoryColor.split(' ').slice(1).join(' ')}`}>
-                      {item.category}
-                    </span>
-                    {!item.completed && (
-                      <button
-                        onClick={() => startZenMode(item)}
-                        className="p-1 sm:p-1.5 rounded-lg text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition-colors cursor-pointer"
-                        title="Launch Zen Focus for this task"
-                      >
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                      </button>
-                    )}
-                  </div>
+          {/* Left Column: Today's Schedule & Enrolled Courses (7 cols) */}
+          <div className="lg:col-span-7 space-y-6">
+            
+            {/* Section: Today's Routine Schedule */}
+            <div className="rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017] p-5 shadow-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-stone-500" />
+                  <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                    Today's Schedule & Routine
+                  </h2>
                 </div>
-              );
-            })}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-stone-400">
+                    {completedCount} of {totalCount} completed
+                  </span>
+                  <button
+                    onClick={() => setActiveView('timeline')}
+                    className="text-xs text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 transition-colors flex items-center gap-0.5 cursor-pointer"
+                  >
+                    <span>Full Day</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Timetable Items List */}
+              <div className="divide-y divide-stone-100 dark:divide-stone-800/80 mt-2">
+                {timetable.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-stone-500">
+                    No scheduled routine items. Click "+ Add Task" to plan your day.
+                  </div>
+                ) : (
+                  timetable.map((item) => {
+                    const isCollegeTime = item.startTime >= '10:30' && item.endTime <= '17:30';
+                    return (
+                      <div
+                        key={item.id}
+                        className={`py-3 flex items-start justify-between gap-3 group transition-colors ${
+                          item.completed ? 'opacity-50' : ''
+                        }`}
+                      >
+                        <div className="flex items-start gap-3 min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => toggleItemComplete(item.id)}
+                            className="mt-0.5 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors cursor-pointer shrink-0"
+                            aria-label={item.completed ? 'Mark incomplete' : 'Mark complete'}
+                          >
+                            {item.completed ? (
+                              <CheckSquare className="w-4 h-4 text-stone-900 dark:text-stone-100" />
+                            ) : (
+                              <Square className="w-4 h-4" />
+                            )}
+                          </button>
+
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span
+                                className={`text-xs font-medium truncate ${
+                                  item.completed
+                                    ? 'line-through text-stone-400'
+                                    : 'text-stone-900 dark:text-stone-100'
+                                }`}
+                              >
+                                {item.title}
+                              </span>
+
+                              {isCollegeTime && (
+                                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-sm bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400">
+                                  Campus
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="text-[11px] text-stone-400 font-mono mt-0.5 flex items-center gap-2">
+                              <span>
+                                {item.startTime} – {item.endTime}
+                              </span>
+                              <span>·</span>
+                              <span className="capitalize">{item.category}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 text-right">
+                          <span className="text-[11px] font-mono text-stone-400">
+                            {item.cognitiveWeight}h load
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="mt-3 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs">
+                <span className="text-stone-400">
+                  Fixed college schedule: 10:30 AM to 5:30 PM
+                </span>
+                <button
+                  onClick={() => setIsScheduleModalOpen(true)}
+                  className="font-semibold text-stone-800 dark:text-stone-200 hover:underline cursor-pointer"
+                >
+                  + Add Study Block
+                </button>
+              </div>
+            </div>
+
+            {/* Section: Enrolled Courses & Quick Subject Vault */}
+            <div className="rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017] p-5 shadow-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-stone-500" />
+                  <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                    Enrolled Courses (Semester {profile.semester})
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setActiveView('academic')}
+                  className="text-xs text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 transition-colors flex items-center gap-0.5 cursor-pointer font-medium"
+                >
+                  <span>View All Syllabus & Notes</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                {subjects.slice(0, 6).map((sub) => (
+                  <div
+                    key={sub.id}
+                    onClick={() => setActiveView('academic')}
+                    className="p-3.5 rounded-lg border border-stone-200/80 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700 bg-stone-50/50 dark:bg-stone-900/30 transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="font-mono text-xs font-bold text-stone-800 dark:text-stone-200">
+                        {sub.code}
+                      </div>
+                      <span className="text-[10px] font-mono text-stone-400">
+                        {sub.credits} Credits
+                      </span>
+                    </div>
+                    <div className="text-xs font-semibold text-stone-900 dark:text-stone-100 mt-1 line-clamp-1 group-hover:text-stone-700 dark:group-hover:text-stone-200">
+                      {sub.name}
+                    </div>
+                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-1.5 flex items-center gap-2">
+                      <span>5 Units Syllabus</span>
+                      <span>·</span>
+                      <span>Notes & PYQs</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
+
+          {/* Right Column: Academic Calendar & Institute Notice (5 cols) */}
+          <div className="lg:col-span-5 space-y-6">
+            
+            {/* Embedded Clean Calendar Component */}
+            <div className="rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017] p-5 shadow-xs">
+              <MonthlyAcademicCalendar />
+            </div>
+
+            {/* SATI Academic Rules & Exam Format Card */}
+            <div className="rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017] p-5 shadow-xs space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-stone-100 dark:border-stone-800">
+                <GraduationCap className="w-4 h-4 text-stone-500" />
+                <h3 className="text-xs font-bold text-stone-900 dark:text-stone-100 uppercase tracking-wider font-mono">
+                  SATI Academic Guidelines
+                </h3>
+              </div>
+
+              <div className="space-y-2 text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-stone-900 dark:text-stone-200 font-mono">1.</span>
+                  <span><strong>75% Mandatory Attendance:</strong> Autonomous regulations require a minimum of 75% attendance in theory & practical classes to be eligible for end-semester exams.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-stone-900 dark:text-stone-200 font-mono">2.</span>
+                  <span><strong>Marking Scheme:</strong> 70 Marks End-Sem University Theory + 30 Marks Continuous Sessional / Mid-Semester Evaluation.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-stone-900 dark:text-stone-200 font-mono">3.</span>
+                  <span><strong>College Timing:</strong> Official lectures and laboratory practicals run from 10:30 AM to 5:30 PM.</span>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs">
+                <button
+                  onClick={() => setActiveView('attendance')}
+                  className="text-stone-800 dark:text-stone-200 hover:underline font-semibold cursor-pointer"
+                >
+                  Check Bunk Limits →
+                </button>
+                <button
+                  onClick={() => setActiveView('academic')}
+                  className="text-stone-500 hover:text-stone-800 dark:hover:text-stone-300 cursor-pointer"
+                >
+                  Download Syllabus PDF
+                </button>
+              </div>
+            </div>
+
+          </div>
+
         </div>
 
       </div>
 
-      {/* Streak Details Modal */}
+      {/* Auxiliary Modals */}
+      <ScheduleTaskModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+      />
       <StreakModal
         isOpen={isStreakModalOpen}
         onClose={() => setIsStreakModalOpen(false)}
       />
-
-      {/* XP Matrix & Badges Modal */}
       <XpModal
         isOpen={isXpModalOpen}
         onClose={() => setIsXpModalOpen(false)}
-      />
-
-      {/* Schedule Study Block Modal */}
-      <ScheduleTaskModal
-        isOpen={isScheduleModalOpen}
-        onClose={() => setIsScheduleModalOpen(false)}
       />
     </>
   );
