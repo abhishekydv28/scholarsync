@@ -4,21 +4,31 @@ import {
   Sun,
   Moon,
   CalendarPlus,
-  Sparkles,
+  Sliders,
+  Pencil,
+  LogIn,
+  UserCheck,
+  User,
   Clock,
   ShieldCheck,
   BarChart3,
   BookOpen,
   Menu,
   X,
-  User,
-  Sliders,
-  LogIn,
-  LogOut,
+  Camera,
+  Flame,
+  Zap,
+  Bot,
+  Headphones,
+  LineChart,
 } from 'lucide-react';
 import { ProfileAvatarModal } from './ProfileAvatarModal';
 import { AuthModal } from './AuthModal';
 import { ScheduleTaskModal } from './ScheduleTaskModal';
+import { StreakModal } from './StreakModal';
+import { XpModal } from './XpModal';
+import { StudentAiChatbotModal } from './StudentAiChatbotModal';
+import { LofiAudioModal } from './LofiAudioModal';
 
 interface NavbarProps {
   onOpenOnboarding: () => void;
@@ -33,13 +43,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
     profile,
     currentUser,
     setIsPersonalizationWizardOpen,
-    setIsAiDrawerOpen,
+    userStreak,
+    userXp,
   } = useApp();
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
+  const [isXpModalOpen, setIsXpModalOpen] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isLofiModalOpen, setIsLofiModalOpen] = useState(false);
 
   const toggleTheme = () => {
     const nextMode = !isDarkMode;
@@ -54,98 +69,59 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
   };
 
   const navLinks = [
-    { id: 'home', label: 'Today', icon: BarChart3 },
-    { id: 'timeline', label: 'Calendar & Schedule', icon: Clock },
+    { id: 'home', label: 'Overview', icon: BarChart3 },
+    { id: 'timeline', label: 'Routine', icon: Clock },
     { id: 'academic', label: 'Academic Vault', icon: BookOpen },
-    { id: 'attendance', label: 'Attendance', icon: ShieldCheck },
-    { id: 'analytics', label: 'Insights & Energy', icon: BarChart3 },
+    { id: 'attendance', label: '75% Attendance', icon: ShieldCheck },
+    { id: 'analytics', label: 'Analytics', icon: LineChart },
   ] as const;
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-stone-200/80 dark:border-stone-800 bg-white/95 dark:bg-[#0c1017]/95 backdrop-blur-md transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-15 gap-4">
+      <header className="sticky top-0 z-30 border-b border-stone-200/90 dark:border-stone-800 bg-white/95 dark:bg-[#0c1017]/95 backdrop-blur-md transition-colors">
+        <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 gap-3">
             
-            {/* Zone 1: Single Brand Element Wordmark with subtle academic context */}
-            <div className="flex items-center gap-3 shrink-0">
+            {/* Zone 1: Brand Logo & Tagline */}
+            <div className="flex items-center gap-3 min-w-0">
+              {/* Brand Logo & Wordmark */}
               <button
-                type="button"
                 onClick={() => {
                   setActiveView('home');
                   setIsMobileNavOpen(false);
                 }}
-                className="flex items-center gap-2 cursor-pointer group text-left"
-                title="Go to Today's Planner"
+                className="flex items-center gap-2.5 cursor-pointer shrink-0 group text-left"
+                title="Go to Overview"
               >
-                <div className="w-7 h-7 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-950 flex items-center justify-center font-bold text-xs tracking-tight shadow-2xs">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-700 to-emerald-600 dark:from-teal-600 dark:to-emerald-500 text-white flex items-center justify-center font-bold text-sm tracking-tight shadow-xs">
                   P
                 </div>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="font-bold text-base text-stone-900 dark:text-stone-100 tracking-tight">
-                    PlanZo
-                  </span>
-                  <span className="hidden sm:inline text-[11px] text-stone-400 font-mono">
-                    · Sem {profile.semester}
-                  </span>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-base text-stone-900 dark:text-stone-100 tracking-tight">
+                      PlanZo
+                    </span>
+                    <span className="hidden xl:inline text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400">
+                      B.Tech
+                    </span>
+                  </div>
+                  <p className="hidden md:block text-[10px] text-teal-700 dark:text-teal-400 font-medium tracking-tight">
+                    For the student, by the student, to the student
+                  </p>
                 </div>
               </button>
-            </div>
 
-            {/* Zone 2: Primary Navigation Tabs (Center) - Clean text with active states */}
-            <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
-              {navLinks.map((item) => {
-                const isActive = activeView === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setActiveView(item.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                      isActive
-                        ? 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 font-semibold'
-                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-850/60'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                );
-              })}
-            </nav>
+              {/* Vertical Hairline Divider */}
+              <div className="hidden sm:block w-px h-6 bg-stone-200 dark:border-stone-800 shrink-0" />
 
-            {/* Zone 3: Right Actions (AI Senior, + Add Task, Profile / Account, Theme Toggle) */}
-            <div className="flex items-center gap-2 shrink-0">
-              
-              {/* Campus Senior AI Assistant Trigger */}
-              <button
-                type="button"
-                onClick={() => setIsAiDrawerOpen(true)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-teal-500/30 bg-teal-50/70 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/50 text-xs font-semibold transition-colors cursor-pointer"
-                title="Ask Campus Senior & AI Academic Guide"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-                <span className="hidden lg:inline">Campus Senior</span>
-              </button>
-
-              {/* Primary Action: + Add Task */}
-              <button
-                type="button"
-                onClick={() => setIsScheduleModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-semibold transition-colors shadow-2xs cursor-pointer whitespace-nowrap"
-                title="Add new task or study block"
-              >
-                <CalendarPlus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Add Task</span>
-              </button>
-
-              {/* Profile & Account Button (Clean, Uncluttered Avatar & Name) */}
-              <button
-                type="button"
-                onClick={() => setIsProfileModalOpen(true)}
-                className="flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1 rounded-lg border border-stone-200/90 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-850 transition-colors cursor-pointer text-xs text-stone-700 dark:text-stone-300"
-                title={`Logged in as ${profile.name || 'Scholar'} - Click to edit profile, college, or avatar`}
-              >
-                <div className="w-6 h-6 rounded-md overflow-hidden bg-stone-200 dark:bg-stone-800 shrink-0 border border-stone-300/60 dark:border-stone-700 flex items-center justify-center font-bold text-[11px]">
+              {/* Student Profile Bar: Avatar + Name + Pencil */}
+              <div className="hidden sm:flex items-center gap-2 min-w-0">
+                <button
+                  type="button"
+                  onClick={() => setIsProfileModalOpen(true)}
+                  className="relative group w-8 h-8 rounded-xl overflow-hidden border border-stone-300 dark:border-stone-700 hover:border-teal-500 transition-all shrink-0 bg-stone-100 dark:bg-stone-800"
+                  title="Click to edit profile"
+                >
                   {profile.avatarUrl ? (
                     <img
                       src={profile.avatarUrl}
@@ -153,31 +129,130 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span>{profile.name ? profile.name.trim()[0].toUpperCase() : 'S'}</span>
+                    <div className="w-full h-full bg-teal-800 text-white flex items-center justify-center font-bold text-xs font-mono">
+                      {profile.name ? profile.name.trim()[0].toUpperCase() : 'S'}
+                    </div>
                   )}
+                  <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                </button>
+
+                <div className="min-w-0 text-left">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-stone-900 dark:text-stone-100 text-xs truncate max-w-[110px]">
+                      {profile.name || 'Scholar'}
+                    </span>
+                    <span className="text-[10px] font-mono px-1 rounded bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400">
+                      S{profile.semester}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-stone-400 truncate max-w-[130px]">
+                    {profile.customCollege || profile.college || 'Engineering College'}
+                  </div>
                 </div>
-                <span className="hidden lg:inline max-w-[100px] truncate font-medium">
-                  {profile.name || 'Profile'}
+              </div>
+
+            </div>
+
+            {/* Zone 2: Navigation Links (Center) */}
+            <nav className="hidden lg:flex items-center gap-1">
+              {navLinks.map((item) => {
+                const isActive = activeView === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveView(item.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                      isActive
+                        ? 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
+                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-50 dark:hover:bg-stone-850'
+                    }`}
+                  >
+                    <item.icon className="w-3.5 h-3.5" />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Zone 3: Gamification Badges & Tools (Right) */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              
+              {/* Streak Counter */}
+              <button
+                onClick={() => setIsStreakModalOpen(true)}
+                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-900/60 hover:scale-105 transition-transform"
+                title="Current Daily Streak"
+              >
+                <Flame className="w-3.5 h-3.5 fill-current" />
+                <span>{userStreak}</span>
+              </button>
+
+              {/* XP Counter */}
+              <button
+                onClick={() => setIsXpModalOpen(true)}
+                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/50 border border-teal-200/60 dark:border-teal-900/60 hover:scale-105 transition-transform"
+                title="Current XP Score"
+              >
+                <Zap className="w-3.5 h-3.5 fill-current" />
+                <span>{userXp}</span>
+              </button>
+
+              {/* Sarthi AI Button */}
+              <button
+                onClick={() => setIsAiModalOpen(true)}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-teal-700 to-emerald-600 hover:from-teal-800 hover:to-emerald-700 text-white shadow-xs transition-all"
+                title="Open Sarthi AI Student Copilot"
+              >
+                <Bot className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">Sarthi AI</span>
+              </button>
+
+              {/* Lofi Beats */}
+              <button
+                onClick={() => setIsLofiModalOpen(true)}
+                className="p-1.5 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                title="Focus Ambient Lo-Fi Audio"
+              >
+                <Headphones className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+              </button>
+
+              {/* + Add Task */}
+              <button
+                onClick={() => setIsScheduleModalOpen(true)}
+                className="hidden md:inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-semibold transition-colors shadow-xs"
+              >
+                <CalendarPlus className="w-3.5 h-3.5" />
+                <span>+ Task</span>
+              </button>
+
+              {/* Auth / Account */}
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors border ${
+                  currentUser?.isAuthenticated
+                    ? 'border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
+                    : 'border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300'
+                }`}
+              >
+                <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span className="hidden sm:inline max-w-[70px] truncate">
+                  {currentUser?.name ? currentUser.name.split(' ')[0] : 'Account'}
                 </span>
               </button>
 
               {/* Theme Toggle */}
               <button
-                type="button"
                 onClick={toggleTheme}
-                className="p-1.5 rounded-lg border border-stone-200/90 dark:border-stone-800 text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-50 dark:hover:bg-stone-850 transition-colors cursor-pointer"
-                title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                aria-label="Toggle Theme"
+                className="p-1.5 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                title={isDarkMode ? 'Light Mode' : 'Dark Mode'}
               >
-                {isDarkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
 
-              {/* Mobile Menu Hamburger */}
+              {/* Mobile Menu Button */}
               <button
-                type="button"
                 onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
-                className="md:hidden p-1.5 rounded-lg border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-850 transition-colors cursor-pointer"
-                aria-label="Toggle Navigation"
+                className="lg:hidden p-1.5 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
               >
                 {isMobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
               </button>
@@ -186,20 +261,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
 
           </div>
 
-          {/* Mobile Navigation Drawer */}
+          {/* Mobile Drawer */}
           {isMobileNavOpen && (
-            <div className="md:hidden py-3 border-t border-stone-200 dark:border-stone-800 space-y-1 animate-fadeIn">
+            <div className="lg:hidden py-3 border-t border-stone-200 dark:border-stone-800 space-y-1 animate-fadeIn">
               {navLinks.map((item) => {
                 const isActive = activeView === item.id;
                 return (
                   <button
                     key={item.id}
-                    type="button"
                     onClick={() => {
                       setActiveView(item.id);
                       setIsMobileNavOpen(false);
                     }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
                       isActive
                         ? 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
                         : 'text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-850'
@@ -213,60 +287,25 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
 
               <div className="pt-2 border-t border-stone-100 dark:border-stone-800 flex flex-col gap-1">
                 <button
-                  type="button"
                   onClick={() => {
                     setIsMobileNavOpen(false);
-                    setIsAiDrawerOpen(true);
+                    setIsAiModalOpen(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-teal-800 dark:text-teal-300 bg-teal-50/60 dark:bg-teal-950/40 hover:bg-teal-100 cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/60"
                 >
-                  <Sparkles className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-                  <span>Ask Campus Senior & AI Mentor</span>
+                  <Bot className="w-4 h-4" />
+                  <span>Sarthi AI Copilot</span>
                 </button>
 
                 <button
-                  type="button"
                   onClick={() => {
                     setIsMobileNavOpen(false);
                     setIsProfileModalOpen(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850 cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850"
                 >
-                  <User className="w-4 h-4 text-stone-500" />
-                  <span>Edit Profile & College Affiliation</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMobileNavOpen(false);
-                    setIsPersonalizationWizardOpen(true);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850 cursor-pointer"
-                >
-                  <Sliders className="w-4 h-4 text-stone-500" />
-                  <span>Customize Routine & Electives</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMobileNavOpen(false);
-                    setIsAuthModalOpen(true);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850 cursor-pointer"
-                >
-                  {currentUser?.isAuthenticated ? (
-                    <>
-                      <LogOut className="w-4 h-4 text-stone-500" />
-                      <span>Account ({currentUser.name})</span>
-                    </>
-                  ) : (
-                    <>
-                      <LogIn className="w-4 h-4 text-stone-500" />
-                      <span>Sign In / Create Account</span>
-                    </>
-                  )}
+                  <Pencil className="w-4 h-4" />
+                  <span>Edit Profile & Degree</span>
                 </button>
               </div>
             </div>
@@ -275,7 +314,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
         </div>
       </header>
 
-      {/* Profile, Auth and Scheduling Modals */}
+      {/* Embedded Modals */}
       <ProfileAvatarModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
@@ -287,6 +326,22 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
       <ScheduleTaskModal
         isOpen={isScheduleModalOpen}
         onClose={() => setIsScheduleModalOpen(false)}
+      />
+      <StreakModal
+        isOpen={isStreakModalOpen}
+        onClose={() => setIsStreakModalOpen(false)}
+      />
+      <XpModal
+        isOpen={isXpModalOpen}
+        onClose={() => setIsXpModalOpen(false)}
+      />
+      <StudentAiChatbotModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+      />
+      <LofiAudioModal
+        isOpen={isLofiModalOpen}
+        onClose={() => setIsLofiModalOpen(false)}
       />
     </>
   );

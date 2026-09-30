@@ -21,7 +21,6 @@ import {
 import { playTaskCompleteSound } from '../utils/audioSynth';
 import { fireConfetti } from '../utils/audioVibes';
 import { ScheduleTaskModal } from './ScheduleTaskModal';
-import { MonthlyAcademicCalendar } from './MonthlyAcademicCalendar';
 
 export const DailyTimeline: React.FC = () => {
   const {
@@ -37,7 +36,6 @@ export const DailyTimeline: React.FC = () => {
     setSelectedResourceForModal,
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'day' | 'month'>('day');
   const [filter, setFilter] = useState<'all' | 'study' | 'habit' | 'chill'>('all');
   const [activeShiftMenuId, setActiveShiftMenuId] = useState<string | null>(null);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -76,70 +74,27 @@ export const DailyTimeline: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 max-w-4xl mx-auto">
+    <div className="space-y-4">
       
-      {/* View Switcher: Day Schedule vs Monthly Academic Calendar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200/80 dark:border-stone-800">
-        <div>
-          <h2 className="text-lg sm:text-xl font-bold text-stone-900 dark:text-stone-100">
-            {activeTab === 'day' ? 'Daily Routine & Timetable' : 'Monthly Academic Calendar'}
-          </h2>
-          <p className="text-xs text-stone-500">
-            {activeTab === 'day' ? 'Chronological time blocks and real-time execution' : 'Plan tasks, tests, and deadlines across the semester'}
-          </p>
-        </div>
-
-        <div className="flex items-center p-1 bg-stone-100 dark:bg-stone-800/90 rounded-xl text-xs w-fit">
-          <button
-            type="button"
-            onClick={() => setActiveTab('day')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              activeTab === 'day'
-                ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-2xs font-semibold'
-                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
-            }`}
-          >
-            Day Timeline
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('month')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              activeTab === 'month'
-                ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-2xs font-semibold'
-                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
-            }`}
-          >
-            Monthly Calendar
-          </button>
-        </div>
-      </div>
-
-      {activeTab === 'month' ? (
-        <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017] p-5 sm:p-6 shadow-xs animate-fadeIn">
-          <MonthlyAcademicCalendar />
-        </div>
-      ) : (
-        <>
-          {/* Dynamic Auto-Correction Notice (Guilt-Free Reassurance) */}
-          {recalibrateNotice && (
-            <div className="rounded-xl border border-teal-200/80 bg-teal-50/90 dark:border-teal-900/60 dark:bg-teal-950/60 p-3.5 flex items-start justify-between gap-3 text-xs text-teal-900 dark:text-teal-100 transition-all">
-              <div className="flex items-start gap-2.5">
-                <Sparkles className="w-4 h-4 text-teal-700 dark:text-teal-400 mt-0.5 shrink-0" />
-                <div>
-                  <span className="font-semibold">Gentle Adjustment: </span>
-                  <span>{recalibrateNotice}</span>
-                </div>
-              </div>
-              <button
-                onClick={clearRecalibrateNotice}
-                className="text-teal-700 dark:text-teal-400 hover:text-teal-900 dark:hover:text-teal-200 p-0.5"
-                aria-label="Dismiss notice"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+      {/* Dynamic Auto-Correction Notice (Guilt-Free Reassurance) */}
+      {recalibrateNotice && (
+        <div className="rounded-xl border border-teal-200/80 bg-teal-50/90 dark:border-teal-900/60 dark:bg-teal-950/60 p-3.5 flex items-start justify-between gap-3 text-xs text-teal-900 dark:text-teal-100 transition-all">
+          <div className="flex items-start gap-2.5">
+            <Sparkles className="w-4 h-4 text-teal-700 dark:text-teal-400 mt-0.5 shrink-0" />
+            <div>
+              <span className="font-semibold">Gentle Adjustment: </span>
+              <span>{recalibrateNotice}</span>
             </div>
-          )}
+          </div>
+          <button
+            onClick={clearRecalibrateNotice}
+            className="text-teal-700 dark:text-teal-400 hover:text-teal-900 dark:hover:text-teal-200 p-0.5"
+            aria-label="Dismiss notice"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Control Bar: Interactive Tabs & Auto-Recalibration */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
@@ -203,181 +158,125 @@ export const DailyTimeline: React.FC = () => {
             onClick={() => recalibrateSchedule()}
             disabled={isRecalibrating}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 border border-stone-200 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+            title="Automatically adjust remaining day schedule without penalty"
           >
-            <RotateCcw className={`w-3.5 h-3.5 ${isRecalibrating ? 'animate-spin text-teal-600' : ''}`} />
-            <span className="hidden sm:inline">{isRecalibrating ? 'Recalculating Flow...' : 'Smooth Tasks'}</span>
+            <RotateCcw className={`w-3.5 h-3.5 ${isRecalibrating ? 'animate-spin' : ''}`} />
+            <span>Auto-Recalibrate Day</span>
           </button>
         </div>
 
       </div>
 
-      {/* Timeline Stream */}
-      <div className="relative border-l-2 border-stone-200 dark:border-stone-800 ml-4 sm:ml-6 pl-4 sm:pl-6 space-y-4 pt-2">
-        {filteredItems.map((item) => {
+      {/* Chronological List of Time Blocks */}
+      <div className="space-y-3 pt-2">
+        {filteredItems.map((item, index) => {
           const meta = getCategoryMeta(item.category);
           const Icon = meta.icon;
-          const isChill = item.category === 'chill';
 
           return (
             <div
               key={item.id}
-              className={`group relative rounded-xl border transition-all duration-300 ${
+              className={`pop-hover-item p-4 rounded-2xl border transition-all cursor-pointer ${
                 item.completed
-                  ? 'border-stone-200/60 bg-stone-50/50 dark:border-stone-800/50 dark:bg-stone-900/30 opacity-60'
-                  : isChill
-                  ? 'border-amber-200/70 bg-amber-50/40 dark:border-amber-900/40 dark:bg-amber-950/20 shadow-xs'
-                  : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs hover:border-stone-300 dark:hover:border-stone-700'
-              } p-4`}
+                  ? 'bg-stone-50/60 dark:bg-stone-900/30 border-stone-200/50 dark:border-stone-800/40 opacity-70'
+                  : 'bg-white dark:bg-stone-900 border-stone-200/80 dark:border-stone-800 shadow-xs hover:border-teal-400 dark:hover:border-teal-500 hover:bg-gradient-to-r hover:from-teal-50/80 hover:via-white hover:to-emerald-50/50 dark:hover:from-teal-950/60 dark:hover:via-stone-850 dark:hover:to-emerald-950/30 hover:shadow-md'
+              }`}
             >
-              {/* Timeline Marker Dot on Left Bar */}
-              <div
-                className={`absolute -left-[25px] sm:-left-[33px] top-5 w-4 h-4 rounded-full border-2 transition-all ${
-                  item.completed
-                    ? 'bg-emerald-600 border-emerald-600'
-                    : isChill
-                    ? 'bg-amber-500 border-amber-500'
-                    : 'bg-white dark:bg-stone-900 border-stone-400 dark:border-stone-600 group-hover:border-teal-600'
-                }`}
-              />
-
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+              <div className="flex items-start justify-between gap-4">
                 
-                {/* Main Task Content */}
-                <div className="flex-1">
+                {/* Left Side: Time Badge + Icon + Details */}
+                <div className="flex items-start gap-3.5 min-w-0 flex-1">
                   
-                  {/* Clean unboxed metadata with typographic separators */}
-                  <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400 mb-1">
-                    <span className="font-mono font-medium text-stone-700 dark:text-stone-300">
-                      {item.startTime} – {item.endTime}
-                    </span>
-                    <span aria-hidden="true">·</span>
-                    <span className={`flex items-center gap-1 font-medium ${meta.color}`}>
-                      <Icon className="w-3.5 h-3.5" />
-                      <span>{meta.label}</span>
-                    </span>
-                    {item.snoozed && (
-                      <>
-                        <span aria-hidden="true">·</span>
-                        <span className="text-amber-600 dark:text-amber-400 font-mono text-[11px]">Snoozed</span>
-                      </>
-                    )}
+                  {/* Category Accent Indicator */}
+                  <div className={`p-2 rounded-xl bg-stone-100 dark:bg-stone-800/80 ${meta.color} shrink-0 mt-0.5`}>
+                    <Icon className="w-4 h-4" />
                   </div>
 
-                  {/* Title & Strike-through on Complete */}
-                  <h3
-                    className={`text-sm sm:text-base font-semibold tracking-tight ${
-                      item.completed
-                        ? 'line-through text-stone-400 dark:text-stone-500'
-                        : 'text-stone-900 dark:text-stone-100'
-                    }`}
-                  >
-                    {item.title}
-                  </h3>
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono text-xs font-bold text-stone-500 dark:text-stone-400">
+                        {item.startTime} – {item.endTime}
+                      </span>
+                      <span className="text-stone-300 dark:text-stone-700">·</span>
+                      <span className="text-xs font-semibold text-stone-600 dark:text-stone-400">
+                        {meta.label}
+                      </span>
 
-                  {/* Specific Topic / Viva / Lab Details */}
-                  {item.topic && (
-                    <p className="mt-1 text-xs text-stone-600 dark:text-stone-300">
-                      <span className="font-medium text-stone-700 dark:text-stone-200">Syllabus Topic: </span>
-                      {item.topic}
-                    </p>
-                  )}
+                      {item.snoozed && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-medium">
+                          Shifted +30m
+                        </span>
+                      )}
+                    </div>
 
-                  {/* Notes / Calm Tips */}
-                  {item.notes && (
-                    <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 italic">
-                      {item.notes}
-                    </p>
-                  )}
+                    <h4
+                      className={`text-sm font-bold tracking-tight ${
+                        item.completed
+                          ? 'line-through text-stone-400 dark:text-stone-500'
+                          : 'text-stone-900 dark:text-stone-100'
+                      }`}
+                    >
+                      {item.title}
+                    </h4>
 
-                  {/* Curated YouTube Video / Notes Link Preview */}
-                  {item.resource && !item.completed && (
-                    <div className="mt-2.5 pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between gap-2">
+                    {item.topic && (
+                      <p className="text-xs text-stone-500 dark:text-stone-400">
+                        Topic: {item.topic}
+                      </p>
+                    )}
+
+                    {item.notes && (
+                      <p className="text-xs text-stone-400 dark:text-stone-500 italic">
+                        "{item.notes}"
+                      </p>
+                    )}
+
+                    {/* Integrated Resource Badge (YouTube or PDF) */}
+                    {item.resource && (
                       <button
                         onClick={() => setSelectedResourceForModal(item.resource)}
-                        className="text-xs text-teal-700 hover:text-teal-900 dark:text-teal-400 dark:hover:text-teal-200 flex items-center gap-1.5 transition-colors font-medium text-left truncate"
+                        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:underline pt-1 cursor-pointer"
                       >
-                        <Play className="w-3 h-3 text-red-500 shrink-0 fill-current" />
-                        <span className="truncate">{item.resource.title}</span>
-                        <span className="text-stone-400 text-[11px]">({item.resource.durationOrPages || item.resource.creatorOrAuthor})</span>
+                        <ExternalLink className="w-3 h-3" />
+                        <span>Curated Material: {item.resource.title}</span>
                       </button>
-                      <a
-                        href={item.resource.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
-                        title="Open resource in new tab"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    </div>
-                  )}
-
+                    )}
+                  </div>
                 </div>
 
-                {/* Right Actions: Complete Check, Zen Focus, Fluid Snooze/Shift */}
-                <div className="flex items-center gap-2 shrink-0 self-end sm:self-start">
+                {/* Right Side: Quick Action Pills (Shift, Zen Mode, Checkbox) */}
+                <div className="flex items-center gap-2 shrink-0">
                   
-                  {/* Zen Mode Launcher (for deep work) */}
-                  {!item.completed && !isChill && (
-                    <button
-                      onClick={() => startZenMode(item)}
-                      className="px-2.5 py-1 rounded-lg text-xs font-medium text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors flex items-center gap-1"
-                      title="Focus in Zen Mode"
-                    >
-                      <Play className="w-3 h-3 text-teal-600 fill-current" />
-                      <span className="hidden sm:inline">Focus</span>
-                    </button>
-                  )}
-
-                  {/* Fluid Snooze / Shift Menu */}
                   {!item.completed && (
-                    <div className="relative">
+                    <div className="flex items-center gap-1">
+                      
+                      {/* Launch Zen Mode Button */}
                       <button
-                        onClick={() =>
-                          setActiveShiftMenuId(activeShiftMenuId === item.id ? null : item.id)
-                        }
-                        className="px-2 py-1 rounded-lg text-xs text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors flex items-center gap-1"
-                        title="Shift or delay task without guilt"
+                        onClick={() => startZenMode(item)}
+                        className="p-1.5 rounded-lg text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                        title="Focus Mode (Full Screen Ambient)"
                       >
-                        <Clock className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Shift</span>
+                        <Play className="w-4 h-4" />
                       </button>
 
-                      {/* Dropdown Options */}
-                      {activeShiftMenuId === item.id && (
-                        <div className="absolute right-0 mt-1 w-48 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-lg py-1.5 z-20 text-xs">
-                          <button
-                            onClick={() => {
-                              snoozeItem(item.id, 30);
-                              setActiveShiftMenuId(null);
-                            }}
-                            className="w-full text-left px-3 py-1.5 text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 flex items-center justify-between"
-                          >
-                            <span>Snooze +30 mins</span>
-                            <ArrowRight className="w-3 h-3 text-stone-400" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              shiftItemToEvening(item.id);
-                              setActiveShiftMenuId(null);
-                            }}
-                            className="w-full text-left px-3 py-1.5 text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 flex items-center justify-between"
-                          >
-                            <span>Move to Evening Review</span>
-                            <ArrowRight className="w-3 h-3 text-stone-400" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              recalibrateSchedule(item.title);
-                              setActiveShiftMenuId(null);
-                            }}
-                            className="w-full text-left px-3 py-1.5 text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/40 flex items-center justify-between font-medium"
-                          >
-                            <span>Auto-Recalibrate Day</span>
-                            <Sparkles className="w-3 h-3" />
-                          </button>
-                        </div>
-                      )}
+                      {/* Quick Snooze +30m Button */}
+                      <button
+                        onClick={() => snoozeItem(item.id, 30)}
+                        className="px-2 py-1 rounded-lg text-xs font-mono font-medium text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                        title="Running late? Snooze slot by 30 mins"
+                      >
+                        +30m
+                      </button>
+
+                      {/* Shift to Night Slot Button */}
+                      <button
+                        onClick={() => shiftItemToEvening(item.id)}
+                        className="px-2 py-1 rounded-lg text-xs font-medium text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                        title="Shift to Evening Study Session"
+                      >
+                        Shift to Night
+                      </button>
+
                     </div>
                   )}
 
@@ -411,8 +310,6 @@ export const DailyTimeline: React.FC = () => {
         <div className="text-center py-12 border border-dashed border-stone-300 dark:border-stone-800 rounded-2xl">
           <p className="text-xs text-stone-500">No items match this filter.</p>
         </div>
-      )}
-      </>
       )}
 
       {/* Schedule Study Block Modal */}
