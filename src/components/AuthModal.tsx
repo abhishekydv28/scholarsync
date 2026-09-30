@@ -34,7 +34,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
   const [college, setCollege] = useState('SATI VIDISHA');
   const [branch, setBranch] = useState(BRANCHES_LIST[0]);
   const [semester, setSemester] = useState(1);
-  const [rollNo, setRollNo] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -67,7 +66,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
         college,
         branch,
         semester,
-        rollNo,
       });
 
       setSuccessMsg('Account created successfully! Welcome to PlanZo.');
@@ -150,8 +148,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
 
             <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-1 text-stone-600 dark:text-stone-400">
               <div>Semester: <strong className="text-stone-900 dark:text-stone-100">Semester {currentUser.semester}</strong></div>
-              <div>Roll No: <strong className="text-stone-900 dark:text-stone-100">{currentUser.rollNo || '0108CS211045'}</strong></div>
-              <div className="col-span-2 truncate">College: <strong className="text-stone-900 dark:text-stone-100">{currentUser.college}</strong></div>
+              <div className="truncate">College: <strong className="text-stone-900 dark:text-stone-100">{currentUser.college}</strong></div>
             </div>
 
             <div className="pt-2 border-t border-stone-200/80 dark:border-stone-800 flex items-center justify-between">
@@ -285,40 +282,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
 
           {mode === 'signup' && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Roll Number */}
-                <div className="space-y-1.5">
-                  <label className="font-semibold text-stone-700 dark:text-stone-300">
-                    Roll No / Enrollment USN
-                  </label>
-                  <input
-                    type="text"
-                    value={rollNo}
-                    onChange={(e) => setRollNo(e.target.value)}
-                    placeholder="e.g. 0801CS221045"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-mono transition-all"
-                  />
-                </div>
-
-                {/* Semester */}
-                <div className="space-y-1.5">
-                  <label className="font-semibold text-stone-700 dark:text-stone-300">
-                    Semester
-                  </label>
-                  <select
-                    value={semester}
-                    onChange={(e) => setSemester(parseInt(e.target.value) || 1)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-medium transition-all cursor-pointer"
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                      <option key={s} value={s}>
-                        Semester {s} ({s <= 2 ? '1st Year' : s <= 4 ? '2nd Year' : s <= 6 ? '3rd Year' : 'Final Year'})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
               {/* Branch */}
               <div className="space-y-1.5">
                 <label className="font-semibold text-stone-700 dark:text-stone-300">

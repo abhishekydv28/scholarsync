@@ -353,32 +353,17 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
               Official courses, 5 syllabus units, and marking schemes for all 8 semesters are mapped for Samrat Ashok Technological Institute (SATI Vidisha).
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div className="space-y-1.5">
-                <label className="font-semibold text-stone-700 dark:text-stone-300">
-                  Student Name
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Abhishek Yadav"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 font-medium focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="font-semibold text-stone-700 dark:text-stone-300">
-                  Roll Number / Enrollment USN
-                </label>
-                <input
-                  type="text"
-                  value={rollNo}
-                  onChange={(e) => setRollNo(e.target.value)}
-                  placeholder="e.g. 0108CS211045"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50"
-                />
-              </div>
+            <div className="space-y-1.5">
+              <label className="font-semibold text-stone-700 dark:text-stone-300">
+                Student Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Abhishek Yadav"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 font-medium focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50"
+              />
             </div>
 
             <div className="space-y-1.5">

@@ -5,24 +5,19 @@ import {
   Moon,
   CalendarPlus,
   Sliders,
-  Pencil,
-  LogIn,
   UserCheck,
-  User,
   Clock,
   ShieldCheck,
   BarChart3,
   BookOpen,
   Menu,
   X,
-  Camera,
   Flame,
   Zap,
   Bot,
   Headphones,
   LineChart,
 } from 'lucide-react';
-import { ProfileAvatarModal } from './ProfileAvatarModal';
 import { AuthModal } from './AuthModal';
 import { ScheduleTaskModal } from './ScheduleTaskModal';
 import { StreakModal } from './StreakModal';
@@ -40,14 +35,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
   const {
     activeView,
     setActiveView,
-    profile,
     currentUser,
     setIsPersonalizationWizardOpen,
     userStreak,
     userXp,
   } = useApp();
 
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -110,47 +103,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
                   </p>
                 </div>
               </button>
-
-              {/* Vertical Hairline Divider */}
-              <div className="hidden sm:block w-px h-6 bg-stone-200 dark:border-stone-800 shrink-0" />
-
-              {/* Student Profile Bar: Avatar + Name + Pencil */}
-              <div className="hidden sm:flex items-center gap-2 min-w-0">
-                <button
-                  type="button"
-                  onClick={() => setIsProfileModalOpen(true)}
-                  className="relative group w-8 h-8 rounded-xl overflow-hidden border border-stone-300 dark:border-stone-700 hover:border-teal-500 transition-all shrink-0 bg-stone-100 dark:bg-stone-800"
-                  title="Click to edit profile"
-                >
-                  {profile.avatarUrl ? (
-                    <img
-                      src={profile.avatarUrl}
-                      alt={profile.name || 'Student'}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-teal-800 text-white flex items-center justify-center font-bold text-xs font-mono">
-                      {profile.name ? profile.name.trim()[0].toUpperCase() : 'S'}
-                    </div>
-                  )}
-                  <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-                </button>
-
-                <div className="min-w-0 text-left">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-stone-900 dark:text-stone-100 text-xs truncate max-w-[110px]">
-                      {profile.name || 'Scholar'}
-                    </span>
-                    <span className="text-[10px] font-mono px-1 rounded bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400">
-                      S{profile.semester}
-                    </span>
-                  </div>
-                  <div className="text-[10px] text-stone-400 truncate max-w-[130px]">
-                    {profile.customCollege || profile.college || 'Engineering College'}
-                  </div>
-                </div>
-              </div>
-
             </div>
 
             {/* Zone 2: Navigation Links (Center) */}
@@ -300,12 +252,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
                 <button
                   onClick={() => {
                     setIsMobileNavOpen(false);
-                    setIsProfileModalOpen(true);
+                    setIsPersonalizationWizardOpen(true);
                   }}
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850"
                 >
-                  <Pencil className="w-4 h-4" />
-                  <span>Edit Profile & Degree</span>
+                  <Sliders className="w-4 h-4" />
+                  <span>Academic Personalization Settings</span>
                 </button>
               </div>
             </div>
@@ -315,10 +267,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
       </header>
 
       {/* Embedded Modals */}
-      <ProfileAvatarModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-      />
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}

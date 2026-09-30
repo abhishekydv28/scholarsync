@@ -174,10 +174,6 @@ export const HomeOverview: React.FC = () => {
               </span>
               <span>·</span>
               <span>{profile.customCollege || profile.college || 'Engineering College'}</span>
-              <span>·</span>
-              <span className="font-mono text-[11px] text-stone-400">
-                Roll: {profile.rollNo || '0108CS211045'}
-              </span>
             </p>
           </div>
 
