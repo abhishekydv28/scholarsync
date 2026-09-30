@@ -21,6 +21,7 @@ import {
 import { playTaskCompleteSound } from '../utils/audioSynth';
 import { fireConfetti } from '../utils/audioVibes';
 import { ScheduleTaskModal } from './ScheduleTaskModal';
+import { MonthlyAcademicCalendar } from './MonthlyAcademicCalendar';
 
 export const DailyTimeline: React.FC = () => {
   const {
@@ -36,6 +37,7 @@ export const DailyTimeline: React.FC = () => {
     setSelectedResourceForModal,
   } = useApp();
 
+  const [activeTab, setActiveTab] = useState<'day' | 'month'>('day');
   const [filter, setFilter] = useState<'all' | 'study' | 'habit' | 'chill'>('all');
   const [activeShiftMenuId, setActiveShiftMenuId] = useState<string | null>(null);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -74,27 +76,70 @@ export const DailyTimeline: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-4xl mx-auto">
       
-      {/* Dynamic Auto-Correction Notice (Guilt-Free Reassurance) */}
-      {recalibrateNotice && (
-        <div className="rounded-xl border border-teal-200/80 bg-teal-50/90 dark:border-teal-900/60 dark:bg-teal-950/60 p-3.5 flex items-start justify-between gap-3 text-xs text-teal-900 dark:text-teal-100 transition-all">
-          <div className="flex items-start gap-2.5">
-            <Sparkles className="w-4 h-4 text-teal-700 dark:text-teal-400 mt-0.5 shrink-0" />
-            <div>
-              <span className="font-semibold">Gentle Adjustment: </span>
-              <span>{recalibrateNotice}</span>
-            </div>
-          </div>
+      {/* View Switcher: Day Schedule vs Monthly Academic Calendar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200/80 dark:border-stone-800">
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold text-stone-900 dark:text-stone-100">
+            {activeTab === 'day' ? 'Daily Routine & Timetable' : 'Monthly Academic Calendar'}
+          </h2>
+          <p className="text-xs text-stone-500">
+            {activeTab === 'day' ? 'Chronological time blocks and real-time execution' : 'Plan tasks, tests, and deadlines across the semester'}
+          </p>
+        </div>
+
+        <div className="flex items-center p-1 bg-stone-100 dark:bg-stone-800/90 rounded-xl text-xs w-fit">
           <button
-            onClick={clearRecalibrateNotice}
-            className="text-teal-700 dark:text-teal-400 hover:text-teal-900 dark:hover:text-teal-200 p-0.5"
-            aria-label="Dismiss notice"
+            type="button"
+            onClick={() => setActiveTab('day')}
+            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
+              activeTab === 'day'
+                ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-2xs font-semibold'
+                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
+            }`}
           >
-            <X className="w-3.5 h-3.5" />
+            Day Timeline
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('month')}
+            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
+              activeTab === 'month'
+                ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-2xs font-semibold'
+                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
+            }`}
+          >
+            Monthly Calendar
           </button>
         </div>
-      )}
+      </div>
+
+      {activeTab === 'month' ? (
+        <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017] p-5 sm:p-6 shadow-xs animate-fadeIn">
+          <MonthlyAcademicCalendar />
+        </div>
+      ) : (
+        <>
+          {/* Dynamic Auto-Correction Notice (Guilt-Free Reassurance) */}
+          {recalibrateNotice && (
+            <div className="rounded-xl border border-teal-200/80 bg-teal-50/90 dark:border-teal-900/60 dark:bg-teal-950/60 p-3.5 flex items-start justify-between gap-3 text-xs text-teal-900 dark:text-teal-100 transition-all">
+              <div className="flex items-start gap-2.5">
+                <Sparkles className="w-4 h-4 text-teal-700 dark:text-teal-400 mt-0.5 shrink-0" />
+                <div>
+                  <span className="font-semibold">Gentle Adjustment: </span>
+                  <span>{recalibrateNotice}</span>
+                </div>
+              </div>
+              <button
+                onClick={clearRecalibrateNotice}
+                className="text-teal-700 dark:text-teal-400 hover:text-teal-900 dark:hover:text-teal-200 p-0.5"
+                aria-label="Dismiss notice"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
 
       {/* Control Bar: Interactive Tabs & Auto-Recalibration */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
@@ -366,6 +411,8 @@ export const DailyTimeline: React.FC = () => {
         <div className="text-center py-12 border border-dashed border-stone-300 dark:border-stone-800 rounded-2xl">
           <p className="text-xs text-stone-500">No items match this filter.</p>
         </div>
+      )}
+      </>
       )}
 
       {/* Schedule Study Block Modal */}

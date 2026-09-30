@@ -12,6 +12,7 @@ import { ResourceModal } from './components/ResourceModal';
 import { SubjectAttendanceFolderModal } from './components/SubjectAttendanceFolderModal';
 import { AuthGatewayScreen } from './components/AuthGatewayScreen';
 import { PersonalizationSetupWizard } from './components/PersonalizationSetupWizard';
+import { AiCampusMentorDrawer } from './components/AiCampusMentorDrawer';
 import { ArrowLeft } from 'lucide-react';
 
 const PlanZoMain: React.FC = () => {
@@ -101,16 +102,18 @@ const PlanZoMain: React.FC = () => {
 
       </main>
 
-      {/* Clean Academic Footer */}
+      {/* Clean Academic Footer with Tagline */}
       <footer className="mt-16 border-t border-stone-200/80 dark:border-stone-800 py-6 bg-white/40 dark:bg-stone-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500 dark:text-stone-400">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
             <span className="font-semibold text-stone-800 dark:text-stone-200">PlanZo</span>
-            <span>·</span>
-            <span>Samrat Ashok Technological Institute (Autonomous), Vidisha (M.P.)</span>
+            <span className="hidden sm:inline">·</span>
+            <span className="font-medium text-stone-700 dark:text-stone-300 italic">
+              "For the student, by the student, to the student"
+            </span>
           </div>
-          <div className="text-[11px] font-mono">
-            B.Tech Computer Science & Engineering Academic Workspace
+          <div className="text-[11px] font-mono text-center sm:text-right text-stone-400">
+            {profile.customCollege || profile.college || 'Engineering College'} Academic Workspace
           </div>
         </div>
       </footer>
@@ -127,6 +130,7 @@ const PlanZoMain: React.FC = () => {
         isOpen={isPersonalizationWizardOpen}
         onClose={() => setIsPersonalizationWizardOpen(false)}
       />
+      <AiCampusMentorDrawer />
     </div>
   );
 };

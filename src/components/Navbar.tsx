@@ -4,18 +4,17 @@ import {
   Sun,
   Moon,
   CalendarPlus,
-  Sliders,
-  Pencil,
-  LogIn,
-  UserCheck,
-  User,
+  Sparkles,
   Clock,
   ShieldCheck,
   BarChart3,
   BookOpen,
   Menu,
   X,
-  Camera,
+  User,
+  Sliders,
+  LogIn,
+  LogOut,
 } from 'lucide-react';
 import { ProfileAvatarModal } from './ProfileAvatarModal';
 import { AuthModal } from './AuthModal';
@@ -34,6 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
     profile,
     currentUser,
     setIsPersonalizationWizardOpen,
+    setIsAiDrawerOpen,
   } = useApp();
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -54,120 +54,57 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
   };
 
   const navLinks = [
-    { id: 'home', label: 'Overview', icon: BarChart3 },
-    { id: 'timeline', label: 'Timetable', icon: Clock },
-    { id: 'academic', label: 'Courses & Syllabus', icon: BookOpen },
+    { id: 'home', label: 'Today', icon: BarChart3 },
+    { id: 'timeline', label: 'Calendar & Schedule', icon: Clock },
+    { id: 'academic', label: 'Academic Vault', icon: BookOpen },
     { id: 'attendance', label: 'Attendance', icon: ShieldCheck },
+    { id: 'analytics', label: 'Insights & Energy', icon: BarChart3 },
   ] as const;
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-stone-200/90 dark:border-stone-800 bg-white/95 dark:bg-[#0c1017]/95 backdrop-blur-md transition-colors">
-        <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 gap-3">
+      <header className="sticky top-0 z-30 border-b border-stone-200/80 dark:border-stone-800 bg-white/95 dark:bg-[#0c1017]/95 backdrop-blur-md transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-15 gap-4">
             
-            {/* Zone 1: Brand & Student Profile Context (Avatar, Name, Semester, Edit Button) */}
-            <div className="flex items-center gap-3 min-w-0">
-              {/* Brand Logo & Wordmark */}
+            {/* Zone 1: Single Brand Element Wordmark with subtle academic context */}
+            <div className="flex items-center gap-3 shrink-0">
               <button
+                type="button"
                 onClick={() => {
                   setActiveView('home');
                   setIsMobileNavOpen(false);
                 }}
-                className="flex items-center gap-2 cursor-pointer shrink-0 group text-left"
-                title="Go to Overview"
+                className="flex items-center gap-2 cursor-pointer group text-left"
+                title="Go to Today's Planner"
               >
-                <div className="w-8 h-8 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-950 flex items-center justify-center font-bold text-sm tracking-tight shadow-xs">
+                <div className="w-7 h-7 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-950 flex items-center justify-center font-bold text-xs tracking-tight shadow-2xs">
                   P
                 </div>
-                <div className="hidden sm:block">
+                <div className="flex items-baseline gap-1.5">
                   <span className="font-bold text-base text-stone-900 dark:text-stone-100 tracking-tight">
                     PlanZo
                   </span>
+                  <span className="hidden sm:inline text-[11px] text-stone-400 font-mono">
+                    · Sem {profile.semester}
+                  </span>
                 </div>
               </button>
-
-              {/* Vertical Hairline Divider */}
-              <div className="hidden sm:block w-px h-6 bg-stone-200 dark:border-stone-800 shrink-0" />
-
-              {/* Student Profile Bar: Avatar + Name + Pencil + Semester */}
-              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                {/* Avatar Photo Button (Opens ProfileAvatarModal) */}
-                <button
-                  type="button"
-                  onClick={() => setIsProfileModalOpen(true)}
-                  className="relative group w-9 h-9 rounded-xl overflow-hidden border border-stone-300 dark:border-stone-700 hover:border-stone-900 dark:hover:border-stone-100 transition-all active:scale-95 shrink-0 shadow-xs cursor-pointer bg-stone-100 dark:bg-stone-800"
-                  title="Click to change profile picture or student avatar"
-                >
-                  {profile.avatarUrl ? (
-                    <img
-                      src={profile.avatarUrl}
-                      alt={profile.name || 'Scholar'}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-stone-800 dark:bg-stone-200 text-white dark:text-stone-900 flex items-center justify-center font-bold text-sm font-mono">
-                      {profile.name ? profile.name.trim()[0].toUpperCase() : 'S'}
-                    </div>
-                  )}
-
-                  {/* Camera icon hover overlay */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
-                    <Camera className="w-3.5 h-3.5" />
-                  </div>
-
-                  <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white dark:border-[#0c1017]" />
-                </button>
-
-                {/* Student Info: Name, Pencil Edit Icon, Semester Badge */}
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setIsProfileModalOpen(true)}
-                      className="font-bold text-stone-900 dark:text-stone-100 text-xs sm:text-sm tracking-tight hover:underline flex items-center gap-1 text-left truncate cursor-pointer"
-                      title="Click to edit student profile"
-                    >
-                      <span className="truncate max-w-[100px] xs:max-w-[140px] sm:max-w-[180px]">
-                        {profile.name || 'Scholar'}
-                      </span>
-                      <Pencil className="w-3 h-3 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 shrink-0" />
-                    </button>
-
-                    <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200/80 dark:border-stone-750 shrink-0">
-                      Sem {profile.semester}
-                    </span>
-                  </div>
-
-                  {/* University & Branch Subtitle */}
-                  <button
-                    type="button"
-                    onClick={onOpenOnboarding}
-                    className="text-[11px] text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-colors flex items-center gap-1 text-left truncate max-w-[120px] xs:max-w-[160px] sm:max-w-xs cursor-pointer"
-                    title="Click to change university, branch, or routine hours"
-                  >
-                    <span className="font-semibold text-stone-700 dark:text-stone-300 truncate">
-                      {profile.college === 'OTHERS' && profile.customCollege ? profile.customCollege : 'SATI Vidisha'}
-                    </span>
-                    <span>·</span>
-                    <span className="truncate">CSE</span>
-                  </button>
-                </div>
-              </div>
             </div>
 
-            {/* Zone 2: Primary Navigation Tabs (Center) */}
-            <nav className="hidden lg:flex items-center gap-1 text-sm font-medium">
+            {/* Zone 2: Primary Navigation Tabs (Center) - Clean text with active states */}
+            <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
               {navLinks.map((item) => {
                 const isActive = activeView === item.id;
                 return (
                   <button
                     key={item.id}
+                    type="button"
                     onClick={() => setActiveView(item.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
                       isActive
-                        ? 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
-                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800/50'
+                        ? 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 font-semibold'
+                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-850/60'
                     }`}
                   >
                     {item.label}
@@ -176,73 +113,70 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
               })}
             </nav>
 
-            {/* Zone 3: Right Actions (Customize Plan, + Add Task, Login / Account Button, Theme) */}
+            {/* Zone 3: Right Actions (AI Senior, + Add Task, Profile / Account, Theme Toggle) */}
             <div className="flex items-center gap-2 shrink-0">
               
-              {/* Customize Plan Button */}
+              {/* Campus Senior AI Assistant Trigger */}
               <button
                 type="button"
-                onClick={() => setIsPersonalizationWizardOpen(true)}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600 bg-white dark:bg-stone-850 text-stone-700 dark:text-stone-300 text-xs font-medium transition-colors cursor-pointer"
-                title="Change Semester, Electives, or Routine Hours"
+                onClick={() => setIsAiDrawerOpen(true)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-teal-500/30 bg-teal-50/70 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/50 text-xs font-semibold transition-colors cursor-pointer"
+                title="Ask Campus Senior & AI Academic Guide"
               >
-                <Sliders className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Customize Plan</span>
+                <Sparkles className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                <span className="hidden lg:inline">Campus Senior</span>
               </button>
 
-              {/* + Schedule Task */}
+              {/* Primary Action: + Add Task */}
               <button
                 type="button"
                 onClick={() => setIsScheduleModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-semibold transition-colors shadow-xs cursor-pointer"
-                title="Add task or study block"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950 text-xs font-semibold transition-colors shadow-2xs cursor-pointer whitespace-nowrap"
+                title="Add new task or study block"
               >
                 <CalendarPlus className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Add Task</span>
               </button>
 
-              {/* LOGIN / ACCOUNT BUTTON (PROMINENT & DIRECT) */}
+              {/* Profile & Account Button (Clean, Uncluttered Avatar & Name) */}
               <button
                 type="button"
-                onClick={() => setIsAuthModalOpen(true)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border ${
-                  currentUser?.isAuthenticated
-                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20'
-                    : 'border-stone-300 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-700'
-                }`}
-                title={currentUser?.isAuthenticated ? `Logged in as ${currentUser.name} (${currentUser.email})` : 'Sign In or Create Account'}
+                onClick={() => setIsProfileModalOpen(true)}
+                className="flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1 rounded-lg border border-stone-200/90 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-850 transition-colors cursor-pointer text-xs text-stone-700 dark:text-stone-300"
+                title={`Logged in as ${profile.name || 'Scholar'} - Click to edit profile, college, or avatar`}
               >
-                {currentUser?.isAuthenticated ? (
-                  <>
-                    <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span className="max-w-[90px] truncate">
-                      {currentUser.name ? currentUser.name.split(' ')[0] : 'Account'}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <LogIn className="w-3.5 h-3.5 shrink-0" />
-                    <span>Sign In</span>
-                  </>
-                )}
+                <div className="w-6 h-6 rounded-md overflow-hidden bg-stone-200 dark:bg-stone-800 shrink-0 border border-stone-300/60 dark:border-stone-700 flex items-center justify-center font-bold text-[11px]">
+                  {profile.avatarUrl ? (
+                    <img
+                      src={profile.avatarUrl}
+                      alt={profile.name || 'Student'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>{profile.name ? profile.name.trim()[0].toUpperCase() : 'S'}</span>
+                  )}
+                </div>
+                <span className="hidden lg:inline max-w-[100px] truncate font-medium">
+                  {profile.name || 'Profile'}
+                </span>
               </button>
 
               {/* Theme Toggle */}
               <button
                 type="button"
                 onClick={toggleTheme}
-                className="p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg border border-stone-200/90 dark:border-stone-800 text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-50 dark:hover:bg-stone-850 transition-colors cursor-pointer"
                 title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 aria-label="Toggle Theme"
               >
-                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {isDarkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
               </button>
 
               {/* Mobile Menu Hamburger */}
               <button
                 type="button"
                 onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
-                className="lg:hidden p-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                className="md:hidden p-1.5 rounded-lg border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-850 transition-colors cursor-pointer"
                 aria-label="Toggle Navigation"
               >
                 {isMobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -254,7 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
 
           {/* Mobile Navigation Drawer */}
           {isMobileNavOpen && (
-            <div className="lg:hidden py-3 border-t border-stone-200 dark:border-stone-800 space-y-1 animate-fadeIn">
+            <div className="md:hidden py-3 border-t border-stone-200 dark:border-stone-800 space-y-1 animate-fadeIn">
               {navLinks.map((item) => {
                 const isActive = activeView === item.id;
                 return (
@@ -282,33 +216,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
                   type="button"
                   onClick={() => {
                     setIsMobileNavOpen(false);
-                    setIsProfileModalOpen(true);
+                    setIsAiDrawerOpen(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850 cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-teal-800 dark:text-teal-300 bg-teal-50/60 dark:bg-teal-950/40 hover:bg-teal-100 cursor-pointer"
                 >
-                  <Pencil className="w-4 h-4" />
-                  <span>Edit Profile & Avatar</span>
+                  <Sparkles className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                  <span>Ask Campus Senior & AI Mentor</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => {
                     setIsMobileNavOpen(false);
-                    setIsAuthModalOpen(true);
+                    setIsProfileModalOpen(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850 cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850 cursor-pointer"
                 >
-                  {currentUser?.isAuthenticated ? (
-                    <>
-                      <UserCheck className="w-4 h-4 text-emerald-600" />
-                      <span>Account ({currentUser.name})</span>
-                    </>
-                  ) : (
-                    <>
-                      <LogIn className="w-4 h-4" />
-                      <span>Sign In / Login</span>
-                    </>
-                  )}
+                  <User className="w-4 h-4 text-stone-500" />
+                  <span>Edit Profile & College Affiliation</span>
                 </button>
 
                 <button
@@ -317,10 +242,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenOnboarding, isDarkMode, se
                     setIsMobileNavOpen(false);
                     setIsPersonalizationWizardOpen(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850 cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850 cursor-pointer"
                 >
-                  <Sliders className="w-4 h-4" />
-                  <span>Customize Plan & Electives</span>
+                  <Sliders className="w-4 h-4 text-stone-500" />
+                  <span>Customize Routine & Electives</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileNavOpen(false);
+                    setIsAuthModalOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850 cursor-pointer"
+                >
+                  {currentUser?.isAuthenticated ? (
+                    <>
+                      <LogOut className="w-4 h-4 text-stone-500" />
+                      <span>Account ({currentUser.name})</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4 text-stone-500" />
+                      <span>Sign In / Create Account</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

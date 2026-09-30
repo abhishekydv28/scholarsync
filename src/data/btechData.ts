@@ -1,11 +1,13 @@
 import { SubjectCourse, TimetableItem } from '../types';
 
 export const COLLEGES_LIST = [
-  'SATI VIDISHA',
-  'RGPV Bhopal',
-  'SGSITS',
-  'IET DAVV',
-  'MEDICAPS UNIVERSITY',
+  'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
+  'University Institute of Technology, RGPV Bhopal',
+  'Shri Govindram Seksaria Institute of Technology and Science (SGSITS), Indore',
+  'Institute of Engineering & Technology (IET DAVV), Indore',
+  'Madhav Institute of Technology & Science (MITS), Gwalior',
+  'Jabalpur Engineering College (JEC), Jabalpur',
+  'Medi-Caps University, Indore',
   'OTHERS',
 ];
 

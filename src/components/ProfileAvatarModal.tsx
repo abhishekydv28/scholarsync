@@ -98,7 +98,8 @@ export const ProfileAvatarModal: React.FC<ProfileAvatarModalProps> = ({ isOpen, 
 
   const [name, setName] = useState(profile.name || 'Abhishek');
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl || TECH_PRESET_AVATARS[0].url);
-  const [college, setCollege] = useState(profile.college || 'SATI VIDISHA');
+  const [college, setCollege] = useState(profile.college || COLLEGES_LIST[0]);
+  const [customCollege, setCustomCollege] = useState(profile.customCollege || profile.college || '');
   const [branch, setBranch] = useState(profile.branch || BRANCHES_LIST[0]);
   const [semester, setSemester] = useState(profile.semester || 1);
   const [rollNo, setRollNo] = useState(profile.rollNo || '0108CS211045');
@@ -126,13 +127,15 @@ export const ProfileAvatarModal: React.FC<ProfileAvatarModalProps> = ({ isOpen, 
   };
 
   const handleSave = () => {
+    const resolvedCollege = college === 'OTHERS' ? (customCollege.trim() || 'Engineering Institute') : college;
     updateProfile({
-      name,
+      name: name.trim() || 'Abhishek',
       avatarUrl,
-      college,
+      college: resolvedCollege,
+      customCollege: resolvedCollege,
       branch,
       semester,
-      rollNo,
+      rollNo: rollNo.trim(),
     });
     setIsSavedNotice(true);
     setTimeout(() => {
@@ -354,6 +357,41 @@ export const ProfileAvatarModal: React.FC<ProfileAvatarModalProps> = ({ isOpen, 
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* College / University Select */}
+          <div className="space-y-1.5">
+            <label className="font-semibold text-stone-700 dark:text-stone-300 flex items-center justify-between">
+              <span>Engineering Institute / College</span>
+              <span className="text-[10px] font-mono text-stone-400">Updates Everywhere</span>
+            </label>
+            <select
+              value={college}
+              onChange={(e) => {
+                setCollege(e.target.value);
+                if (e.target.value !== 'OTHERS') {
+                  setCustomCollege(e.target.value);
+                }
+              }}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium cursor-pointer"
+            >
+              {COLLEGES_LIST.map((c) => (
+                <option key={c} value={c}>
+                  {c === 'OTHERS' ? 'Other Engineering College / University (Custom)' : c}
+                </option>
+              ))}
+            </select>
+
+            {/* Custom College Input if OTHERS or custom */}
+            {(college === 'OTHERS' || !COLLEGES_LIST.includes(college)) && (
+              <input
+                type="text"
+                value={customCollege}
+                onChange={(e) => setCustomCollege(e.target.value)}
+                placeholder="Type your college or university name..."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium mt-1.5"
+              />
+            )}
           </div>
         </div>
 

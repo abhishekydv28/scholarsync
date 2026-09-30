@@ -151,9 +151,9 @@ export const AuthGatewayScreen: React.FC<AuthGatewayScreenProps> = ({
         {/* Left Column: Purpose & Institutional Grounding */}
         <div className="lg:col-span-6 space-y-6">
           <div className="inline-flex items-center gap-2 text-xs font-mono text-stone-600 dark:text-stone-400">
-            <span>Samrat Ashok Technological Institute (Autonomous)</span>
+            <span className="font-semibold italic text-stone-800 dark:text-stone-200">"For the student, by the student, to the student"</span>
             <span>·</span>
-            <span>Est. 1960</span>
+            <span>PlanZo</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 leading-tight">

@@ -59,8 +59,9 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
 
   // Step 1: Academic Identity
   const [name, setName] = useState(profile.name || 'Abhishek');
-  const [college, setCollege] = useState('Samrat Ashok Technological Institute (SATI), Vidisha M.P.');
-  const [branch, setBranch] = useState('B.Tech. Computer Science & Engineering');
+  const [college, setCollege] = useState(profile.customCollege || profile.college || 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.');
+  const [customCollege, setCustomCollege] = useState(profile.customCollege || '');
+  const [branch, setBranch] = useState(profile.branch || 'B.Tech. Computer Science & Engineering');
   const [semester, setSemester] = useState<number>(profile.semester || 1);
   const [rollNo, setRollNo] = useState(profile.rollNo || '0108CS211045');
 
@@ -270,15 +271,16 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
       localStorage.setItem('planzo_scheduled_tasks_v5', JSON.stringify(initialTasks));
       localStorage.setItem('planzo_tasks_v3', JSON.stringify(initialTasks));
 
+      const resolvedCollege = college === 'OTHERS' ? (customCollege.trim() || 'Engineering Institute') : college;
       updateProfile({
         name: name.trim() || 'Abhishek',
-        college: 'SATI VIDISHA',
-        customCollege: 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
+        college: resolvedCollege,
+        customCollege: resolvedCollege,
         branch: branch,
         semester: semester,
         rollNo: rollNo.trim(),
-        collegeStart: '10:30', // SATI Vidisha Fixed 10:30 AM
-        collegeEnd: '17:30',   // SATI Vidisha Fixed 5:30 PM
+        collegeStart: '10:30', // internal timetable reference only
+        collegeEnd: '17:30',   // internal timetable reference only
         wakeTime: wakeTime,
         sleepTime: sleepTime,
         selectedHabits: selectedHabits,
@@ -380,27 +382,55 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-semibold text-stone-700 dark:text-stone-300">
-                Engineering Institute / College
+              <label className="font-semibold text-stone-700 dark:text-stone-300 flex items-center justify-between">
+                <span>Engineering Institute / College</span>
+                <span className="text-[10px] font-mono text-stone-400">Updates Everywhere</span>
               </label>
               <select
                 value={college}
-                onChange={(e) => setCollege(e.target.value)}
+                onChange={(e) => {
+                  setCollege(e.target.value);
+                  if (e.target.value !== 'OTHERS') {
+                    setCustomCollege(e.target.value);
+                  }
+                }}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 cursor-pointer"
               >
                 <option value="Samrat Ashok Technological Institute (SATI), Vidisha M.P.">
                   ⭐ Samrat Ashok Technological Institute (SATI), Vidisha M.P. (Autonomous)
                 </option>
-                <option value="RGPV Bhopal (University Institute of Technology)">
-                  RGPV Bhopal (UIT)
+                <option value="University Institute of Technology, RGPV Bhopal">
+                  University Institute of Technology, RGPV Bhopal
                 </option>
-                <option value="SGSITS Indore">
-                  SGSITS Indore
+                <option value="Shri Govindram Seksaria Institute of Technology and Science (SGSITS), Indore">
+                  Shri Govindram Seksaria Institute of Technology and Science (SGSITS), Indore
                 </option>
-                <option value="IET DAVV Indore">
-                  IET DAVV Indore
+                <option value="Institute of Engineering & Technology (IET DAVV), Indore">
+                  Institute of Engineering & Technology (IET DAVV), Indore
+                </option>
+                <option value="Madhav Institute of Technology & Science (MITS), Gwalior">
+                  Madhav Institute of Technology & Science (MITS), Gwalior
+                </option>
+                <option value="Jabalpur Engineering College (JEC), Jabalpur">
+                  Jabalpur Engineering College (JEC), Jabalpur
+                </option>
+                <option value="Medi-Caps University, Indore">
+                  Medi-Caps University, Indore
+                </option>
+                <option value="OTHERS">
+                  Other Engineering College / University (Custom)
                 </option>
               </select>
+
+              {(college === 'OTHERS' || !['Samrat Ashok Technological Institute (SATI), Vidisha M.P.', 'University Institute of Technology, RGPV Bhopal', 'Shri Govindram Seksaria Institute of Technology and Science (SGSITS), Indore', 'Institute of Engineering & Technology (IET DAVV), Indore', 'Madhav Institute of Technology & Science (MITS), Gwalior', 'Jabalpur Engineering College (JEC), Jabalpur', 'Medi-Caps University, Indore'].includes(college)) && (
+                <input
+                  type="text"
+                  value={customCollege}
+                  onChange={(e) => setCustomCollege(e.target.value)}
+                  placeholder="Enter your college or university name..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 mt-1 font-medium"
+                />
+              )}
             </div>
 
             {/* Semester Selection: All 8 Semesters in Ascending Order */}

@@ -37,10 +37,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
   };
 
   const handleSave = () => {
+    const resolvedCollege = college === 'OTHERS' ? (customCollege.trim() || 'Engineering Institute') : college;
     updateProfile({
       name: name.trim() || 'Abhishek',
-      college,
-      customCollege: college === 'OTHERS' ? customCollege.trim() : '',
+      college: resolvedCollege,
+      customCollege: resolvedCollege,
       branch,
       semester,
       wakeTime,

@@ -15,10 +15,13 @@ import {
   Clock,
   Plus,
   Calendar,
+  CalendarPlus,
   X,
   Layers,
   Download,
   AlertCircle,
+  GraduationCap,
+  ShieldCheck,
 } from 'lucide-react';
 import { FolderItem } from '../types';
 import { playTaskCompleteSound } from '../utils/audioSynth';
@@ -33,6 +36,7 @@ export const AcademicHub: React.FC = () => {
     toggleAssignmentStatus,
     addCustomNoteToFolder,
     setSelectedResourceForModal,
+    scheduleStudyBlock,
   } = useApp();
 
   const [browsingSemester, setBrowsingSemester] = useState<number | null>(null);
@@ -42,10 +46,17 @@ export const AcademicHub: React.FC = () => {
     : subjects;
 
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(subjects[0]?.id || 'cs101');
-  const [activeFolderTab, setActiveFolderTab] = useState<'notes' | 'pyq' | 'viva' | 'assignments' | 'syllabus'>('notes');
+  const [activeFolderTab, setActiveFolderTab] = useState<'notes' | 'pyq' | 'viva' | 'assignments' | 'syllabus' | 'guidelines'>('notes');
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [selectedVivaQuestion, setSelectedVivaQuestion] = useState<any | null>(null);
   const [selectedNotePreview, setSelectedNotePreview] = useState<FolderItem | null>(null);
+
+  // AI Accelerated Study Roadmap Generator State
+  const [isRoadmapModalOpen, setIsRoadmapModalOpen] = useState(false);
+  const [roadmapDays, setRoadmapDays] = useState(7);
+  const [isGeneratingRoadmap, setIsGeneratingRoadmap] = useState(false);
+  const [roadmapData, setRoadmapData] = useState<any | null>(null);
+  const [scheduledPhaseIndex, setScheduledPhaseIndex] = useState<number | null>(null);
 
   // New Note Form State
   const [newNoteTitle, setNewNoteTitle] = useState('');
@@ -129,6 +140,73 @@ export const AcademicHub: React.FC = () => {
     setNewNoteTitle('');
     setNewNoteSummary('');
     setIsAddingNote(false);
+  };
+
+  const handleGenerateRoadmap = async (days = 7) => {
+    setIsGeneratingRoadmap(true);
+    setIsRoadmapModalOpen(true);
+    setScheduledPhaseIndex(null);
+    setRoadmapDays(days);
+
+    try {
+      const res = await fetch('/api/syllabus-planner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: activeSubject.name,
+          daysRemaining: days,
+          currentLevel: 'Intermediate',
+        }),
+      });
+
+      if (!res.ok) throw new Error('Planner API error');
+      const data = await res.json();
+      setRoadmapData(data);
+    } catch (e) {
+      console.error('Roadmap error', e);
+      setRoadmapData({
+        studyPlan: [
+          {
+            phase: 'Phase 1: High-Yield Units & Definitions',
+            focusTopics: ['Module 1 & 2 Core Proofs', 'Standard Architecture Diagrams'],
+            recommendedVideo: 'Neso Academy & Gate Smashers Comprehensive Playlist',
+            estimatedHours: 2,
+          },
+          {
+            phase: 'Phase 2: Recurring 10-Mark University PYQs',
+            focusTopics: ['Previous 3 Years Exam Papers', 'Model Solved Numericals'],
+            recommendedVideo: 'Abdul Bari / High-Yield Problem Solving Series',
+            estimatedHours: 2.5,
+          },
+          {
+            phase: 'Phase 3: Formula Sheet & Mock Simulation',
+            focusTopics: ['Summary Cheat Sheet', '1 Timed Exam Paper Simulation'],
+            recommendedVideo: '1-Shot Quick Revision Marathon',
+            estimatedHours: 1.5,
+          },
+        ],
+        highYieldTip: 'Focus on the repeating questions in Unit 1 and Unit 3 for guaranteed passing marks.',
+      });
+    } finally {
+      setIsGeneratingRoadmap(false);
+    }
+  };
+
+  const handleSchedulePhase = (phase: any, index: number) => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    scheduleStudyBlock({
+      title: `${activeSubject.code}: ${phase.phase.split(':')[0]} (${phase.focusTopics[0] || 'Revision'})`,
+      category: 'study',
+      startTime: '19:00',
+      endTime: '21:00',
+      date: todayStr,
+      subjectId: activeSubject.id,
+      cognitiveWeight: 3,
+      notes: `Focus topics: ${phase.focusTopics.join(', ')}. Resource: ${phase.recommendedVideo}`,
+    });
+    setScheduledPhaseIndex(index);
+    playTaskCompleteSound();
+    fireConfetti(25);
   };
 
   return (
@@ -243,10 +321,19 @@ export const AcademicHub: React.FC = () => {
         {/* Folder Header & Sub-Tab Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-200 dark:border-stone-800 pb-2">
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs uppercase font-mono font-bold tracking-wider text-teal-700 dark:text-teal-400">
               📁 {activeSubject.name} ({activeSubject.code})
             </span>
+            <button
+              type="button"
+              onClick={() => handleGenerateRoadmap(7)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-500/10 border border-teal-500/20 text-teal-800 dark:text-teal-300 hover:bg-teal-500/20 text-[11px] font-semibold transition-colors cursor-pointer"
+              title="Generate tailored study roadmap and timetable blocks"
+            >
+              <Sparkles className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+              <span>Generate Study Roadmap</span>
+            </button>
           </div>
 
           {/* Sub-Folders Segmented Control */}
@@ -309,6 +396,18 @@ export const AcademicHub: React.FC = () => {
             >
               <Layers className="w-3.5 h-3.5 text-stone-500" />
               <span>Syllabus Modules</span>
+            </button>
+
+            <button
+              onClick={() => setActiveFolderTab('guidelines')}
+              className={`px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${
+                activeFolderTab === 'guidelines'
+                  ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-xs'
+                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Exam Scheme & Regulations</span>
             </button>
           </div>
 
@@ -565,6 +664,64 @@ export const AcademicHub: React.FC = () => {
           </div>
         )}
 
+        {/* 6. Academic Regulations & Exam Scheme */}
+        {activeFolderTab === 'guidelines' && (
+          <div className="space-y-4 animate-fadeIn">
+            <div className="rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-xs space-y-5">
+              <div className="flex items-center gap-2.5 pb-3 border-b border-stone-100 dark:border-stone-800">
+                <GraduationCap className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <div>
+                  <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
+                    B.Tech Academic Regulations & Examination Guidelines
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    Official evaluation framework, attendance thresholds, and grading rules
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-850/50 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-stone-900 dark:text-stone-100">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <span>75% Minimum Attendance</span>
+                  </div>
+                  <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
+                    Mandatory 75% attendance in theory lectures & practical laboratory sessions is required to remain eligible for end-semester university exams.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-850/50 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-stone-900 dark:text-stone-100">
+                    <BookOpen className="w-4 h-4 text-sky-600" />
+                    <span>70/30 Examination Scheme</span>
+                  </div>
+                  <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
+                    70 Marks End-Semester University Theory + 30 Marks Continuous Sessional / Mid-Semester Evaluation (MSTs, Quizzes & Assignments).
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-850/50 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-stone-900 dark:text-stone-100">
+                    <Sparkles className="w-4 h-4 text-amber-600" />
+                    <span>Laboratory Viva & Practicals</span>
+                  </div>
+                  <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
+                    External viva voce, lab records, and code demonstration account for separate practical credits with independent passing criteria.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-teal-50/80 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900 text-xs text-teal-900 dark:text-teal-200 space-y-1">
+                <span className="font-semibold">Preparation Strategy: </span>
+                <span>
+                  Consistent daily time-blocking of 1.5–2 hours for problem-solving and unit revision prevents eleventh-hour cramming and guarantees higher SGPA/CGPA.
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* Add Custom Note Modal */}
@@ -701,6 +858,161 @@ export const AcademicHub: React.FC = () => {
                 Close Preview
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Study Roadmap & Timetable Generator Modal */}
+      {isRoadmapModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/60 backdrop-blur-xs p-4 animate-fadeIn">
+          <div className="max-w-2xl w-full bg-white dark:bg-[#0c1017] border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
+                    Accelerated Study Roadmap: {activeSubject.code}
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    Syllabus chunking & exam-targeted study blocks for {activeSubject.name}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsRoadmapModalOpen(false)}
+                className="p-1.5 rounded-lg text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Days Sprint Selector */}
+            <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-stone-50 dark:bg-stone-850/60 border border-stone-200/70 dark:border-stone-800">
+              <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">
+                Exam Timeline Sprint:
+              </span>
+              <div className="flex items-center gap-1.5 text-xs">
+                {[3, 7, 14].map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => handleGenerateRoadmap(d)}
+                    className={`px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                      roadmapDays === d
+                        ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 font-semibold shadow-2xs'
+                        : 'bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-100'
+                    }`}
+                  >
+                    {d === 3 ? '3 Days (Emergency)' : d === 7 ? '7 Days (Balanced)' : '14 Days (Full Unit)'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {isGeneratingRoadmap ? (
+              <div className="py-12 text-center text-xs text-stone-500 space-y-2">
+                <Sparkles className="w-6 h-6 text-teal-600 animate-spin mx-auto" />
+                <p>Generating tailored study roadmap and curating high-yield video lectures...</p>
+              </div>
+            ) : roadmapData ? (
+              <div className="space-y-4">
+                
+                {/* High Yield Advice Banner */}
+                {roadmapData.highYieldTip && (
+                  <div className="p-3.5 rounded-xl bg-teal-50/80 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900 text-xs text-teal-900 dark:text-teal-200 flex items-start gap-2.5">
+                    <Sparkles className="w-4 h-4 text-teal-600 dark:text-teal-400 mt-0.5 shrink-0" />
+                    <div className="leading-relaxed">
+                      <strong>Senior Exam Strategy:</strong> {roadmapData.highYieldTip}
+                    </div>
+                  </div>
+                )}
+
+                {/* Phases List */}
+                <div className="space-y-3">
+                  {roadmapData.studyPlan?.map((phase: any, idx: number) => {
+                    const isScheduled = scheduledPhaseIndex === idx;
+                    return (
+                      <div
+                        key={idx}
+                        className="p-4 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#0c1017] space-y-3 hover:border-teal-500/40 transition-colors shadow-2xs"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <span className="text-[10px] font-mono uppercase tracking-wider text-teal-700 dark:text-teal-400 font-bold">
+                              Milestone 0{idx + 1}
+                            </span>
+                            <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                              {phase.phase}
+                            </h4>
+                          </div>
+
+                          <span className="text-xs font-mono text-stone-500 shrink-0">
+                            ~{phase.estimatedHours}h study
+                          </span>
+                        </div>
+
+                        {/* Focus Topics */}
+                        <div className="space-y-1">
+                          <span className="text-[11px] text-stone-400 font-mono">Core Focus:</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {phase.focusTopics?.map((t: string, tidx: number) => (
+                              <span
+                                key={tidx}
+                                className="text-xs px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Recommended Resource & 1-Click Schedule CTA */}
+                        <div className="pt-2 border-t border-stone-100 dark:border-stone-850 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                          <div className="text-stone-500 truncate max-w-sm">
+                            🎥 {phase.recommendedVideo}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleSchedulePhase(phase, idx)}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+                              isScheduled
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-950'
+                            }`}
+                          >
+                            <CalendarPlus className="w-3.5 h-3.5" />
+                            <span>{isScheduled ? 'Scheduled to Routine ✓' : '+ Schedule Block'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+              </div>
+            ) : null}
+
+            {/* Modal Footer */}
+            <div className="pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs">
+              <span className="text-stone-400 italic">
+                Blocks are directly added to today's timetable.
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsRoadmapModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+
           </div>
         </div>
       )}

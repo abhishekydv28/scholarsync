@@ -143,14 +143,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return {
           name: parsed.name || 'Abhishek',
           avatarUrl: parsed.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=CyberArchitect&colors=emerald,cyan,teal',
-          college: parsed.college && COLLEGES_LIST.includes(parsed.college) ? parsed.college : COLLEGES_LIST[0],
-          customCollege: parsed.customCollege || 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
+          college: parsed.college || COLLEGES_LIST[0],
+          customCollege: parsed.customCollege || parsed.college || COLLEGES_LIST[0],
           branch: parsed.branch && BRANCHES_LIST.includes(parsed.branch) ? parsed.branch : BRANCHES_LIST[0],
           semester: parsed.semester || 1,
           wakeTime: parsed.wakeTime || '07:00',
           sleepTime: parsed.sleepTime || '23:30',
-          collegeStart: '10:30', // SATI Vidisha Fixed 10:30 AM
-          collegeEnd: '17:30',   // SATI Vidisha Fixed 5:30 PM
+          collegeStart: '10:30', // internal timetable reference only
+          collegeEnd: '17:30',   // internal timetable reference only
           selectedHabits: parsed.selectedHabits || [DEFAULT_HABITS[0], DEFAULT_HABITS[1], DEFAULT_HABITS[2]],
           onboarded: parsed.onboarded !== undefined ? parsed.onboarded : true,
           accountCreatedAt: parsed.accountCreatedAt || new Date().toISOString().split('T')[0],
@@ -160,14 +160,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return {
       name: 'Abhishek',
       avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=CyberArchitect&colors=emerald,cyan,teal',
-      college: 'SATI VIDISHA',
+      college: COLLEGES_LIST[0],
       customCollege: 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
       branch: 'B.Tech. Computer Science & Engineering',
       semester: 1,
       wakeTime: '07:00',
       sleepTime: '23:30',
-      collegeStart: '10:30', // SATI Vidisha Fixed 10:30 AM
-      collegeEnd: '17:30',   // SATI Vidisha Fixed 5:30 PM
+      collegeStart: '10:30', // internal timetable reference only
+      collegeEnd: '17:30',   // internal timetable reference only
       selectedHabits: [DEFAULT_HABITS[0], DEFAULT_HABITS[1], DEFAULT_HABITS[2]],
       onboarded: true,
       accountCreatedAt: new Date().toISOString().split('T')[0],
@@ -398,7 +398,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [scheduledTasks]);
 
   const updateProfile = (updates: Partial<StudentProfile>) => {
-    setProfile((prev) => ({ ...prev, ...updates }));
+    setProfile((prev) => {
+      const nextCollege = updates.college !== undefined ? updates.college : prev.college;
+      const nextCustomCollege = updates.customCollege !== undefined 
+        ? updates.customCollege 
+        : updates.college !== undefined 
+          ? updates.college 
+          : prev.customCollege;
+      return {
+        ...prev,
+        ...updates,
+        college: nextCollege,
+        customCollege: nextCustomCollege,
+      };
+    });
+
+    // Keep currentUser in sync with profile changes if logged in
+    setCurrentUser((prev) => {
+      if (!prev) return null;
+      const updatedUser: AuthUser = {
+        ...prev,
+        name: updates.name !== undefined ? updates.name : prev.name,
+        college: updates.customCollege || updates.college || prev.college,
+        branch: updates.branch !== undefined ? updates.branch : prev.branch,
+        semester: updates.semester !== undefined ? updates.semester : prev.semester,
+        rollNo: updates.rollNo !== undefined ? updates.rollNo : prev.rollNo,
+        avatarUrl: updates.avatarUrl !== undefined ? updates.avatarUrl : prev.avatarUrl,
+      };
+      localStorage.setItem('planzo_auth_user_v1', JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+
     if (updates.branch) {
       if (CURRICULUM_DATA[updates.branch]) {
         setSubjects(CURRICULUM_DATA[updates.branch]);
@@ -888,13 +918,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     updateProfile({
       name: userData.name,
-      college: 'SATI VIDISHA',
-      customCollege: 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
+      college: userData.college || profile.college || 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
+      customCollege: userData.college || profile.customCollege || 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
       branch: userData.branch || 'B.Tech. Computer Science & Engineering',
       semester: targetSem,
       rollNo: userData.rollNo || '',
-      collegeStart: '10:30', // SATI Fixed
-      collegeEnd: '17:30',   // SATI Fixed
+      collegeStart: '10:30', // internal timetable reference only
+      collegeEnd: '17:30',   // internal timetable reference only
       accountCreatedAt: todayStr,
       avatarUrl: userData.avatarUrl || profile.avatarUrl,
     });
@@ -908,7 +938,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       name: profile.name || 'Abhishek',
       email: email,
       rollNo: profile.rollNo || '0108CS211045',
-      college: profile.college || 'SATI VIDISHA',
+      college: profile.customCollege || profile.college || 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
       branch: profile.branch || 'B.Tech. Computer Science & Engineering',
       semester: profile.semester || 1,
       avatarUrl: profile.avatarUrl,
