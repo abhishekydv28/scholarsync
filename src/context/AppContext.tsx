@@ -56,8 +56,8 @@ interface AppContextType {
   setZenModeOpen: (open: boolean) => void;
   activeZenTask: TimetableItem | null;
   startZenMode: (item?: TimetableItem) => void;
-  activeView: 'home' | 'timeline' | 'academic' | 'attendance' | 'analytics';
-  setActiveView: (view: 'home' | 'timeline' | 'academic' | 'attendance' | 'analytics') => void;
+  activeView: 'home' | 'timeline' | 'tasks' | 'schedule' | 'attendance' | 'academic' | 'analytics' | 'ai' | 'settings';
+  setActiveView: (view: 'home' | 'timeline' | 'tasks' | 'schedule' | 'attendance' | 'academic' | 'analytics' | 'ai' | 'settings') => void;
   isAiDrawerOpen: boolean;
   setIsAiDrawerOpen: (open: boolean) => void;
   isAttendanceModalOpen: boolean;
@@ -333,7 +333,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   // UI States
-  const [activeView, setActiveView] = useState<'home' | 'timeline' | 'academic' | 'attendance' | 'analytics'>('home');
+  const [activeView, setActiveView] = useState<
+    'home' | 'timeline' | 'tasks' | 'schedule' | 'attendance' | 'academic' | 'analytics' | 'ai' | 'settings'
+  >('home');
   const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

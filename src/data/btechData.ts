@@ -35,6 +35,17 @@ export const DEFAULT_HABITS = [
   'No Phone During Morning Study Block',
 ];
 
+export const ALL_8_SEMESTERS = [
+  { sem: 1, name: 'Semester 1', year: '1st Year', badge: 'I Sem', highlight: 'Applied Physics, C, Python' },
+  { sem: 2, name: 'Semester 2', year: '1st Year', badge: 'II Sem', highlight: 'Stats, Data Structures, Linux' },
+  { sem: 3, name: 'Semester 3', year: '2nd Year', badge: 'III Sem', highlight: 'Discrete Maths, ADA, Java, OS' },
+  { sem: 4, name: 'Semester 4', year: '2nd Year', badge: 'IV Sem', highlight: 'Networks, DBMS, Compilers, Adv Java' },
+  { sem: 5, name: 'Semester 5', year: '3rd Year', badge: 'V Sem', highlight: 'AI, Distributed Sys, Graphics, Data Sci' },
+  { sem: 6, name: 'Semester 6', year: '3rd Year', badge: 'VI Sem', highlight: 'Cloud Comp, ML, Web Tech, Minor Proj' },
+  { sem: 7, name: 'Semester 7', year: 'Final Year', badge: 'VII Sem', highlight: 'Deep Learning, Major Proj, Lab IV' },
+  { sem: 8, name: 'Semester 8', year: 'Final Year', badge: 'VIII Sem', highlight: 'CS-801 Major Project Dissertation' },
+];
+
 // Rich curriculum mapping for B.Tech
 export const CURRICULUM_DATA: Record<string, SubjectCourse[]> = {
   'B.Tech. Computer Science & Engineering': [

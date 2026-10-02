@@ -312,23 +312,29 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
         {/* Wizard Top Step Indicator */}
         <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-950 flex items-center justify-center font-bold text-xs">
+            <div className="w-8 h-8 rounded-lg bg-teal-700 text-white flex items-center justify-center font-bold text-xs">
               <GraduationCap className="w-4 h-4" />
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                <span>Configure Curriculum & Routine</span>
-                <span className="text-[11px] font-mono text-stone-500">
+                <span>
+                  {step === 1 && '01 Profile & Identity'}
+                  {step === 2 && '02 Academic Electives'}
+                  {step === 3 && '03 College Routine'}
+                  {step === 4 && '04 Study Preferences'}
+                  {step === 5 && '05 Confirm Workspace'}
+                </span>
+                <span className="text-[11px] font-mono text-stone-400">
                   Step {step} of 5
                 </span>
               </h2>
               <p className="text-xs text-stone-500 dark:text-stone-400">
-                SATI Vidisha B.Tech CSE · Semesters 1 to 8 Official Syllabus
+                B.Tech Student Operating System Setup
               </p>
             </div>
           </div>
 
-          <div className="text-xs font-mono font-bold text-stone-500">
+          <div className="text-xs font-mono font-bold text-teal-700 dark:text-teal-400">
             {Math.round((step / 5) * 100)}%
           </div>
         </div>
@@ -336,7 +342,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
         {/* Step Progress Line */}
         <div className="w-full h-1 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
           <div
-            className="h-full bg-stone-900 dark:bg-stone-100 transition-all duration-300"
+            className="h-full bg-teal-600 transition-all duration-300"
             style={{ width: `${(step / 5) * 100}%` }}
           />
         </div>
@@ -350,7 +356,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
               <span className="font-semibold text-stone-900 dark:text-stone-100">
                 Autonomous Syllabus Engine Loaded:
               </span>{' '}
-              Official courses, 5 syllabus units, and marking schemes for all 8 semesters are mapped for Samrat Ashok Technological Institute (SATI Vidisha).
+              Official courses, 5 syllabus units, and marking schemes for all 8 semesters are mapped for your B.Tech engineering curriculum.
             </div>
 
             <div className="space-y-1.5">
@@ -508,7 +514,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">
-                  Semester {semester} SATI Vidisha Courses & Electives
+                  Semester {semester} Courses & Electives
                 </h3>
                 <p className="text-stone-500 dark:text-stone-400 text-xs">
                   Pick your registered departmental & open electives below.
@@ -623,7 +629,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
               </p>
             </div>
 
-            {/* SATI Vidisha Fixed College Timing */}
+            {/* College Timing */}
             <div className="p-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
@@ -631,7 +637,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
                 </div>
                 <div>
                   <div className="font-bold text-xs text-stone-900 dark:text-stone-100">
-                    SATI Vidisha Official Schedule: 10:30 AM – 05:30 PM
+                    College Routine Schedule: 10:30 AM – 05:30 PM
                   </div>
                   <div className="text-[11px] text-stone-500 dark:text-stone-400">
                     Institute fixed working hours automatically applied to your routine.
@@ -855,10 +861,10 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
 
             <div className="space-y-1">
               <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">
-                Ready to Generate Your Personalized PlanZo Workspace!
+                Your PlanZo workspace is ready.
               </h3>
               <p className="text-xs text-stone-500 dark:text-stone-400 max-w-md mx-auto">
-                We've combined your college timings, real attendance, and official SATI Vidisha B.Tech CSE syllabus.
+                Review your academic details below before activating your personalized dashboard.
               </p>
             </div>
 
@@ -866,14 +872,14 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
             <div className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 text-left space-y-2 font-mono text-[11px]">
               <div className="flex items-center justify-between">
                 <span className="text-stone-500">Institute:</span>
-                <span className="font-bold text-stone-800 dark:text-stone-200">SATI Vidisha (Autonomous)</span>
+                <span className="font-bold text-stone-800 dark:text-stone-200">{customCollege || college || 'B.Tech Engineering'}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-stone-500">Academic Year & Semester:</span>
                 <span className="font-bold text-emerald-600 dark:text-emerald-400">Semester {semester} CSE</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-500">SATI Courses Mapped:</span>
+                <span className="text-stone-500">Courses Mapped:</span>
                 <span className="font-bold text-stone-800 dark:text-stone-200">{getCompiledSubjects().length} Courses</span>
               </div>
               <div className="flex items-center justify-between">
