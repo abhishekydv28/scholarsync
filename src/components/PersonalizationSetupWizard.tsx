@@ -27,6 +27,98 @@ import { SubjectCourse, SubjectAttendance, TimetableItem } from '../types';
 import { playTaskCompleteSound } from '../utils/audioSynth';
 import { fireConfetti } from '../utils/audioVibes';
 
+export interface StudentHabitItem {
+  id: string;
+  title: string;
+  desc: string;
+  icon: string;
+  category: string;
+  badge: string;
+}
+
+export const STUDENT_TEN_HABITS: StudentHabitItem[] = [
+  {
+    id: 'habit-dsa',
+    title: 'Daily Coding / DSA Practice',
+    desc: 'Solve 1-2 coding problems on LeetCode/GeeksforGeeks daily',
+    icon: '💻',
+    category: 'Skills & Tech',
+    badge: 'High Impact',
+  },
+  {
+    id: 'habit-gym',
+    title: 'Gym / Workout / Physical Fitness',
+    desc: '45m physical exercise, gym or sports to sustain mental energy',
+    icon: '🏋️‍♂️',
+    category: 'Health & Energy',
+    badge: 'Vitality',
+  },
+  {
+    id: 'habit-hydration',
+    title: 'Daily Hydration (3L+ Water)',
+    desc: 'Maintain steady water intake to avoid fatigue during long lectures',
+    icon: '💧',
+    category: 'Health & Energy',
+    badge: 'Essential',
+  },
+  {
+    id: 'habit-deepwork',
+    title: 'Deep Work: No-Phone Study Block (45m)',
+    desc: 'Distraction-free focus sprint with notifications turned off',
+    icon: '📵',
+    category: 'Academics',
+    badge: 'Focus',
+  },
+  {
+    id: 'habit-revision',
+    title: 'Formula & Concept Sheet Revision',
+    desc: '15 min active recall of engineering formulas, laws and derivations',
+    icon: '🔄',
+    category: 'Academics',
+    badge: 'Exams',
+  },
+  {
+    id: 'habit-communication',
+    title: 'English Speaking & Soft Skills Practice',
+    desc: 'Practice spoken English, GD communication and technical pitch',
+    icon: '🗣️',
+    category: 'Career & Prep',
+    badge: 'Interviews',
+  },
+  {
+    id: 'habit-tech-news',
+    title: 'Tech News & Technical Paper Reading',
+    desc: 'Read latest AI advancements, open-source tech blogs & research papers',
+    icon: '📰',
+    category: 'Skills & Tech',
+    badge: 'Knowledge',
+  },
+  {
+    id: 'habit-meditation',
+    title: 'Mindful Breathing / Meditation (10m)',
+    desc: 'Mental reset and calmness before starting or after returning from college',
+    icon: '🧘',
+    category: 'Mental Wellness',
+    badge: 'Calm',
+  },
+  {
+    id: 'habit-reading',
+    title: 'Reading Non-Academic / Mindset Books',
+    desc: 'Read 15-20 pages of self-growth, mindset, finance or career books',
+    icon: '📖',
+    category: 'Personal Growth',
+    badge: 'Mindset',
+  },
+  {
+    id: 'habit-journaling',
+    title: 'Night Journaling & Tomorrow Planning',
+    desc: 'Reflect on today\'s learnings and lock in top 3 priorities for tomorrow',
+    icon: '📝',
+    category: 'Discipline',
+    badge: 'Routine',
+  },
+];
+
 interface PersonalizationSetupWizardProps {
   isOpen: boolean;
   onClose: () => void;
@@ -45,7 +137,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
     timetable,
   } = useApp();
 
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
 
   // All 8 Semesters in strictly ascending order (1 to 8) - Clean, no subjects
   const ALL_8_SEMESTERS = [
@@ -193,17 +285,27 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
     setSemester(newSem);
   };
 
-  // Step 3: Timing & Goals (SATI Vidisha college time is permanently fixed: 10:30 to 17:30)
-  const collegeStart = '10:30';
-  const collegeEnd = '17:30';
+  // Step 3: Timing & Goals (User configurable college timing, wake/sleep & primary focus)
+  const [collegeStartTime, setCollegeStartTime] = useState(profile.collegeStart || '10:00');
+  const [collegeEndTime, setCollegeEndTime] = useState(profile.collegeEnd || '17:00');
   const [wakeTime, setWakeTime] = useState(profile.wakeTime || '07:00');
   const [sleepTime, setSleepTime] = useState(profile.sleepTime || '23:30');
-  const [primaryGoal, setPrimaryGoal] = useState<'placement' | 'cgpa' | 'bunk' | 'gate'>('placement');
-  const [selectedHabits, setSelectedHabits] = useState<string[]>([
-    'Daily LeetCode Problem',
-    'Hydration (3L)',
-    'Gym / Physical Reset',
-  ]);
+  const [primaryGoal, setPrimaryGoal] = useState<'skills' | 'other_studies' | 'cgpa' | 'bunk' | 'gate'>(
+    ((profile as any).primaryGoal === 'placement' ? 'skills' : (profile as any).primaryGoal) || 'skills'
+  );
+
+  // Step 4: 10 Habits Commonly Pursued by Students
+  const [selectedHabits, setSelectedHabits] = useState<string[]>(
+    profile.selectedHabits && profile.selectedHabits.length > 0
+      ? profile.selectedHabits
+      : [
+          'Daily Coding / DSA Practice',
+          'Gym / Workout / Physical Fitness',
+          'Daily Hydration (3L+ Water)',
+          'Deep Work: No-Phone Study Block (45m)',
+          'Formula & Concept Sheet Revision',
+        ]
+  );
 
   // Step 4: Attendance Input (Starts at 0 attended, 0 conducted for clean start)
   const [attendanceValues, setAttendanceValues] = useState<Record<string, { attended: number; total: number }>>({});
@@ -230,12 +332,30 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
     setStep((prev) => (prev + 1) as any);
   };
 
-  const handleHabitToggle = (habit: string) => {
-    if (selectedHabits.includes(habit)) {
-      setSelectedHabits(selectedHabits.filter((h) => h !== habit));
+  const handleHabitToggle = (habitTitle: string) => {
+    if (selectedHabits.includes(habitTitle)) {
+      setSelectedHabits(selectedHabits.filter((h) => h !== habitTitle));
     } else {
-      setSelectedHabits([...selectedHabits, habit]);
+      setSelectedHabits([...selectedHabits, habitTitle]);
     }
+  };
+
+  const handleSelectAllHabits = () => {
+    setSelectedHabits(STUDENT_TEN_HABITS.map((h) => h.title));
+  };
+
+  const handleSelectPopularHabits = () => {
+    setSelectedHabits([
+      'Daily Coding / DSA Practice',
+      'Gym / Workout / Physical Fitness',
+      'Daily Hydration (3L+ Water)',
+      'Deep Work: No-Phone Study Block (45m)',
+      'Formula & Concept Sheet Revision',
+    ]);
+  };
+
+  const handleClearHabits = () => {
+    setSelectedHabits([]);
   };
 
   const handleFinalizePlan = () => {
@@ -244,7 +364,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
     setTimeout(() => {
       const compiledSubjects = getCompiledSubjects();
 
-      // 1. Build Personalized Timetable based on SATI Vidisha 10:30 - 17:30 college hours
+      // 1. Build Personalized Timetable based on user's entered college hours
       const personalizedTimetable: TimetableItem[] = [
         {
           id: 'routine-1',
@@ -257,69 +377,71 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
         },
         {
           id: 'routine-2',
-          title: 'Breakfast & Commute to SATI Vidisha Campus',
+          title: 'Breakfast & Commute to Campus',
           category: 'chill',
           startTime: '08:45',
-          endTime: '10:15',
+          endTime: collegeStartTime || '10:00',
           completed: false, // Starts fresh!
           cognitiveWeight: 1,
         },
         {
           id: 'routine-3',
-          title: `${compiledSubjects[0]?.code || 'CS-701'}: ${compiledSubjects[0]?.name || 'Department Lecture 1'}`,
+          title: `${compiledSubjects[0]?.code || 'SUB-101'}: ${compiledSubjects[0]?.name || 'Department Lecture 1'}`,
           category: 'lecture',
-          startTime: '10:30',
-          endTime: '12:00',
+          startTime: collegeStartTime || '10:00',
+          endTime: '11:45',
           completed: false,
           cognitiveWeight: 4,
           subjectId: compiledSubjects[0]?.id,
         },
         {
           id: 'routine-4',
-          title: `${compiledSubjects[1]?.code || 'CS-702'}: ${compiledSubjects[1]?.name || 'Department Lecture 2'}`,
+          title: `${compiledSubjects[1]?.code || 'SUB-102'}: ${compiledSubjects[1]?.name || 'Department Lecture 2'}`,
           category: 'lecture',
-          startTime: '12:00',
-          endTime: '13:30',
+          startTime: '11:45',
+          endTime: '13:15',
           completed: false,
           cognitiveWeight: 3,
           subjectId: compiledSubjects[1]?.id,
         },
         {
           id: 'routine-5',
-          title: 'SATI Canteen Lunch Break & Peer Discussion',
+          title: 'Campus Lunch Break & Peer Discussion',
           category: 'chill',
-          startTime: '13:30',
-          endTime: '14:15',
+          startTime: '13:15',
+          endTime: '14:00',
           completed: false,
           cognitiveWeight: 1,
         },
         {
           id: 'routine-6',
-          title: `${compiledSubjects.find((s) => s.id.includes('lab') || s.id.includes('706') || s.id.includes('406') || s.id.includes('606') || s.id.includes('26101p'))?.name || 'Department Laboratory Practicals'}`,
+          title: `${compiledSubjects.find((s) => s.id.includes('lab') || s.name.toLowerCase().includes('lab') || s.name.toLowerCase().includes('drawing') || s.name.toLowerCase().includes('graphics'))?.name || 'Department Practical Session & Labs'}`,
           category: 'lab',
-          startTime: '14:15',
-          endTime: '17:30',
+          startTime: '14:00',
+          endTime: collegeEndTime || '17:00',
           completed: false,
           cognitiveWeight: 4,
         },
         {
           id: 'routine-7',
-          title: 'Campus Departure & Evening Chai Break',
+          title: 'Campus Departure & Evening Refreshment',
           category: 'chill',
-          startTime: '17:30',
-          endTime: '18:30',
+          startTime: collegeEndTime || '17:00',
+          endTime: '18:15',
           completed: false,
           cognitiveWeight: 1,
         },
         {
           id: 'routine-8',
-          title: primaryGoal === 'placement'
-            ? 'Evening Sprint: DSA LeetCode & Mini-Project Coding'
+          title: primaryGoal === 'skills'
+            ? 'Evening Sprint: Skills Development (Coding, AI & Projects)'
+            : primaryGoal === 'other_studies'
+            ? 'Evening Focus: Other Studies with College (GATE, UPSC & Exam Prep)'
             : primaryGoal === 'gate'
             ? 'Evening Core CS Revision (Algorithms & Discrete Maths)'
             : 'Evening Study: Topper Notes & Lab Assignment Submission',
           category: 'study',
-          startTime: '19:00',
+          startTime: '18:45',
           endTime: '21:00',
           completed: false,
           cognitiveWeight: 4,
@@ -335,9 +457,9 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
         },
         {
           id: 'routine-10',
-          title: 'Night Review: Tomorrow\'s Schedule Sync & Sleep',
+          title: `Night Review: ${selectedHabits[selectedHabits.length - 1] || "Tomorrow's Schedule Sync"} & Sleep`,
           category: 'habit',
-          startTime: '22:30',
+          startTime: '22:15',
           endTime: sleepTime || '23:30',
           completed: false,
           cognitiveWeight: 1,
@@ -354,7 +476,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
           attendedClasses: recorded.attended,
           totalClasses: recorded.total,
           isLab: sub.name.toLowerCase().includes('lab'),
-          professorName: 'SATI Vidisha Faculty',
+          professorName: 'Faculty',
         };
       });
 
@@ -384,8 +506,8 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
         branch: resolvedBranch,
         semester: semester,
         rollNo: rollNo.trim(),
-        collegeStart: '10:30', // internal timetable reference only
-        collegeEnd: '17:30',   // internal timetable reference only
+        collegeStart: collegeStartTime,
+        collegeEnd: collegeEndTime,
         wakeTime: wakeTime,
         sleepTime: sleepTime,
         selectedHabits: selectedHabits,
@@ -424,13 +546,14 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
               <h2 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
                 <span>
                   {step === 1 && '01 Profile & Identity'}
-                  {step === 2 && '02 Academic Electives'}
-                  {step === 3 && '03 College Routine'}
-                  {step === 4 && '04 Study Preferences'}
-                  {step === 5 && '05 Confirm Workspace'}
+                  {step === 2 && '02 Subject Options'}
+                  {step === 3 && '03 College Routine & Focus'}
+                  {step === 4 && '04 Daily Discipline Habits'}
+                  {step === 5 && '05 Current Attendance'}
+                  {step === 6 && '06 Confirm Workspace'}
                 </span>
                 <span className="text-[11px] font-mono text-stone-400">
-                  Step {step} of 5
+                  Step {step} of 6
                 </span>
               </h2>
               <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -440,7 +563,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
           </div>
 
           <div className="text-xs font-mono font-bold text-teal-700 dark:text-teal-400">
-            {Math.round((step / 5) * 100)}%
+            {Math.round((step / 6) * 100)}%
           </div>
         </div>
 
@@ -448,7 +571,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
         <div className="w-full h-1 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
           <div
             className="h-full bg-teal-600 transition-all duration-300"
-            style={{ width: `${(step / 5) * 100}%` }}
+            style={{ width: `${(step / 6) * 100}%` }}
           />
         </div>
 
@@ -812,6 +935,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
         )}
 
         {/* ---------------------------------------------------- */}
+        {/* ---------------------------------------------------- */}
         {/* STEP 3: Daily Timing & Personal Focus Goals         */}
         {/* ---------------------------------------------------- */}
         {step === 3 && (
@@ -821,28 +945,84 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
                 Your Daily Rhythm & Routine Hours
               </h3>
               <p className="text-stone-500 dark:text-stone-400 text-xs">
-                PlanZo will schedule your study sessions around your real college hours.
+                PlanZo schedules your study sprints, breaks, and habit triggers around your actual college hours.
               </p>
             </div>
 
-            {/* College Timing */}
-            <div className="p-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-                  <Clock className="w-4 h-4" />
+            {/* College Timing (User Input - Not Predefined) */}
+            <div className="p-3.5 sm:p-4 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/40 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs text-stone-900 dark:text-stone-100">
+                      College Routine Schedule (Start & End Time)
+                    </div>
+                    <div className="text-[11px] text-stone-500 dark:text-stone-400">
+                      Set your institute's class timings. Timetable lectures & commute adapt to these hours.
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-bold text-xs text-stone-900 dark:text-stone-100">
-                    College Routine Schedule: 10:30 AM – 05:30 PM
-                  </div>
-                  <div className="text-[11px] text-stone-500 dark:text-stone-400">
-                    Institute fixed working hours automatically applied to your routine.
-                  </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-teal-500/20 text-teal-700 dark:text-teal-300 font-bold border border-teal-500/30">
+                  Custom Input
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-stone-700 dark:text-stone-300 flex items-center justify-between">
+                    <span>College Starts At</span>
+                    <span className="text-[10px] font-mono text-stone-400">Morning</span>
+                  </label>
+                  <input
+                    type="time"
+                    value={collegeStartTime}
+                    onChange={(e) => setCollegeStartTime(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-850 font-mono text-xs font-semibold text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-teal-500/50 shadow-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-stone-700 dark:text-stone-300 flex items-center justify-between">
+                    <span>College Ends At</span>
+                    <span className="text-[10px] font-mono text-stone-400">Evening</span>
+                  </label>
+                  <input
+                    type="time"
+                    value={collegeEndTime}
+                    onChange={(e) => setCollegeEndTime(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-850 font-mono text-xs font-semibold text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-teal-500/50 shadow-xs"
+                  />
                 </div>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-500/30">
-                Fixed (Auto-Synced)
-              </span>
+
+              {/* Quick Timing Presets */}
+              <div className="flex items-center gap-1.5 flex-wrap pt-0.5 text-[11px]">
+                <span className="text-stone-400 text-[10px] font-mono">Suggested Presets:</span>
+                {[
+                  { label: '09:00 AM – 04:00 PM', start: '09:00', end: '16:00' },
+                  { label: '10:00 AM – 05:00 PM', start: '10:00', end: '17:00' },
+                  { label: '10:30 AM – 05:30 PM', start: '10:30', end: '17:30' },
+                  { label: '08:30 AM – 03:30 PM', start: '08:30', end: '15:30' },
+                ].map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => {
+                      setCollegeStartTime(preset.start);
+                      setCollegeEndTime(preset.end);
+                    }}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-mono transition-colors cursor-pointer border ${
+                      collegeStartTime === preset.start && collegeEndTime === preset.end
+                        ? 'bg-teal-600 text-white border-teal-600 font-bold'
+                        : 'bg-white dark:bg-stone-800 text-stone-600 dark:text-stone-400 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-750'
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Sleep & Wake Times */}
@@ -876,12 +1056,38 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
               <label className="font-semibold text-stone-700 dark:text-stone-300">
                 What is your primary semester focus?
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
-                  { id: 'placement', label: 'Placement & DSA Grinder', desc: 'Focus on LeetCode & Projects', icon: '🎯' },
-                  { id: 'cgpa', label: '9+ CGPA Semester Topper', desc: 'Prioritize Units I-V & Theory', icon: '🏆' },
-                  { id: 'bunk', label: '75% Bunk Safe & Balanced', desc: 'Canteen freedom + minimum attendance', icon: '🛡️' },
-                  { id: 'gate', label: 'GATE & Core CS Research', desc: 'Algorithms & Theoretical CS', icon: '🧠' },
+                  {
+                    id: 'skills',
+                    label: 'Skills Development',
+                    desc: 'Focus on Coding, AI tools, Projects & Practical Skills',
+                    icon: '🚀',
+                  },
+                  {
+                    id: 'other_studies',
+                    label: 'Other Studies with College',
+                    desc: 'GATE, CAT, UPSC, Govt Exams & Higher Studies Prep',
+                    icon: '📚',
+                  },
+                  {
+                    id: 'cgpa',
+                    label: '9+ CGPA Semester Topper',
+                    desc: 'Prioritize Units I-V, Syllabus & University Theory',
+                    icon: '🏆',
+                  },
+                  {
+                    id: 'bunk',
+                    label: '75% Bunk Safe & Balanced',
+                    desc: 'Canteen freedom + minimum attendance barrier',
+                    icon: '🛡️',
+                  },
+                  {
+                    id: 'gate',
+                    label: 'Research & Core Engineering',
+                    desc: 'Algorithms, Core Labs & Research Papers',
+                    icon: '🧠',
+                  },
                 ].map((g) => (
                   <button
                     key={g.id}
@@ -889,58 +1095,130 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
                     onClick={() => setPrimaryGoal(g.id as any)}
                     className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                       primaryGoal === g.id
-                        ? 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/40 text-stone-900 dark:text-stone-100'
-                        : 'border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/30 text-stone-600 dark:text-stone-400'
+                        ? 'border-teal-500 bg-teal-500/10 ring-2 ring-teal-500/40 text-stone-900 dark:text-stone-100'
+                        : 'border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/30 text-stone-600 dark:text-stone-400 hover:border-stone-300 dark:hover:border-stone-700'
                     }`}
                   >
-                    <div className="text-base">{g.icon}</div>
-                    <div className="font-bold text-xs mt-1">{g.label}</div>
-                    <div className="text-[10px] text-stone-500 dark:text-stone-400">{g.desc}</div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-base">{g.icon}</span>
+                      {primaryGoal === g.id && (
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-teal-600 text-white font-bold">Active</span>
+                      )}
+                    </div>
+                    <div className="font-bold text-xs mt-1.5">{g.label}</div>
+                    <div className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5">{g.desc}</div>
                   </button>
                 ))}
-              </div>
-            </div>
-
-            {/* Habits to Track */}
-            <div className="space-y-1.5 pt-1">
-              <label className="font-semibold text-stone-700 dark:text-stone-300">
-                Key Habits to Anchor Into Your Day:
-              </label>
-              <div className="flex flex-wrap gap-1.5">
-                {[
-                  'Daily LeetCode Problem',
-                  'Gym / Physical Reset',
-                  'Hydration (3L)',
-                  'Technical Paper Reading',
-                  'Mindful Breathing (10m)',
-                  'No Phone Study Block',
-                ].map((habit) => {
-                  const isChecked = selectedHabits.includes(habit);
-                  return (
-                    <button
-                      key={habit}
-                      type="button"
-                      onClick={() => handleHabitToggle(habit)}
-                      className={`px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
-                        isChecked
-                          ? 'border-emerald-500 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-bold'
-                          : 'border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400'
-                      }`}
-                    >
-                      {isChecked ? '✓ ' : '+ '}
-                      {habit}
-                    </button>
-                  );
-                })}
               </div>
             </div>
           </div>
         )}
 
         {/* ---------------------------------------------------- */}
-        {/* STEP 4: Real Attendance Input (Starts at 0/0 Clean) */}
+        {/* STEP 4: KEY HABITS TO ANCHOR YOUR DAY (10 Habits)   */}
         {/* ---------------------------------------------------- */}
         {step === 4 && (
+          <div className="space-y-4 animate-fadeIn text-xs">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="font-black text-sm sm:text-base tracking-wider uppercase text-stone-900 dark:text-stone-100">
+                  KEY HABITS TO ANCHOR YOUR DAY
+                </h3>
+                <p className="text-stone-500 dark:text-stone-400 text-xs mt-0.5">
+                  Select the core habits you want PlanZo to build into your daily timetable & habit tracker.
+                </p>
+              </div>
+
+              <span className="font-mono text-[11px] px-2.5 py-1 rounded-xl bg-teal-500/15 text-teal-700 dark:text-teal-300 font-bold border border-teal-500/30 shrink-0">
+                {selectedHabits.length} / {STUDENT_TEN_HABITS.length} Selected
+              </span>
+            </div>
+
+            {/* Quick Action Buttons */}
+            <div className="flex items-center justify-between gap-2 pt-1 border-b border-stone-100 dark:border-stone-800 pb-2.5">
+              <span className="text-[11px] text-stone-500 font-medium">Quick Habit Presets:</span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleSelectAllHabits}
+                  className="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 text-[10px] font-bold hover:bg-teal-100 dark:hover:bg-teal-900 cursor-pointer"
+                >
+                  Select All (10)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSelectPopularHabits}
+                  className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 text-[10px] font-semibold hover:bg-stone-200 dark:hover:bg-stone-700 cursor-pointer"
+                >
+                  Top 5 Presets
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClearHabits}
+                  className="px-2 py-1 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 text-[10px] font-mono cursor-pointer"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            {/* 10 Habits Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
+              {STUDENT_TEN_HABITS.map((habit) => {
+                const isSelected = selectedHabits.includes(habit.title);
+                return (
+                  <button
+                    key={habit.id}
+                    type="button"
+                    onClick={() => handleHabitToggle(habit.title)}
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
+                      isSelected
+                        ? 'border-teal-500 bg-teal-500/10 ring-1 ring-teal-500/40 text-stone-900 dark:text-stone-100 shadow-xs'
+                        : 'border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/30 text-stone-600 dark:text-stone-400 hover:border-stone-300 dark:hover:border-stone-700'
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-base shrink-0 shadow-2xs">
+                      {habit.icon}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className="font-bold text-xs truncate text-stone-900 dark:text-stone-100">
+                          {habit.title}
+                        </span>
+                        <div
+                          className={`w-4 h-4 rounded-md flex items-center justify-center shrink-0 border transition-colors ${
+                            isSelected
+                              ? 'bg-teal-600 border-teal-600 text-white'
+                              : 'border-stone-300 dark:border-stone-700'
+                          }`}
+                        >
+                          {isSelected && <Check className="w-2.5 h-2.5" />}
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-stone-500 dark:text-stone-400 line-clamp-2 mt-0.5">
+                        {habit.desc}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 border border-stone-200/60 dark:border-stone-700/60">
+                          {habit.category}
+                        </span>
+                        <span className="text-[9px] font-mono text-teal-600 dark:text-teal-400 font-semibold">
+                          {habit.badge}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ---------------------------------------------------- */}
+        {/* STEP 5: Real Attendance Input (Starts at 0/0 Clean) */}
+        {/* ---------------------------------------------------- */}
+        {step === 5 && (
           <div className="space-y-4 animate-fadeIn text-xs">
             <div className="flex items-center justify-between">
               <div>
@@ -1047,9 +1325,9 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
         )}
 
         {/* ---------------------------------------------------- */}
-        {/* STEP 5: Confirmation & Dynamic Generation           */}
+        {/* STEP 6: Confirmation & Dynamic Generation           */}
         {/* ---------------------------------------------------- */}
-        {step === 5 && (
+        {step === 6 && (
           <div className="space-y-5 animate-fadeIn text-xs text-center py-3">
             <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-emerald-500 to-cyan-500 text-stone-950 flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/25">
               <Sparkles className="w-8 h-8 text-white animate-pulse" />
@@ -1095,11 +1373,37 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-stone-500">College Schedule:</span>
-                <span className="font-bold text-stone-800 dark:text-stone-200">{collegeStart} to {collegeEnd}</span>
+                <span className="font-bold text-stone-800 dark:text-stone-200">{collegeStartTime} to {collegeEndTime}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-stone-500">Primary Focus:</span>
-                <span className="font-bold capitalize text-cyan-600 dark:text-cyan-400">{primaryGoal}</span>
+                <span className="font-bold capitalize text-cyan-600 dark:text-cyan-400">
+                  {primaryGoal === 'skills'
+                    ? 'Skills Development'
+                    : primaryGoal === 'other_studies'
+                    ? 'Other Studies with College'
+                    : primaryGoal === 'cgpa'
+                    ? '9+ CGPA Semester Topper'
+                    : primaryGoal === 'bunk'
+                    ? '75% Bunk Safe & Balanced'
+                    : 'Research & Core Engineering'}
+                </span>
+              </div>
+              <div className="pt-1 border-t border-stone-200/60 dark:border-stone-800/60">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-stone-500 text-[10px] font-mono uppercase font-bold">Daily Habits Tracked:</span>
+                  <span className="font-bold text-teal-600 dark:text-teal-400">{selectedHabits.length} Habits</span>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {selectedHabits.map((habit) => (
+                    <span
+                      key={habit}
+                      className="px-2 py-0.5 rounded-md bg-white dark:bg-stone-850 text-teal-700 dark:text-teal-300 text-[10px] font-medium border border-teal-200/70 dark:border-teal-800/70"
+                    >
+                      ✓ {habit}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -1132,7 +1436,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
             </button>
           )}
 
-          {step < 5 ? (
+          {step < 6 ? (
             <button
               type="button"
               onClick={handleNextStep}
