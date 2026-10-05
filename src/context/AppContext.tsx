@@ -530,9 +530,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const recalibrateSchedule = async (missedItemTitle?: string) => {
     setIsRecalibrating(true);
     try {
-      const response = await fetch('/api/recalibrate', {
+      const searchParams = typeof window !== 'undefined' ? window.location.search || '' : '';
+      const response = await fetch(`/api/recalibrate${searchParams}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           items: timetable.filter((t) => !t.completed),
           missedItemTitle: missedItemTitle || 'Missed Study Slot',

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { ChatMessage, ChatAttachment } from '../types';
 import { FormattedAiMessage } from './FormattedAiMessage';
+import { querySarthiAi } from '../services/sarthiChatService';
 
 export const SarthiAiView: React.FC = () => {
   const {
@@ -108,48 +109,34 @@ export const SarthiAiView: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [...messages, userMessage],
-          attachment: currentAttachment
-            ? {
-                name: currentAttachment.name,
-                mimeType: currentAttachment.mimeType,
-                data: currentAttachment.data,
-              }
-            : undefined,
-          context: {
-            college: profile.customCollege || profile.college,
-            branch: profile.branch,
-            semester: profile.semester,
-            bandwidth: bandwidth?.status,
-            attendance: overallAttendancePercentage,
-          },
-        }),
+      const reply = await querySarthiAi({
+        messages: [...messages, userMessage],
+        attachment: currentAttachment
+          ? {
+              name: currentAttachment.name,
+              mimeType: currentAttachment.mimeType,
+              data: currentAttachment.data,
+            }
+          : undefined,
+        context: {
+          college: profile.customCollege || profile.college,
+          branch: profile.branch,
+          semester: profile.semester,
+          bandwidth: bandwidth?.status,
+          attendance: overallAttendancePercentage,
+        },
       });
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        throw new Error(errorData?.error || `Server responded with status ${res.status}`);
-      }
-
-      const data = await res.json();
-      if (data.reply) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `assistant-${Date.now()}`,
-            sender: 'assistant',
-            content: data.reply,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          },
-        ]);
-        awardXp(15, 'Sarthi AI consultation');
-      } else {
-        throw new Error('No reply received from AI server.');
-      }
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `assistant-${Date.now()}`,
+          sender: 'assistant',
+          content: reply,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        },
+      ]);
+      awardXp(15, 'Sarthi AI consultation');
     } catch (err: any) {
       console.error('Chat error:', err);
       setErrorMessage(err?.message || 'Could not connect to Sarthi AI. Please check your query and try again.');
