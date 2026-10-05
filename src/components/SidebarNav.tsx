@@ -15,7 +15,6 @@ import {
   Sun,
   X,
   Sparkles,
-  FileText,
 } from 'lucide-react';
 
 interface SidebarNavProps {
@@ -154,22 +153,6 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               <Settings className={`w-4 h-4 ${activeView === 'settings' ? 'text-teal-700 dark:text-teal-400' : 'text-stone-400'}`} />
               <span>Settings</span>
             </button>
-
-            <a
-              href="/PlanZo_Technical_Architecture_and_Pitch_Dossier.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-stone-600 dark:text-stone-400 hover:bg-stone-100/80 dark:hover:bg-stone-850 hover:text-stone-900 dark:hover:text-stone-200 transition-colors"
-              title="Download Pitch Dossier PDF (5 Pages)"
-            >
-              <div className="flex items-center gap-2.5">
-                <FileText className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-                <span>Pitch PDF Dossier</span>
-              </div>
-              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-teal-100 dark:bg-teal-900/80 text-teal-800 dark:text-teal-200">
-                PDF
-              </span>
-            </a>
           </nav>
         </div>
 

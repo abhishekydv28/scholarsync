@@ -9,7 +9,6 @@ import {
   Sparkles,
   Bot,
   Sliders,
-  FileText,
 } from 'lucide-react';
 
 interface TopHeaderProps {
@@ -18,7 +17,6 @@ interface TopHeaderProps {
   onOpenStreakModal: () => void;
   onOpenXpModal: () => void;
   onOpenLofiModal: () => void;
-  onOpenDossierModal: () => void;
 }
 
 export const TopHeader: React.FC<TopHeaderProps> = ({
@@ -27,7 +25,6 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onOpenStreakModal,
   onOpenXpModal,
   onOpenLofiModal,
-  onOpenDossierModal,
 }) => {
   const { activeView, setActiveView, userStreak, userXp, setIsPersonalizationWizardOpen } = useApp();
 
@@ -90,16 +87,6 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         >
           <Zap className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 fill-teal-600 dark:fill-teal-400" />
           <span className="font-mono tabular-nums">{userXp} XP</span>
-        </button>
-
-        {/* Pitch PDF Dossier Button */}
-        <button
-          onClick={onOpenDossierModal}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-teal-500/40 bg-teal-50 dark:bg-teal-950/70 text-teal-800 dark:text-teal-300 hover:bg-teal-100 transition-colors text-xs font-semibold cursor-pointer"
-          title="Open Project Pitch Dossier & PDF Export"
-        >
-          <FileText className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-          <span className="hidden md:inline">Pitch PDF</span>
         </button>
 
         {/* Lo-Fi Focus Music */}
