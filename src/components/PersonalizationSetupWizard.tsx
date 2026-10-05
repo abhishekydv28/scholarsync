@@ -448,51 +448,23 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
               )}
             </div>
 
-            {/* Semester Selection: Clean 8 Semesters in Ascending Order (No subjects listed) */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="font-semibold text-stone-700 dark:text-stone-300">
-                  Select Semester:
-                </label>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-700 dark:text-teal-400 font-bold border border-teal-500/30">
-                  Semesters 1 to 8 Available
-                </span>
-              </div>
-
-              {/* Visual 8-Semester Card Grid (1 to 8 Ascending - Clean, No Subjects) */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {ALL_8_SEMESTERS.map((s) => {
-                  const isSelected = semester === s.sem;
-                  return (
-                    <button
-                      key={s.sem}
-                      type="button"
-                      onClick={() => handleSemesterChange(s.sem)}
-                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                        isSelected
-                          ? 'border-teal-500 bg-teal-500/15 text-stone-900 dark:text-stone-100 ring-2 ring-teal-500/50 shadow-xs'
-                          : 'border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/30 hover:border-teal-500/40 text-stone-700 dark:text-stone-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs sm:text-sm">{s.name}</span>
-                        <span
-                          className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-bold ${
-                            isSelected
-                              ? 'bg-teal-600 text-white font-bold'
-                              : 'bg-stone-200/70 dark:bg-stone-800 text-stone-500'
-                          }`}
-                        >
-                          {s.badge}
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-teal-600 dark:text-teal-400 font-medium mt-1.5">
-                        {s.year}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+            {/* Semester Selection: Clean Dropdown Menu */}
+            <div className="space-y-1.5">
+              <label className="font-semibold text-stone-700 dark:text-stone-300 flex items-center justify-between">
+                <span>Select Semester</span>
+                <span className="text-[10px] font-mono text-teal-700 dark:text-teal-400 font-semibold">Semesters 1 to 8 Available</span>
+              </label>
+              <select
+                value={semester}
+                onChange={(e) => handleSemesterChange(parseInt(e.target.value) || 1)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
+              >
+                {ALL_8_SEMESTERS.map((s) => (
+                  <option key={s.sem} value={s.sem}>
+                    {s.name} ({s.year} · {s.badge})
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Engineering Branch Selection with Options */}
