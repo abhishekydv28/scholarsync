@@ -12,87 +12,119 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-app.use(express.json());
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
-// Initialize GoogleGenAI server-side with telemetry header
+// Initialize GoogleGenAI server-side
 const apiKey = process.env.GEMINI_API_KEY;
-const ai = apiKey
-  ? new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        },
-      },
-    })
-  : null;
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
-// Endpoint: Student Life AI Chatbot (PlanZo Coach)
+// Endpoint: Student Life AI Chatbot (PlanZo Coach / Sarthi AI)
 app.post('/api/chat', async (req, res) => {
   try {
-    const { messages, context } = req.body;
-    const userMessage = messages?.[messages.length - 1]?.content || '';
+    const { messages, attachment, context } = req.body;
+    const userMessage = (messages?.[messages.length - 1]?.content || '').trim();
 
-    const systemPrompt = `You are Senior Campus Mentor on PlanZo, an experienced, friendly, and practical senior engineer advising a junior B.Tech student.
-You understand the real chaos of Indian engineering colleges: 75% attendance criteria, surprise class tests, lab record submissions, HOD external viva intimidation, mass bunks, proxy drama, canteen cutting chai, and clearing exams by studying PYQs 1 night before.
+    if (!userMessage && !attachment?.data) {
+      return res.status(400).json({ error: 'Message or attachment is required' });
+    }
 
-User context:
-- College / Branch: ${context?.college || 'B.Tech University'} / ${context?.branch || 'Computer Science & Engineering'}
-- Current Semester: Semester ${context?.semester || '4'}
-- Current Schedule Density: ${context?.bandwidth || 'Moderate'}
-- Habits tracked: ${context?.habits?.join(', ') || 'DSA practice, Workout, Hydration'}
+    const systemInstruction = `You are Sarthi, an expert, empathetic, and exceptionally practical senior B.Tech mentor & academic copilot on PlanZo.
+Student Academic Context:
+- College / Institute: ${context?.college || 'B.Tech Engineering College'}
+- Engineering Branch: ${context?.branch || 'Engineering'}
+- Current Semester: Semester ${context?.semester || '1'}
+- Current Schedule Load: ${context?.bandwidth || 'Balanced'}
 
-Key Tone & Voice Rules:
-1. Speak warmly, respectfully, and realistically like a helpful senior (natural mix of practical English with relatable campus terms: "HOD", "PYQs", "viva", "internal marks", "cutting chai", "75% criteria", "backlog prevention").
-2. No robotic AI jargon or generic platitudes.
-3. If they ask about exam survival (72 hours / 1 night before), give direct 80/20 Pareto advice: focus on the repeating 10-mark questions from the last 3-4 years' university papers, practice standard diagrams (professors give marks for neat diagrams), and sleep at least 6 hours.
-4. If they are stressed or burnt out, reassure them without patronizing, and suggest a realistic adjustment (e.g. swap a heavy subject with a chai break or postpone non-essential tasks).
-5. Always keep advice actionable, structured, and calm.`;
+Core Principles:
+1. Provide direct, rigorous, and intelligent answers to whatever question the student asks—whether it is solving mathematics equations, explaining physics/chemistry concepts, writing and debugging code (C, C++, Python, Java, JS), breaking down syllabus topics, explaining engineering drawing principles, or advising on 75% attendance rules.
+2. If an image or file is attached (e.g. photos of exam question papers, textbook pages, circuit diagrams, code screenshots, handwritten notes, or lab manuals), thoroughly analyze and explain it step-by-step.
+3. Keep formatting clean, highly readable, and structured. Use clear section titles, clean numbered steps (1., 2., 3.), clean bullet points, and code blocks for code snippets. Avoid dumping messy raw symbols or excessive asterisks.
+4. Never give robotic generic boilerplate or repeated pre-fed canned answers. Answer specifically and dynamically to the student's exact query.`;
 
     if (ai) {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: `${systemPrompt}\n\nStudent: ${userMessage}`,
+      // Build conversation contents for Gemini
+      const contents: any[] = [];
+
+      // Include previous turns for context (up to last 6 messages)
+      if (Array.isArray(messages) && messages.length > 1) {
+        const history = messages.slice(-7, -1);
+        for (const msg of history) {
+          if (msg.content) {
+            contents.push({
+              role: msg.sender === 'user' ? 'user' : 'model',
+              parts: [{ text: msg.content }],
+            });
+          }
+        }
+      }
+
+      // Build the latest turn
+      const currentParts: any[] = [];
+      if (userMessage) {
+        currentParts.push({ text: userMessage });
+      }
+
+      // Include image / document attachment if provided
+      if (attachment && attachment.data && attachment.mimeType) {
+        const cleanBase64 = attachment.data.includes(',')
+          ? attachment.data.split(',')[1]
+          : attachment.data;
+        currentParts.push({
+          inlineData: {
+            mimeType: attachment.mimeType,
+            data: cleanBase64,
+          },
+        });
+      }
+
+      // If user uploaded a file without text prompt
+      if (currentParts.length === 1 && currentParts[0].inlineData) {
+        currentParts.unshift({
+          text: 'Please carefully analyze this uploaded image/document, identify what it contains, explain the concepts, and solve or answer any problems shown.',
+        });
+      }
+
+      contents.push({
+        role: 'user',
+        parts: currentParts,
       });
-      return res.json({ reply: response.text });
+
+      // Try modern models with fallback
+      const candidateModels = ['gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
+      let generatedText = '';
+      let lastError: any = null;
+
+      for (const model of candidateModels) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents,
+            config: {
+              systemInstruction,
+            },
+          });
+          if (response && response.text) {
+            generatedText = response.text;
+            break;
+          }
+        } catch (err: any) {
+          console.warn(`Model ${model} attempt error:`, err?.message?.slice(0, 120) || err);
+          lastError = err;
+        }
+      }
+
+      if (generatedText) {
+        return res.json({ reply: generatedText });
+      }
+
+      console.error('All Gemini candidate models failed:', lastError);
+      return res.status(503).json({
+        error: 'AI service is temporarily busy. Please retry in a few seconds.',
+      });
     }
 
-    // Heuristic fallback response when offline or key is pending
-    let fallbackReply = `Here is a calm, balanced plan for your ${context?.branch || 'engineering'} coursework. Remember that deep work is most effective in 45-minute focused sprints with intentional 10-15 minute cognitive buffer zones.`;
-    
-    if (userMessage.toLowerCase().includes('72-hour') || userMessage.toLowerCase().includes('survival') || userMessage.toLowerCase().includes('exam')) {
-      fallbackReply = `### 72-Hour High-Yield Exam Recovery Plan
-Don't panic—three days is enough to master 70–80% of core marks using the 80/20 Pareto principle.
-
-**Day 1: Foundation & High-Yield Units (Units 1 & 2)**
-• Block 1 (9:00 AM - 11:30 AM): Core theory, definitions, and standard architectural diagrams.
-• Buffer (11:30 AM - 12:00 PM): Digital detox walk and hydration.
-• Block 2 (2:00 PM - 4:30 PM): Solved numericals and standard derivations.
-• Evening Review (7:00 PM - 8:30 PM): Previous 3 years' university question papers (PYQs).
-
-**Day 2: Application & High-Weightage Algorithms (Units 3 & 4)**
-• Morning: Key algorithmic proofs or trace tables.
-• Afternoon: Common recurring 10-mark questions from mid-term papers.
-• Night: Sleep by 11:00 PM—sleep is vital for cognitive retrieval.
-
-**Day 3: PYQ Simulation & Formula Consolidation**
-• Solve 1 full model question paper under timed conditions.
-• Formula sheet review; avoid learning completely new optional chapters.
-
-*Tip: I've flagged a 20-minute Chill Block before your evening review to keep your mental bandwidth steady.*`;
-    } else if (userMessage.toLowerCase().includes('burnout') || userMessage.toLowerCase().includes('tired') || userMessage.toLowerCase().includes('rest')) {
-      fallbackReply = `### Rest & Recalibration Strategy
-Engineering curricula often stack labs, theory, and deadlines all at once. Experiencing cognitive fatigue is a biological signal to restore, not a failure.
-
-**Immediate Action:**
-1. I have shifted your heavy study tasks for today into lighter review chunks tomorrow.
-2. Your workout habit is postponed to Saturday when your timetable has zero lab sessions.
-3. Take a 30-minute zero-screen reset: step outside, hydrate, and stretch.
-
-Protecting your bandwidth today ensures higher peak focus tomorrow.`;
-    }
-
-    return res.json({ reply: fallbackReply });
+    return res.status(500).json({ error: 'Gemini API is not configured on this server.' });
   } catch (error) {
     console.error('Chat error:', error);
     res.status(500).json({ error: 'Failed to process chat response' });

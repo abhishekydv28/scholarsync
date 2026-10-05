@@ -115,11 +115,20 @@ export interface ReflectionEntry {
   timestamp: string;
 }
 
+export interface ChatAttachment {
+  name: string;
+  mimeType: string;
+  data: string; // base64
+  size?: number;
+  previewUrl?: string;
+}
+
 export interface ChatMessage {
   id: string;
   sender: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  attachment?: ChatAttachment;
   actionablePlan?: {
     type: 'recalibrate' | 'add_buffer' | 'study_plan';
     payload: any;

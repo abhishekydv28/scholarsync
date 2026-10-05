@@ -1,24 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import {
-  MessageSquare,
   X,
   Send,
-  Sparkles,
   Bot,
-  User,
-  Coffee,
+  Paperclip,
+  FileText,
   RotateCcw,
-  BookOpen,
-  ShieldAlert,
-  Zap,
-  CheckCircle2,
-  Clock,
-  ChevronRight,
-  Maximize2,
-  Minimize2,
+  AlertCircle,
 } from 'lucide-react';
-import { ChatMessage } from '../types';
+import { ChatMessage, ChatAttachment } from '../types';
+import { FormattedAiMessage } from './FormattedAiMessage';
 
 interface StudentAiChatbotModalProps {
   isOpen: boolean;
@@ -31,289 +23,374 @@ export const StudentAiChatbotModal: React.FC<StudentAiChatbotModalProps> = ({
 }) => {
   const {
     profile,
-    timetable,
-    attendance,
-    overallAttendancePercentage,
     bandwidth,
-    recalibrateSchedule,
-    injectBufferZone,
-    startZenMode,
+    overallAttendancePercentage,
     awardXp,
   } = useApp();
 
   const [inputMessage, setInputMessage] = useState('');
+  const [attachment, setAttachment] = useState<ChatAttachment | null>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
-      id: 'welcome-1',
+      id: 'welcome-modal',
       sender: 'assistant',
-      content: `Namaste ${profile.name || 'Friend'}! 🙏 I am **Sarthi**, your 24/7 B.Tech & Student-Life AI Copilot.\n\n*For the student, by the student, to the student.* I know the pressure of 75% attendance, surprise lab viva, mid-sems, and balancing DSA with college lectures. How can I assist you right now?`,
+      content: `Namaste ${profile.name || 'Engineer'}! 🙏 I am **Sarthi**, your B.Tech & Student-Life AI Copilot.\n\nAsk me any questions about your engineering courses, numericals, code, or schedule. You can also upload photos of questions, diagrams, notes, or code to analyze!`,
       timestamp: 'Just now',
     },
   ]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+    if (isOpen) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isTyping, isOpen]);
 
   if (!isOpen) return null;
 
-  // Quick suggestion chips based on real engineering dilemmas
-  const promptSuggestions = [
-    {
-      label: '⚡ Fix Today\'s Schedule',
-      prompt: 'I missed my morning study slot and feeling overwhelmed. Please recalibrate my remaining tasks for today.',
-    },
-    {
-      label: '🛡️ 75% Attendance Hack',
-      prompt: 'My current attendance is below 75%. How should I plan my classes this month to reach the safe zone?',
-    },
-    {
-      label: '☕ I Need a Chill Block',
-      prompt: 'My brain feels completely saturated from labs. Help me add a restorative chill block without feeling guilty.',
-    },
-    {
-      label: '📚 End-Sem Exam Strategy',
-      prompt: 'How should I break down my 5-unit syllabus if exams are only 2 weeks away?',
-    },
-    {
-      label: '💻 DSA & Coding Routine',
-      prompt: 'How to consistently solve 2 LeetCode problems daily along with heavy college hours?',
-    },
-  ];
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const handleSend = async (textToSend?: string) => {
-    const text = (textToSend || inputMessage).trim();
-    if (!text) return;
+    if (file.size > 15 * 1024 * 1024) {
+      setErrorMessage('File size exceeds 15MB. Please upload a smaller file.');
+      return;
+    }
 
-    const userMsg: ChatMessage = {
+    setErrorMessage(null);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const resultStr = reader.result as string;
+      setAttachment({
+        name: file.name,
+        mimeType: file.type || 'application/octet-stream',
+        data: resultStr,
+        size: file.size,
+        previewUrl: file.type.startsWith('image/') ? resultStr : undefined,
+      });
+    };
+    reader.readAsDataURL(file);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = () => {
+    setAttachment(null);
+  };
+
+  const handleClearChat = () => {
+    setMessages([
+      {
+        id: `welcome-${Date.now()}`,
+        sender: 'assistant',
+        content: `Chat cleared! How can I assist you right now? Feel free to ask a question or upload an image/document.`,
+        timestamp: 'Just now',
+      },
+    ]);
+    setAttachment(null);
+    setErrorMessage(null);
+  };
+
+  const handleSend = async () => {
+    const text = inputMessage.trim();
+    if (!text && !attachment) return;
+
+    const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       sender: 'user',
       content: text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      attachment: attachment ? { ...attachment } : undefined,
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, userMessage]);
+    const currentAttachment = attachment;
     setInputMessage('');
+    setAttachment(null);
     setIsTyping(true);
+    setErrorMessage(null);
 
-    // Contextual responses tailored specifically for college engineering realities
-    setTimeout(async () => {
-      let botReply = '';
-      let actionablePlan: ChatMessage['actionablePlan'] | undefined = undefined;
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+          attachment: currentAttachment
+            ? {
+                name: currentAttachment.name,
+                mimeType: currentAttachment.mimeType,
+                data: currentAttachment.data,
+              }
+            : undefined,
+          context: {
+            college: profile.customCollege || profile.college,
+            branch: profile.branch,
+            semester: profile.semester,
+            bandwidth: bandwidth?.status,
+            attendance: overallAttendancePercentage,
+          },
+        }),
+      });
 
-      const lower = text.toLowerCase();
-
-      if (lower.includes('recalibrate') || lower.includes('overwhelmed') || lower.includes('missed') || lower.includes('schedule')) {
-        await recalibrateSchedule('Recalibrated via Sarthi AI Assistant');
-        awardXp(15, 'Schedule balanced with AI Sarthi');
-        botReply = `Done! ⚡ I have auto-recalibrated your timetable without any guilt:\n\n• Shifted non-critical tasks to evening open slots.\n• Reserved your night sleep window (11:30 PM) strictly intact.\n• Preserved a 20-minute buffer zone.\n\nTake a deep breath — you do not need to catch up on everything at once. Focus on the single next task on your dashboard.`;
-        actionablePlan = { type: 'recalibrate', payload: {} };
-      } else if (lower.includes('attendance') || lower.includes('75%') || lower.includes('bunk')) {
-        const attended = attendance.reduce((acc, a) => acc + a.attendedClasses, 0);
-        const total = attendance.reduce((acc, a) => acc + a.totalClasses, 0);
-        const safe = overallAttendancePercentage >= 75;
-
-        botReply = `Here is your Attendance Diagnostic for **${profile.college || 'College'}**:\n\n` +
-          `• Current Overall Attendance: **${overallAttendancePercentage}%** (${safe ? 'Safe Zone 🟢' : 'Medical Condonation / Risk Zone ⚠️'})\n` +
-          `• Total Classes Attended: **${attended} / ${total}**\n\n` +
-          `**Golden Engineering Rules to stay safe:**\n` +
-          `1. Prioritize **Lab Sessions**: Labs carry 2-4 hours credit and missing one hurts attendance twice as hard.\n` +
-          `2. Check the **Attendance Tracker** tab to see exactly how many consecutive lectures you must attend per subject to hit 75%.\n` +
-          `3. Keep medical slips and fest participation duty-leave certificates ready before end-sem debar lists are published!`;
-      } else if (lower.includes('chill') || lower.includes('buffer') || lower.includes('tired') || lower.includes('exhausted') || lower.includes('burnout')) {
-        injectBufferZone();
-        awardXp(10, 'Mindful chill block taken');
-        botReply = `I hear you. College burnout is real, especially with long lectures and lab records.\n\n☕ **I just injected a 25-minute Calm Chill Block into your schedule!**\n\nDuring this break:\n• Step away from IDEs and laptop screens.\n• Drink a glass of water or grab chai.\n• Listen to the calming Lo-Fi Flute in PlanZo (top bar 🎧 icon).\n\nYour next study block will feel 2x easier after this reset.`;
-        actionablePlan = { type: 'add_buffer', payload: {} };
-      } else if (lower.includes('exam') || lower.includes('syllabus') || lower.includes('pyq') || lower.includes('end-sem') || lower.includes('mid-sem')) {
-        botReply = `Here is the **Proven 80/20 Engineering Exam Blueprint**:\n\n` +
-          `1. **Download Past 5 Years PYQ (Previous Year Questions)**: Over 65% of numerical and theorem questions in university exams (RGPV, AKTU, VTU) repeat directly or with minor parameter changes.\n` +
-          `2. **Target High-Weightage Units First**: In our Academic Vault, check Module 1 & 2 for foundational theorems, and Module 4 & 5 for 14-mark design questions.\n` +
-          `3. **Watch 1.5x Topic Playlists**: Abdul Bari for Algorithms, Gate Smashers for OS/DBMS, and Knowledge Gate for Theory of Computation.\n` +
-          `4. **Diagrams & Flowcharts**: Indian university examiners award 40% of marks for neat circuit diagrams, architecture blocks, and algorithm flowcharts!`;
-      } else if (lower.includes('dsa') || lower.includes('leetcode') || lower.includes('coding') || lower.includes('placement')) {
-        botReply = `Consistency beats cramming in DSA! Here is how to maintain it without dropping your GPA:\n\n` +
-          `• **Morning Golden Window (45 mins)**: Solve 1 medium problem before morning college lectures when your mind is fresh.\n` +
-          `• **Stick to a Curated Sheet**: Don't solve random problems. Use **Striver's A2Z DSA Sheet** or **NeetCode 150**.\n` +
-          `• **Weekend Mock Contests**: Reserve Saturday night (8:00 PM) for LeetCode Biweekly contest.\n` +
-          `• PlanZo has a daily DSA block in your timeline — check it off daily to build your 30-day streak! 🔥`;
-      } else {
-        botReply = `I understand! As an engineering student, managing coursework, semester labs, coding, and personal life is intense.\n\nHere is what you can do right now:\n1. Open your **Today's Hub** to focus on just 1 task at a time.\n2. If you are stuck on a specific subject, explore the **Academic Vault** for topper notes, PYQs, and guaranteed viva questions.\n3. Click **Auto-Recalibrate** anytime you fall behind — PlanZo never scolds or induces guilt.\n\nWhat topic or issue would you like us to solve next?`;
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.error || `Server responded with status ${res.status}`);
       }
 
-      setIsTyping(false);
+      const data = await res.json();
+      if (data.reply) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `assistant-${Date.now()}`,
+            sender: 'assistant',
+            content: data.reply,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          },
+        ]);
+        awardXp(15, 'Sarthi AI consultation');
+      } else {
+        throw new Error('No reply received from AI server.');
+      }
+    } catch (err: any) {
+      console.error('Chat error:', err);
+      setErrorMessage(err?.message || 'Could not connect to Sarthi AI. Please check your query and try again.');
       setMessages((prev) => [
         ...prev,
         {
-          id: `bot-${Date.now()}`,
+          id: `err-${Date.now()}`,
           sender: 'assistant',
-          content: botReply,
+          content: `⚠️ **Connection Issue**: ${err?.message || 'Failed to generate response.'}\n\nPlease retry your question in a moment.`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          actionablePlan,
         },
       ]);
-    }, 600);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/60 dark:bg-black/70 backdrop-blur-xs animate-fadeIn">
-      <div className="relative w-full max-w-2xl h-[85vh] max-h-[700px] flex flex-col rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-2xl overflow-hidden transition-all">
-        
-        {/* Top Header Bar */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-900/80 backdrop-blur-xs">
-          <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-600 via-emerald-500 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-teal-500/20">
-              <Sparkles className="w-5 h-5" />
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white dark:border-stone-900 animate-pulse" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-950/70 backdrop-blur-xs animate-fadeIn">
+      <div className="bg-white dark:bg-[#0c1018] border border-stone-200 dark:border-stone-800 rounded-2xl w-full max-w-xl h-[85vh] max-h-[700px] shadow-2xl flex flex-col overflow-hidden">
+        {/* Clean Header: Dark Tone in Dark Mode */}
+        <div className="px-4 py-3 border-b border-stone-200/80 dark:border-stone-800/80 bg-stone-50/80 dark:bg-[#111723] flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-teal-700 text-white flex items-center justify-center font-bold">
+              <Bot className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                  PlanZo Sarthi
+                <h3 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100">
+                  Sarthi AI Mentor
                 </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300">
-                  AI Student Copilot
+                <span className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Active
                 </span>
               </div>
-              <p className="text-[11px] text-stone-500 dark:text-stone-400">
-                For the student, by the student, to the student
+              <p className="text-[10px] text-stone-500 dark:text-stone-400">
+                Ask doubts, code, formulas, or upload images/notes
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleClearChat}
+              className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+              title="Clear chat"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-200/50 dark:hover:bg-stone-800 transition-colors"
+              className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+              title="Close"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Real-time Context Strip */}
-        <div className="px-5 py-2 bg-stone-100/70 dark:bg-stone-800/40 border-b border-stone-200/70 dark:border-stone-800/70 flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
-          <div className="flex items-center gap-2">
-            <span>Branch: <strong className="text-stone-700 dark:text-stone-200">{profile.branch || 'B.Tech CSE'}</strong></span>
-            <span>·</span>
-            <span>Sem {profile.semester}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span>Attendance: <strong className={overallAttendancePercentage >= 75 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-500'}>{overallAttendancePercentage}%</strong></span>
-            <span>·</span>
-            <span>Load: <strong className="text-teal-600 dark:text-teal-400">{bandwidth.densityScore}%</strong></span>
-          </div>
-        </div>
-
-        {/* Chat Messages Scroll Container */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+        {/* Message Stream: Dark Mode Contrast */}
+        <div className="flex-1 p-4 overflow-y-auto space-y-3.5 text-xs bg-stone-50/30 dark:bg-[#0c1018]">
           {messages.map((msg) => {
             const isUser = msg.sender === 'user';
             return (
               <div
                 key={msg.id}
-                className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'} animate-fadeIn`}
+                className={`flex items-start gap-2.5 ${isUser ? 'flex-row-reverse' : ''}`}
               >
-                {!isUser && (
-                  <div className="w-8 h-8 rounded-xl bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300 flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
-                    <Bot className="w-4 h-4" />
-                  </div>
-                )}
-
                 <div
-                  className={`max-w-[85%] sm:max-w-[78%] rounded-2xl px-4 py-3 text-xs sm:text-[13px] leading-relaxed shadow-xs ${
+                  className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 text-[10px] font-bold ${
                     isUser
-                      ? 'bg-teal-700 text-white rounded-tr-xs'
-                      : 'bg-stone-100 dark:bg-stone-800/90 text-stone-800 dark:text-stone-200 border border-stone-200/80 dark:border-stone-700/80 rounded-tl-xs'
+                      ? 'bg-teal-700 text-white dark:bg-teal-800'
+                      : 'bg-stone-800 text-white dark:bg-stone-700'
                   }`}
                 >
-                  <div className="whitespace-pre-line">{msg.content}</div>
+                  {isUser ? 'U' : <Bot className="w-3.5 h-3.5" />}
+                </div>
 
-                  {msg.actionablePlan && (
-                    <div className="mt-3 pt-2.5 border-t border-stone-200/60 dark:border-stone-700/60 flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Action Executed Live</span>
-                      </span>
+                <div
+                  className={`max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed space-y-2 ${
+                    isUser
+                      ? 'bg-teal-700 text-white dark:bg-teal-900/90 dark:border dark:border-teal-700/60 font-medium shadow-xs'
+                      : 'bg-white dark:bg-[#151c28] border border-stone-200/80 dark:border-stone-800 text-stone-800 dark:text-stone-200 shadow-xs'
+                  }`}
+                >
+                  {/* Uploaded Attachment in User Message */}
+                  {msg.attachment && (
+                    <div className="pb-1.5">
+                      {msg.attachment.previewUrl ? (
+                        <div className="relative rounded-lg overflow-hidden border border-white/20 dark:border-stone-700 max-w-xs max-h-48 bg-black/20">
+                          <img
+                            src={msg.attachment.previewUrl}
+                            alt={msg.attachment.name}
+                            className="w-full h-auto object-cover"
+                          />
+                          <div className="p-1 text-[9px] font-mono truncate bg-black/70 text-white">
+                            {msg.attachment.name}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-black/10 dark:bg-black/30 flex items-center gap-2 max-w-xs">
+                          <FileText className="w-3.5 h-3.5 shrink-0 text-teal-400" />
+                          <span className="text-[10px] font-mono truncate">{msg.attachment.name}</span>
+                        </div>
+                      )}
                     </div>
                   )}
 
+                  {isUser ? (
+                    <div className="whitespace-pre-line break-words text-xs leading-relaxed">{msg.content}</div>
+                  ) : (
+                    <FormattedAiMessage content={msg.content} />
+                  )}
+
                   <div
-                    className={`mt-1.5 text-[10px] text-right ${
-                      isUser ? 'text-teal-200' : 'text-stone-400'
+                    className={`text-[9px] font-mono pt-0.5 ${
+                      isUser ? 'text-teal-200 dark:text-teal-300/80' : 'text-stone-400 dark:text-stone-500'
                     }`}
                   >
                     {msg.timestamp}
                   </div>
                 </div>
-
-                {isUser && (
-                  <div className="w-8 h-8 rounded-xl bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-200 flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
-                    <User className="w-4 h-4" />
-                  </div>
-                )}
               </div>
             );
           })}
 
           {isTyping && (
-            <div className="flex gap-3 justify-start items-center">
-              <div className="w-8 h-8 rounded-xl bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300 flex items-center justify-center shrink-0 text-xs">
-                <Bot className="w-4 h-4" />
-              </div>
-              <div className="rounded-2xl px-4 py-3 bg-stone-100 dark:bg-stone-800 text-stone-500 rounded-tl-xs flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-teal-500 animate-bounce" />
-                <span className="w-2 h-2 rounded-full bg-teal-500 animate-bounce [animation-delay:0.2s]" />
-                <span className="w-2 h-2 rounded-full bg-teal-500 animate-bounce [animation-delay:0.4s]" />
-              </div>
+            <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400 p-1">
+              <Bot className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 animate-spin" />
+              <span className="animate-pulse">Sarthi AI is analyzing...</span>
             </div>
           )}
 
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Suggestion Chips */}
-        <div className="px-4 py-2 border-t border-stone-100 dark:border-stone-800 overflow-x-auto flex items-center gap-2 shrink-0 scrollbar-none bg-stone-50/50 dark:bg-stone-900/50">
-          {promptSuggestions.map((item, i) => (
-            <button
-              key={i}
-              onClick={() => handleSend(item.prompt)}
-              className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:border-teal-500 dark:hover:border-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors shadow-2xs"
-            >
-              {item.label}
+        {/* Error Notification */}
+        {errorMessage && (
+          <div className="px-4 py-2 bg-rose-50 dark:bg-rose-950/70 border-t border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+            <button onClick={() => setErrorMessage(null)} className="p-1 hover:text-rose-900 dark:hover:text-rose-100 cursor-pointer">
+              <X className="w-3 h-3" />
             </button>
-          ))}
-        </div>
+          </div>
+        )}
 
-        {/* Input Bar */}
-        <div className="p-3 sm:p-4 border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSend();
-            }}
-            className="flex items-center gap-2"
-          >
+        {/* Clean Input Controls: High-Contrast Dark Theme */}
+        <div className="p-3 border-t border-stone-200/80 dark:border-stone-800/80 bg-white dark:bg-[#111723] space-y-2">
+          {/* Attachment Preview Card */}
+          {attachment && (
+            <div className="flex items-center gap-2 p-1.5 rounded-lg bg-teal-50 dark:bg-[#162536] border border-teal-200 dark:border-teal-800 max-w-sm">
+              {attachment.previewUrl ? (
+                <img
+                  src={attachment.previewUrl}
+                  alt="Attachment preview"
+                  className="w-8 h-8 rounded object-cover border border-teal-300 dark:border-teal-700 shrink-0"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded bg-teal-100 dark:bg-teal-900/80 flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4 text-teal-700 dark:text-teal-300" />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] font-semibold text-teal-950 dark:text-teal-100 truncate">
+                  {attachment.name}
+                </div>
+                <div className="text-[9px] font-mono text-teal-600 dark:text-teal-400">
+                  {attachment.size ? `${(attachment.size / 1024).toFixed(1)} KB` : 'Attached'}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={removeAttachment}
+                className="p-1 rounded text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900 transition-colors cursor-pointer"
+                title="Remove attachment"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* Form */}
+          <div className="flex items-end gap-1.5">
             <input
-              type="text"
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept="image/*,.pdf,.txt,.c,.cpp,.py,.java,.js,.ts,.json,.md"
+              className="hidden"
+            />
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="p-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-[#182030] hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-300 transition-colors cursor-pointer shrink-0"
+              title="Upload question photo, notes, or file"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
+
+            <textarea
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Ask anything: syllabus help, exam plan, attendance recovery..."
-              className="flex-1 rounded-2xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 px-4 py-3 text-xs sm:text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:border-teal-600 dark:focus:border-teal-400 transition-colors"
+              onKeyDown={handleKeyDown}
+              placeholder="Ask Sarthi anything (Enter to send)..."
+              rows={1}
+              className="flex-1 max-h-28 min-h-[40px] px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700/80 bg-stone-50 dark:bg-[#182030] text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-hidden focus:ring-2 focus:ring-teal-500 resize-none font-medium leading-relaxed"
             />
+
             <button
-              type="submit"
-              disabled={!inputMessage.trim() || isTyping}
-              className="p-3 rounded-2xl bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white font-medium shadow-md shadow-teal-700/20 transition-all shrink-0"
+              type="button"
+              onClick={handleSend}
+              disabled={(!inputMessage.trim() && !attachment) || isTyping}
+              className="p-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 disabled:opacity-40 disabled:hover:bg-teal-700 text-white transition-all cursor-pointer shrink-0 shadow-xs"
+              title="Send"
             >
               <Send className="w-4 h-4" />
             </button>
-          </form>
+          </div>
         </div>
-
       </div>
     </div>
   );
