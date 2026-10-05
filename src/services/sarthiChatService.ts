@@ -193,39 +193,49 @@ In Semester ${sem} engineering curricula, this topic is central to both universi
 Would you like me to solve a specific numerical problem on this, write code, or provide a 3-phase revision checklist? Just drop the details!`);
 }
 
+const DEV_BACKEND_ENDPOINT = 'https://ais-dev-xwtqs7ljetyij5npxh755f-893813178872.asia-east1.run.app/api/chat';
+
 /**
  * Primary Sarthi AI Query Handler
  * Sends request to /api/chat with full credentials & auth query params.
- * Transparently recovers from 405 Nginx iframe redirects or connection blips.
+ * If running on a static preview deployment (ais-pre) where /api/chat is 404,
+ * seamlessly calls the live backend endpoint with CORS enabled.
  */
 export async function querySarthiAi(payload: ChatRequestPayload): Promise<string> {
   const userMessage = payload.messages[payload.messages.length - 1]?.content || '';
   const searchParams = typeof window !== 'undefined' ? window.location.search || '' : '';
-  const endpoint = `/api/chat${searchParams}`;
+  const localEndpoint = `/api/chat${searchParams}`;
 
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      credentials: 'include',
-      redirect: 'follow',
-      body: JSON.stringify(payload),
-    });
+  // Candidate endpoints to try in order
+  const endpointsToTry = [localEndpoint];
+  if (typeof window !== 'undefined' && !window.location.origin.includes('localhost') && !window.location.origin.includes('ais-dev')) {
+    endpointsToTry.push(DEV_BACKEND_ENDPOINT);
+  }
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.reply) {
-        return cleanAiResponseFormat(data.reply);
+  for (const endpoint of endpointsToTry) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        credentials: 'include',
+        redirect: 'follow',
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.reply) {
+          return cleanAiResponseFormat(data.reply);
+        }
       }
-    }
 
-    // If server responded with 405 (Nginx iframe cookie redirect), 404, or other error
-    console.warn(`Sarthi AI server returned HTTP ${res.status}. Engaging intelligent academic resolver.`);
-  } catch (netErr) {
-    console.warn('Network call to /api/chat failed:', netErr);
+      console.warn(`Sarthi AI endpoint ${endpoint} returned HTTP ${res.status}.`);
+    } catch (netErr) {
+      console.warn(`Network call to ${endpoint} failed:`, netErr);
+    }
   }
 
   // Resilient fallback: Never leave student stranded with a connection error
