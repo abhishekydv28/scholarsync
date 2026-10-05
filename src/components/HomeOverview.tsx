@@ -37,6 +37,7 @@ import { fireConfetti } from '../utils/audioVibes';
 export const HomeOverview: React.FC = () => {
   const {
     profile,
+    currentUser,
     timetable,
     attendance,
     overallAttendancePercentage,
@@ -131,7 +132,7 @@ export const HomeOverview: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-stone-200/80 dark:border-stone-800">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight">
-            {getGreeting()}, {profile.name ? profile.name.split(' ')[0] : 'Student'}
+            {getGreeting()}, {currentUser?.firstName || profile.firstName || (profile.name?.trim() ? profile.name.trim().split(' ')[0] : (currentUser?.name?.trim() ? currentUser.name.trim().split(' ')[0] : 'Student'))}
           </h1>
           <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
             Here's what needs your attention today.

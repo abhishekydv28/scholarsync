@@ -15,6 +15,7 @@ import {
   Sun,
   X,
   Sparkles,
+  FileText,
 } from 'lucide-react';
 
 interface SidebarNavProps {
@@ -153,6 +154,22 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               <Settings className={`w-4 h-4 ${activeView === 'settings' ? 'text-teal-700 dark:text-teal-400' : 'text-stone-400'}`} />
               <span>Settings</span>
             </button>
+
+            <a
+              href="/PlanZo_Technical_Architecture_and_Pitch_Dossier.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-stone-600 dark:text-stone-400 hover:bg-stone-100/80 dark:hover:bg-stone-850 hover:text-stone-900 dark:hover:text-stone-200 transition-colors"
+              title="Download Pitch Dossier PDF (5 Pages)"
+            >
+              <div className="flex items-center gap-2.5">
+                <FileText className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                <span>Pitch PDF Dossier</span>
+              </div>
+              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded font-bold bg-teal-100 dark:bg-teal-900/80 text-teal-800 dark:text-teal-200">
+                PDF
+              </span>
+            </a>
           </nav>
         </div>
 
@@ -176,11 +193,11 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-200/60 dark:border-stone-800 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
               <div className="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-200 flex items-center justify-center font-bold text-xs shrink-0">
-                {(profile.name || 'S')[0]?.toUpperCase()}
+                {((currentUser?.name || profile.name || 'S').trim())[0]?.toUpperCase()}
               </div>
               <div className="min-w-0">
                 <div className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">
-                  {profile.name || currentUser?.name || 'B.Tech Student'}
+                  {currentUser?.name || profile.name || 'B.Tech Student'}
                 </div>
                 <div className="text-[10px] text-stone-400 truncate">
                   Sem {profile.semester} · {profile.branch ? profile.branch.split(' ')[0] : 'CSE'}

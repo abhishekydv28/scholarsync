@@ -39,29 +39,49 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
 }) => {
   const {
     profile,
+    currentUser,
     updateProfile,
     timetable,
   } = useApp();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
-  // All 8 Semesters in strictly ascending order (1 to 8)
+  // All 8 Semesters in strictly ascending order (1 to 8) - Clean, no subjects
   const ALL_8_SEMESTERS = [
-    { sem: 1, name: 'Semester 1', year: '1st Year', badge: 'I Sem', highlight: 'Applied Physics, C, Python' },
-    { sem: 2, name: 'Semester 2', year: '1st Year', badge: 'II Sem', highlight: 'Stats, Data Structures, Linux' },
-    { sem: 3, name: 'Semester 3', year: '2nd Year', badge: 'III Sem', highlight: 'Discrete Maths, ADA, Java, OS' },
-    { sem: 4, name: 'Semester 4', year: '2nd Year', badge: 'IV Sem', highlight: 'Networks, DBMS, Compilers, Adv Java' },
-    { sem: 5, name: 'Semester 5', year: '3rd Year', badge: 'V Sem', highlight: 'AI, Distributed Sys, Graphics, Data Sci' },
-    { sem: 6, name: 'Semester 6', year: '3rd Year', badge: 'VI Sem', highlight: 'Cloud Comp, ML, Web Tech, Minor Proj' },
-    { sem: 7, name: 'Semester 7', year: 'Final Year', badge: 'VII Sem', highlight: 'Deep Learning, Major Proj, Lab IV' },
-    { sem: 8, name: 'Semester 8', year: 'Final Year', badge: 'VIII Sem', highlight: 'CS-801 Major Project Dissertation' },
+    { sem: 1, name: 'Semester 1', year: '1st Year', badge: 'Sem 1' },
+    { sem: 2, name: 'Semester 2', year: '1st Year', badge: 'Sem 2' },
+    { sem: 3, name: 'Semester 3', year: '2nd Year', badge: 'Sem 3' },
+    { sem: 4, name: 'Semester 4', year: '2nd Year', badge: 'Sem 4' },
+    { sem: 5, name: 'Semester 5', year: '3rd Year', badge: 'Sem 5' },
+    { sem: 6, name: 'Semester 6', year: '3rd Year', badge: 'Sem 6' },
+    { sem: 7, name: 'Semester 7', year: 'Final Year', badge: 'Sem 7' },
+    { sem: 8, name: 'Semester 8', year: 'Final Year', badge: 'Sem 8' },
+  ];
+
+  const ENGINEERING_BRANCH_OPTIONS = [
+    'Computer Science & Engineering (CSE)',
+    'Information Technology (IT)',
+    'Artificial Intelligence & Machine Learning (AIML)',
+    'Artificial Intelligence & Data Science (AI & DS)',
+    'Electronics & Communication Engineering (ECE)',
+    'Electrical Engineering (EE)',
+    'Mechanical Engineering (ME)',
+    'Civil Engineering (CE)',
+    'Electronics & Instrumentation Engineering (EI)',
+    'Robotics & Automation',
+    'Chemical Engineering',
+    'Biotechnology Engineering',
+    'Other Engineering Branch (Custom)',
   ];
 
   // Step 1: Academic Identity
-  const [name, setName] = useState(profile.name || 'Abhishek');
+  const [name, setName] = useState(currentUser?.name || profile.name || '');
   const [college, setCollege] = useState(profile.customCollege || profile.college || 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.');
   const [customCollege, setCustomCollege] = useState(profile.customCollege || '');
-  const [branch, setBranch] = useState(profile.branch || 'B.Tech. Computer Science & Engineering');
+  const [branch, setBranch] = useState(profile.branch || 'Computer Science & Engineering (CSE)');
+  const [customBranch, setCustomBranch] = useState(
+    ENGINEERING_BRANCH_OPTIONS.includes(profile.branch || '') ? '' : (profile.branch || '')
+  );
   const [semester, setSemester] = useState<number>(profile.semester || 1);
   const [rollNo, setRollNo] = useState(profile.rollNo || '0108CS211045');
 
@@ -272,11 +292,15 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
       localStorage.setItem('planzo_tasks_v3', JSON.stringify(initialTasks));
 
       const resolvedCollege = college === 'OTHERS' ? (customCollege.trim() || 'Engineering Institute') : college;
+      const resolvedBranch = (branch === 'Other Engineering Branch (Custom)' || branch === 'OTHERS')
+        ? (customBranch.trim() || 'Engineering')
+        : (customBranch.trim() || branch || 'Computer Science & Engineering (CSE)');
+
       updateProfile({
-        name: name.trim() || 'Abhishek',
+        name: name.trim() || currentUser?.name || profile.name || 'Student',
         college: resolvedCollege,
         customCollege: resolvedCollege,
-        branch: branch,
+        branch: resolvedBranch,
         semester: semester,
         rollNo: rollNo.trim(),
         collegeStart: '10:30', // internal timetable reference only
@@ -367,7 +391,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Abhishek Yadav"
+                placeholder="e.g. Rahul Sharma"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 font-medium focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50"
               />
             </div>
@@ -424,19 +448,19 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
               )}
             </div>
 
-            {/* Semester Selection: All 8 Semesters in Ascending Order */}
+            {/* Semester Selection: Clean 8 Semesters in Ascending Order (No subjects listed) */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="font-semibold text-stone-700 dark:text-stone-300">
-                  Select B.Tech CSE Semester (All 8 Semesters in Ascending Order):
+                  Select Semester:
                 </label>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-700 dark:text-teal-400 font-bold border border-teal-500/30">
                   Semesters 1 to 8 Available
                 </span>
               </div>
 
-              {/* Visual 8-Semester Card Grid (1 to 8 Ascending) */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {/* Visual 8-Semester Card Grid (1 to 8 Ascending - Clean, No Subjects) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {ALL_8_SEMESTERS.map((s) => {
                   const isSelected = semester === s.sem;
                   return (
@@ -444,64 +468,68 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
                       key={s.sem}
                       type="button"
                       onClick={() => handleSemesterChange(s.sem)}
-                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                         isSelected
-                          ? 'border-emerald-500 bg-emerald-500/15 text-stone-900 dark:text-stone-100 ring-2 ring-emerald-500/50 shadow-xs'
-                          : 'border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/30 hover:border-emerald-500/40 text-stone-700 dark:text-stone-300'
+                          ? 'border-teal-500 bg-teal-500/15 text-stone-900 dark:text-stone-100 ring-2 ring-teal-500/50 shadow-xs'
+                          : 'border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/30 hover:border-teal-500/40 text-stone-700 dark:text-stone-300'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-xs">{s.name}</span>
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs sm:text-sm">{s.name}</span>
                         <span
                           className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-bold ${
                             isSelected
-                              ? 'bg-emerald-500 text-stone-950 font-bold'
+                              ? 'bg-teal-600 text-white font-bold'
                               : 'bg-stone-200/70 dark:bg-stone-800 text-stone-500'
                           }`}
                         >
                           {s.badge}
                         </span>
                       </div>
-                      <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                      <div className="text-[11px] text-teal-600 dark:text-teal-400 font-medium mt-1.5">
                         {s.year}
-                      </div>
-                      <div className="text-[9px] text-stone-500 dark:text-stone-400 truncate mt-0.5" title={s.highlight}>
-                        {s.highlight}
                       </div>
                     </button>
                   );
                 })}
               </div>
-
-              {/* Dropdown Alternative */}
-              <div className="space-y-1 pt-1">
-                <label className="text-[11px] text-stone-500 dark:text-stone-400">
-                  Or select from dropdown:
-                </label>
-                <select
-                  value={semester}
-                  onChange={(e) => handleSemesterChange(parseInt(e.target.value) || 1)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 font-bold focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 cursor-pointer"
-                >
-                  {ALL_8_SEMESTERS.map((s) => (
-                    <option key={s.sem} value={s.sem}>
-                      {s.name} ({s.year} / {s.badge}) — {s.highlight}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
 
+            {/* Engineering Branch Selection with Options */}
             <div className="space-y-1.5">
-              <label className="font-semibold text-stone-700 dark:text-stone-300">
-                Engineering Branch
+              <label className="font-semibold text-stone-700 dark:text-stone-300 flex items-center justify-between">
+                <span>Engineering Branch</span>
+                <span className="text-[10px] font-mono text-stone-400">Select Specialization</span>
               </label>
-              <input
-                type="text"
-                disabled
-                value="B.Tech. Computer Science & Engineering (CSE)"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-850 text-stone-600 dark:text-stone-300 font-medium cursor-not-allowed"
-              />
+              <select
+                value={ENGINEERING_BRANCH_OPTIONS.includes(branch) ? branch : 'Other Engineering Branch (Custom)'}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setBranch(val);
+                  if (val !== 'Other Engineering Branch (Custom)') {
+                    setCustomBranch('');
+                  }
+                }}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:ring-2 focus:ring-teal-500/50 cursor-pointer"
+              >
+                {ENGINEERING_BRANCH_OPTIONS.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+
+              {(branch === 'Other Engineering Branch (Custom)' || (!ENGINEERING_BRANCH_OPTIONS.slice(0, -1).includes(branch) && branch)) && (
+                <input
+                  type="text"
+                  value={customBranch}
+                  onChange={(e) => {
+                    setCustomBranch(e.target.value);
+                  }}
+                  placeholder="Enter your Engineering Branch (e.g. Aeronautical Engineering)..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-teal-500/50 mt-1 font-medium"
+                />
+              )}
             </div>
           </div>
         )}
@@ -876,7 +904,9 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-stone-500">Academic Year & Semester:</span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">Semester {semester} CSE</span>
+                <span className="font-bold text-teal-600 dark:text-teal-400">
+                  Semester {semester} · {branch === 'Other Engineering Branch (Custom)' ? (customBranch || 'Engineering') : branch}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-stone-500">Courses Mapped:</span>

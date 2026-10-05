@@ -92,11 +92,15 @@ interface AppContextType {
   currentUser: AuthUser | null;
   signUp: (userData: {
     name: string;
+    firstName?: string;
+    lastName?: string;
     email: string;
+    phone?: string;
     password?: string;
-    college: string;
-    branch: string;
-    semester: number;
+    isVerified?: boolean;
+    college?: string;
+    branch?: string;
+    semester?: number;
     rollNo?: string;
     avatarUrl?: string;
   }) => void;
@@ -140,9 +144,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        const savedName = parsed.name || '';
+        const savedFirst = parsed.firstName || (savedName ? savedName.split(' ')[0] : '');
+        const savedLast = parsed.lastName || (savedName && savedName.split(' ').length > 1 ? savedName.split(' ').slice(1).join(' ') : '');
         return {
-          name: parsed.name || 'Abhishek',
-          avatarUrl: parsed.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=CyberArchitect&colors=emerald,cyan,teal',
+          name: savedName,
+          firstName: savedFirst,
+          lastName: savedLast,
+          phone: parsed.phone || '',
+          isVerified: parsed.isVerified || false,
+          avatarUrl: parsed.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=PlanZoStudent&colors=emerald,cyan,teal',
           college: parsed.college || COLLEGES_LIST[0],
           customCollege: parsed.customCollege || parsed.college || COLLEGES_LIST[0],
           branch: parsed.branch && BRANCHES_LIST.includes(parsed.branch) ? parsed.branch : BRANCHES_LIST[0],
@@ -158,8 +169,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch (e) {}
     }
     return {
-      name: 'Abhishek',
-      avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=CyberArchitect&colors=emerald,cyan,teal',
+      name: '',
+      firstName: '',
+      lastName: '',
+      phone: '',
+      isVerified: false,
+      avatarUrl: 'https://api.dicebear.com/7.x/bottts/svg?seed=PlanZoStudent&colors=emerald,cyan,teal',
       college: COLLEGES_LIST[0],
       customCollege: 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
       branch: 'B.Tech. Computer Science & Engineering',
@@ -861,28 +876,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const signUp = (userData: {
     name: string;
+    firstName?: string;
+    lastName?: string;
     email: string;
+    phone?: string;
     password?: string;
-    college: string;
-    branch: string;
-    semester: number;
+    isVerified?: boolean;
+    college?: string;
+    branch?: string;
+    semester?: number;
     rollNo?: string;
     avatarUrl?: string;
   }) => {
     const todayStr = new Date().toISOString().split('T')[0];
+    const derivedFirstName = userData.firstName || (userData.name ? userData.name.trim().split(' ')[0] : 'Student');
+    const derivedLastName = userData.lastName || (userData.name && userData.name.trim().split(' ').length > 1 ? userData.name.trim().split(' ').slice(1).join(' ') : '');
+    const fullName = `${derivedFirstName} ${derivedLastName}`.trim();
+
     const newUser: AuthUser = {
       id: `usr-${Date.now()}`,
-      name: userData.name,
-      email: userData.email,
+      name: fullName,
+      firstName: derivedFirstName,
+      lastName: derivedLastName,
+      email: userData.email.toLowerCase().trim(),
+      phone: userData.phone || '',
+      password: userData.password || '',
+      isVerified: userData.isVerified !== undefined ? userData.isVerified : true,
       rollNo: userData.rollNo || '',
-      college: userData.college || 'SATI VIDISHA',
+      college: userData.college || 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
       branch: userData.branch || 'B.Tech. Computer Science & Engineering',
       semester: userData.semester || 1,
-      avatarUrl: userData.avatarUrl || profile.avatarUrl,
+      avatarUrl: userData.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(derivedFirstName)}&colors=emerald,cyan,teal`,
       isAuthenticated: true,
       joinedAt: 'Just now',
       accountCreatedAt: todayStr,
     };
+
+    // Save in registered users list in localStorage
+    try {
+      const savedUsersRaw = localStorage.getItem('planzo_registered_users_v1');
+      const registeredUsers: AuthUser[] = savedUsersRaw ? JSON.parse(savedUsersRaw) : [];
+      const filtered = registeredUsers.filter((u) => u.email.toLowerCase() !== newUser.email);
+      filtered.push(newUser);
+      localStorage.setItem('planzo_registered_users_v1', JSON.stringify(filtered));
+    } catch (e) {
+      console.error('Error saving registered user', e);
+    }
+
     setCurrentUser(newUser);
     localStorage.setItem('planzo_auth_user_v1', JSON.stringify(newUser));
 
@@ -918,39 +958,113 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setReflections([]);
     localStorage.setItem(STORAGE_KEYS.REFLECTIONS, JSON.stringify([]));
 
-    updateProfile({
-      name: userData.name,
-      college: userData.college || profile.college || 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
-      customCollege: userData.college || profile.customCollege || 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
-      branch: userData.branch || 'B.Tech. Computer Science & Engineering',
+    const newProfile: StudentProfile = {
+      name: fullName,
+      firstName: derivedFirstName,
+      lastName: derivedLastName,
+      phone: userData.phone || '',
+      isVerified: true,
+      college: newUser.college,
+      customCollege: newUser.college,
+      branch: newUser.branch,
       semester: targetSem,
       rollNo: userData.rollNo || '',
-      collegeStart: '10:30', // internal timetable reference only
-      collegeEnd: '17:30',   // internal timetable reference only
+      wakeTime: '07:00',
+      sleepTime: '23:30',
+      collegeStart: '10:30',
+      collegeEnd: '17:30',
+      selectedHabits: [DEFAULT_HABITS[0], DEFAULT_HABITS[1], DEFAULT_HABITS[2]],
+      onboarded: true,
       accountCreatedAt: todayStr,
-      avatarUrl: userData.avatarUrl || profile.avatarUrl,
-    });
-    setRecalibrateNotice(`Welcome to PlanZo, ${userData.name}! Student workspace unlocked.`);
+      avatarUrl: newUser.avatarUrl,
+    };
+
+    setProfile(newProfile);
+    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(newProfile));
+    localStorage.setItem('planzo_profile_v3', JSON.stringify(newProfile));
+
+    setRecalibrateNotice(`Welcome to PlanZo, ${derivedFirstName}! Student workspace unlocked.`);
   };
 
   const signIn = (email: string, password?: string): boolean => {
+    const cleanEmail = email.toLowerCase().trim();
     const todayStr = new Date().toISOString().split('T')[0];
-    const user: AuthUser = {
-      id: `usr-${Date.now()}`,
-      name: profile.name || 'Abhishek',
-      email: email,
-      rollNo: profile.rollNo || '0108CS211045',
-      college: profile.customCollege || profile.college || 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
-      branch: profile.branch || 'B.Tech. Computer Science & Engineering',
-      semester: profile.semester || 1,
-      avatarUrl: profile.avatarUrl,
-      isAuthenticated: true,
-      joinedAt: 'Active Member',
-      accountCreatedAt: profile.accountCreatedAt || todayStr,
+
+    // Check if user is in planzo_registered_users_v1
+    let matchedUser: AuthUser | null = null;
+    try {
+      const savedUsersRaw = localStorage.getItem('planzo_registered_users_v1');
+      if (savedUsersRaw) {
+        const users: AuthUser[] = JSON.parse(savedUsersRaw);
+        matchedUser = users.find((u) => u.email.toLowerCase() === cleanEmail) || null;
+      }
+    } catch (e) {}
+
+    let userToLogin: AuthUser;
+
+    if (matchedUser) {
+      userToLogin = {
+        ...matchedUser,
+        isAuthenticated: true,
+      };
+    } else {
+      // If user logs in with email that was not previously registered, derive proper first & last name
+      const prefix = cleanEmail.split('@')[0] || 'student';
+      const formatted = prefix
+        .split(/[._-]/)
+        .filter(Boolean)
+        .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+        .join(' ') || 'Student';
+      const fName = formatted.split(' ')[0];
+      const lName = formatted.split(' ').slice(1).join(' ');
+
+      userToLogin = {
+        id: `usr-${Date.now()}`,
+        name: formatted,
+        firstName: fName,
+        lastName: lName,
+        email: cleanEmail,
+        phone: '',
+        isVerified: true,
+        rollNo: '',
+        college: profile.customCollege || profile.college || 'Samrat Ashok Technological Institute (SATI), Vidisha M.P.',
+        branch: profile.branch || 'B.Tech. Computer Science & Engineering',
+        semester: profile.semester || 1,
+        avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(fName)}&colors=emerald,cyan,teal`,
+        isAuthenticated: true,
+        joinedAt: 'Active Member',
+        accountCreatedAt: todayStr,
+      };
+
+      try {
+        const savedUsersRaw = localStorage.getItem('planzo_registered_users_v1');
+        const registeredUsers: AuthUser[] = savedUsersRaw ? JSON.parse(savedUsersRaw) : [];
+        registeredUsers.push(userToLogin);
+        localStorage.setItem('planzo_registered_users_v1', JSON.stringify(registeredUsers));
+      } catch (e) {}
+    }
+
+    setCurrentUser(userToLogin);
+    localStorage.setItem('planzo_auth_user_v1', JSON.stringify(userToLogin));
+
+    const updatedProfile: StudentProfile = {
+      ...profile,
+      name: userToLogin.name,
+      firstName: userToLogin.firstName || userToLogin.name.split(' ')[0],
+      lastName: userToLogin.lastName || '',
+      phone: userToLogin.phone || profile.phone || '',
+      isVerified: userToLogin.isVerified || false,
+      college: userToLogin.college,
+      customCollege: userToLogin.college,
+      branch: userToLogin.branch,
+      semester: userToLogin.semester,
+      rollNo: userToLogin.rollNo,
     };
-    setCurrentUser(user);
-    localStorage.setItem('planzo_auth_user_v1', JSON.stringify(user));
-    setRecalibrateNotice(`Welcome back, ${user.name}!`);
+    setProfile(updatedProfile);
+    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(updatedProfile));
+    localStorage.setItem('planzo_profile_v3', JSON.stringify(updatedProfile));
+
+    setRecalibrateNotice(`Welcome back, ${userToLogin.firstName || userToLogin.name}!`);
     return true;
   };
 

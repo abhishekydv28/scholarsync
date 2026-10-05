@@ -84,7 +84,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
   };
 
   const handleQuickDemoLogin = () => {
-    signIn('abhishek.cse@uitrgpv.ac.in', 'demo1234');
+    signIn('student.demo@planzo.edu', 'demo1234');
     setSuccessMsg('Logged in with Verified Student Demo Account!');
     setTimeout(() => {
       setSuccessMsg('');
@@ -228,7 +228,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Abhishek Yadav"
+                  placeholder="e.g. Rahul Sharma"
                   required
                   className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-900/60 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 font-medium transition-all"
                 />

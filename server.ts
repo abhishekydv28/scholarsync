@@ -198,6 +198,12 @@ Return JSON with:
   }
 });
 
+// Endpoint: Technical Dossier PDF Download
+app.get('/api/download-dossier', (_req, res) => {
+  const filePath = path.resolve(__dirname, 'public', 'PlanZo_Technical_Architecture_and_Pitch_Dossier.pdf');
+  res.download(filePath, 'PlanZo_Technical_Architecture_and_Pitch_Dossier.pdf');
+});
+
 // Vite Middleware integration for development
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {

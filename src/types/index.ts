@@ -58,6 +58,10 @@ export interface DailyScheduledTask {
 
 export interface StudentProfile {
   name: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  isVerified?: boolean;
   avatarUrl?: string;
   college: string;
   customCollege?: string;
@@ -76,7 +80,12 @@ export interface StudentProfile {
 export interface AuthUser {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
+  phone?: string;
+  isVerified?: boolean;
+  password?: string;
   rollNo?: string;
   college: string;
   branch: string;

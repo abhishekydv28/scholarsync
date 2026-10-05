@@ -15,7 +15,7 @@ interface OnboardingModalProps {
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClose }) => {
   const { profile, updateProfile, recalibrateSchedule } = useApp();
 
-  const [name, setName] = useState(profile.name || 'Abhishek');
+  const [name, setName] = useState(profile.name || '');
   const [college, setCollege] = useState(profile.college || COLLEGES_LIST[0]);
   const [customCollege, setCustomCollege] = useState(profile.customCollege || '');
   const [branch, setBranch] = useState(profile.branch);
@@ -39,7 +39,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
   const handleSave = () => {
     const resolvedCollege = college === 'OTHERS' ? (customCollege.trim() || 'Engineering Institute') : college;
     updateProfile({
-      name: name.trim() || 'Abhishek',
+      name: name.trim() || profile.name || 'Student',
       college: resolvedCollege,
       customCollege: resolvedCollege,
       branch,
@@ -91,7 +91,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name (e.g. Abhishek Yadav)"
+            placeholder="Enter your name (e.g. Rahul Sharma)"
             className="w-full rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 p-2.5 text-xs text-stone-900 dark:text-stone-100 focus:outline-hidden focus:border-teal-500 font-medium"
           />
         </div>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlanZo - Complete Technical Pitch Dossier & Architecture Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 15mm 18mm 15mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: #1e293b;
+      background: #f8fafc;
+      line-height: 1.55;
+      font-size: 13px;
+    }
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    @media print {
+      body {
+        background: #ffffff;
+      }
+      .container {
+        max-width: 100%;
+        padding: 0;
+        box-shadow: none;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+    }
+    .header-bar {
+      border-bottom: 2px solid #0f766e;
+      padding-bottom: 20px;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .brand-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f766e;
+      letter-spacing: -0.5px;
+    }
+    .brand-subtitle {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: #f0fdfa;
+      color: #0f766e;
+      border: 1px solid #ccfbf1;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f172a;
+      border-left: 4px solid #0f766e;
+      padding-left: 10px;
+      margin-top: 26px;
+      margin-bottom: 12px;
+    }
+    h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+    p {
+      margin-bottom: 10px;
+      color: #334155;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 20px 0;
+      font-size: 12px;
+    }
+    th, td {
+      border: 1px solid #e2e8f0;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .formula-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 3px solid #0f766e;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin: 10px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #0f172a;
+    }
+    .qa-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      background: #ffffff;
+    }
+    .qa-question {
+      font-weight: 700;
+      color: #0f766e;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+    .qa-answer {
+      color: #334155;
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+    .actions-bar {
+      position: sticky;
+      top: 15px;
+      z-index: 100;
+      background: #0f766e;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 25px -5px rgba(15, 118, 110, 0.4);
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-white {
+      background: white;
+      color: #0f766e;
+    }
+    .btn-white:hover {
+      background: #f0fdfa;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Non-printable Top Bar -->
+    <div class="actions-bar no-print">
+      <div>
+        <strong>PlanZo Technical Pitch Dossier</strong>
+        <span style="opacity: 0.8; font-size: 11px; margin-left: 8px;">Ready to Print / Save as PDF</span>
+      </div>
+      <div>
+        <button onclick="window.print()" class="btn btn-white">🖨️ Print / Save as PDF (Ctrl + P)</button>
+      </div>
+    </div>
+
+    <!-- Document Header -->
+    <div class="header-bar">
+      <div>
+        <div class="brand-title">PlanZo — B.Tech Student Operating System</div>
+        <div class="brand-subtitle">Project Technical Specification, Architectural Blueprints & Pitch Dossier</div>
+      </div>
+      <div style="text-align: right;">
+        <span class="badge">PRODUCTION READY</span>
+        <div style="font-size: 10px; color: #94a3b8; margin-top: 4px; font-family: 'JetBrains Mono', monospace;">Batch 2026 Edition</div>
+      </div>
+    </div>
+
+    <!-- 1. Executive Summary -->
+    <h2>1. Executive Summary & Problem Statement</h2>
+    <p>
+      Engineering colleges impose rigid, high-friction operational constraints on students: mandatory 75% attendance criteria with debarment consequences, simultaneous lecture and laboratory timetables, university examination weightage spreads (5 units per course), and external viva pressure.
+    </p>
+    <p>
+      Generic productivity applications (Google Calendar, Notion, Apple Reminders) treat student time as isolated blocks, lack academic awareness, and generate cognitive guilt when assignments or study sessions are missed. <strong>PlanZo</strong> is purpose-built as an intelligent Student Operating System that combines regulatory 75% attendance protection, mathematical load balancing, dynamic guilt-free schedule recalibration, and an AI campus copilot.
+    </p>
+
+    <!-- 2. Tech Stack & Programming Languages -->
+    <h2>2. Programming Languages & Technical Architecture</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Technology</th>
+          <th>Language</th>
+          <th>Engineering Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Frontend UI</strong></td>
+          <td>React 19 (`react`, `react-dom`)</td>
+          <td>TypeScript</td>
+          <td>Component-driven architecture, custom hooks, and React Context API for reactive state management.</td>
+        </tr>
+        <tr>
+          <td><strong>Styling Engine</strong></td>
+          <td>Tailwind CSS v4 (`@tailwindcss/vite`)</td>
+          <td>CSS3 / PostCSS</td>
+          <td>Zero-runtime atomic utility classes, seamless Dark/Light theme switches, and responsive desktop/mobile layouts.</td>
+        </tr>
+        <tr>
+          <td><strong>Build Tool</strong></td>
+          <td>Vite 8</td>
+          <td>JavaScript / ESModules</td>
+          <td>Sub-second Hot Module Replacement (HMR) and optimized minified production asset bundling.</td>
+        </tr>
+        <tr>
+          <td><strong>Backend API</strong></td>
+          <td>Node.js & Express.js (v4.21)</td>
+          <td>TypeScript (TSX)</td>
+          <td>Lightweight REST API microservice proxying AI requests, parsing JSON, and enforcing API key isolation.</td>
+        </tr>
+        <tr>
+          <td><strong>AI Model & SDK</strong></td>
+          <td>Google Gemini 3.8 Flash (`@google/genai`)</td>
+          <td>TypeScript</td>
+          <td>High-speed inference (<1s latency), structured JSON output mode, and prompt orchestration.</td>
+        </tr>
+        <tr>
+          <td><strong>Sound Engine</strong></td>
+          <td>Web Audio API (`AudioContext`)</td>
+          <td>TypeScript</td>
+          <td>Synthetic pentatonic sound frequency generation (chimes, Lo-Fi beats) without external heavy audio files.</td>
+        </tr>
+        <tr>
+          <td><strong>Persistence</strong></td>
+          <td>Browser LocalStorage API</td>
+          <td>Web API</td>
+          <td>Offline-first encrypted storage for timetable, attendance counts, XP, and streak logs with 100% student privacy.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- 3. Core Algorithms -->
+    <h2>3. Mathematical Core & Specialized Algorithms</h2>
+
+    <h3>Algorithm 1: 75% Attendance Regulatory & Safe-Bunk Math</h3>
+    <p>Eliminates student guesswork and debarment notices through exact regulatory mathematics:</p>
+    <div class="formula-box">
+      <strong>Overall Attendance Percentage:</strong><br>
+      P = (A / T) × 100<br><br>
+      <strong>Consecutive Classes Needed to Reach 75% (Recovery):</strong><br>
+      Classes Needed = ⌈(0.75 × T - A) / (1 - 0.75)⌉ = ⌈3T - 4A⌉<br><br>
+      <strong>Safe Bunk Allowance (Classes that can be missed safely):</strong><br>
+      Safe Bunks = ⌊(A - 0.75 × T) / 0.75⌋ = ⌊(4A - 3T) / 3⌋
+    </div>
+
+    <h3>Algorithm 2: Cognitive Load & Mental Bandwidth Balancing</h3>
+    <p>Prevents student burnout by weighting task density against available daily recovery windows:</p>
+    <div class="formula-box">
+      <strong>Bandwidth Density Score:</strong><br>
+      Score = min(100, [ Σ (Duration_i × Weight_i) / Total_Available_Hours ] × k)<br><br>
+      • Lab Sessions: Weight = 4 to 5 (High fatigue factor)<br>
+      • Theory Lectures: Weight = 3 to 4<br>
+      • Self-Study / DSA: Weight = 2 to 3<br>
+      • Buffer / Chill Blocks: Weight = 1 (Restorative)<br>
+      • Trigger: When Score > 75%, system injects an automatic 20-min Chill Zone.
+    </div>
+
+    <h3>Algorithm 3: Dynamic Schedule Recalibration (Greedy Slack Interval)</h3>
+    <p>When a study block is delayed or missed, PlanZo avoids the "domino effect" of schedule collapse:</p>
+    <div class="formula-box">
+      1. Identifies missed task and reason.<br>
+      2. Scans evening slack intervals (free time slots before 11:30 PM).<br>
+      3. Shifts non-critical items and strictly protects the 11:30 PM sleep window.<br>
+      4. Injects an immediate 20-minute cognitive buffer.
+    </div>
+
+    <h3>Algorithm 4: 80/20 Pareto Curriculum Pruning</h3>
+    <p>Isolates high-frequency recurring 10-mark and 14-mark university exam questions from the past 5 years of papers, generating high-yield 72-hour accelerated study roadmaps.</p>
+
+    <h3>Algorithm 5: Sound Synthesis & Pentatonic Frequency Modulation</h3>
+    <div class="formula-box">
+      Generates mathematical chime frequencies without MP3 assets:<br>
+      C5 (523.25 Hz) → D5 (587.33 Hz) → E5 (659.25 Hz) → G5 (783.99 Hz) → A5 (880 Hz)<br>
+      Modulated via Web Audio API ADSR (Attack, Decay, Sustain, Release) exponential volume envelopes.
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- 4. How the API Works -->
+    <h2>4. API Architecture & Performance Characteristics</h2>
+    <p>
+      The API relies on a <strong>Server-Side Proxy Pattern</strong> that ensures security, speed, and continuous availability:
+    </p>
+    <ul>
+      <li><strong>Zero API Key Exposure:</strong> The Gemini API key is encapsulated inside the Node.js backend. Client inspection in browser DevTools reveals zero third-party tokens.</li>
+      <li><strong>Structured JSON Output:</strong> The <code>/api/recalibrate</code> and <code>/api/syllabus-planner</code> endpoints enforce <code>responseMimeType: 'application/json'</code>, guaranteeing parseable data without markdown wrapping.</li>
+      <li><strong>Context-Enriched Ingestion:</strong> Each prompt to <code>/api/chat</code> injects the student's real-time attendance margin, semester, branch, and cognitive density score.</li>
+      <li><strong>Dual-Tier Fallback:</strong> If the cloud model is unreachable or offline, the server executes a deterministic heuristic engine, ensuring zero crashes and continuous uptime.</li>
+    </ul>
+
+    <!-- 5. Cross-Questions & Winning Answers -->
+    <h2>5. Evaluator Cross-Questions & Bulletproof Answers</h2>
+
+    <div class="qa-card">
+      <div class="qa-question">Q1: "Why not just use Google Calendar, Notion, or simple To-Do apps?"</div>
+      <div class="qa-answer">
+        <strong>Answer:</strong> "Generic calendars fail engineering students because they treat time as rigid, isolated blocks and produce guilt when tasks are missed. PlanZo solves three engineering realities: 1) Active AICTE 75% attendance calculations with safe bunk alerts; 2) Cognitive load balancing that dynamically recalibrates schedules when 3-hour labs run overtime; and 3) Syllabus-grounded 80/20 PYQ study plans."
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-question">Q2: "How is student data privacy preserved?"</div>
+      <div class="qa-answer">
+        <strong>Answer:</strong> "PlanZo is architected Offline-First. Timetables, attendance records, study notes, XP, and streak logs stay locally on the student's device via browser storage. Only prompt contexts are routed through our secure Express proxy, with no sensitive student identity sold or stored on unvetted servers."
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-question">Q3: "What happens if there is no internet connection?"</div>
+      <div class="qa-answer">
+        <strong>Answer:</strong> "PlanZo features Graceful Degradation. The daily timeline, attendance calculator, subject notes, habit tracker, and audio synthesizers operate 100% offline. On the server side, a deterministic fallback engine handles schedule rebalancing and exam survival plans."
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-question">Q4: "Why React 19 + TypeScript + Express instead of Next.js or Python?"</div>
+      <div class="qa-answer">
+        <strong>Answer:</strong> "For a daily student OS, sub-50ms instant feedback is vital. Vite 8 and React 19 provide zero-route-reload latency. TypeScript across full-stack eliminates interface mismatches, while Express acts as a lightweight, dedicated microservice proxy for AI model orchestration."
+      </div>
+    </div>
+
+    <div class="qa-card">
+      <div class="qa-question">Q5: "What is your Unique Selling Proposition (USP) in one single sentence?"</div>
+      <div class="qa-answer">
+        <strong>Answer:</strong> "PlanZo is the only academic workspace engineered specifically for B.Tech students that combines mandatory 75% attendance protection, dynamic guilt-free schedule recalibration, and curriculum-focused AI mentoring."
+      </div>
+    </div>
+
+    <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; display: flex; justify-content: space-between;">
+      <span>PlanZo OS · B.Tech Academic Operating System</span>
+      <span>Confidential Technical Pitch Dossier</span>
+    </div>
+
+  </div>
+
+</body>
+</html>

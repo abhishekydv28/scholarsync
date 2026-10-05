@@ -22,6 +22,7 @@ import { ScheduleTaskModal } from './components/ScheduleTaskModal';
 import { StreakModal } from './components/StreakModal';
 import { XpModal } from './components/XpModal';
 import { LofiAudioModal } from './components/LofiAudioModal';
+import { ProjectPitchDossierModal } from './components/ProjectPitchDossierModal';
 import { Bot, ArrowLeft } from 'lucide-react';
 
 const PlanZoMain: React.FC = () => {
@@ -41,6 +42,7 @@ const PlanZoMain: React.FC = () => {
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
   const [isXpModalOpen, setIsXpModalOpen] = useState(false);
   const [isLofiModalOpen, setIsLofiModalOpen] = useState(false);
+  const [isDossierModalOpen, setIsDossierModalOpen] = useState(false);
 
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('planzo_theme');
@@ -91,6 +93,7 @@ const PlanZoMain: React.FC = () => {
           onOpenStreakModal={() => setIsStreakModalOpen(true)}
           onOpenXpModal={() => setIsXpModalOpen(true)}
           onOpenLofiModal={() => setIsLofiModalOpen(true)}
+          onOpenDossierModal={() => setIsDossierModalOpen(true)}
         />
 
         {/* Main Content Viewport */}
@@ -191,6 +194,10 @@ const PlanZoMain: React.FC = () => {
       <LofiAudioModal
         isOpen={isLofiModalOpen}
         onClose={() => setIsLofiModalOpen(false)}
+      />
+      <ProjectPitchDossierModal
+        isOpen={isDossierModalOpen}
+        onClose={() => setIsDossierModalOpen(false)}
       />
 
     </div>
