@@ -22,6 +22,7 @@ import {
   SATI_SUBJECT_FOLDERS_DATA,
   getCurriculumForSatiSemester,
 } from '../data/satiVidishaData';
+import { FOUNDATION_ENGINEERING_SUBJECTS } from '../data/foundationSubjects';
 import { SubjectCourse, SubjectAttendance, TimetableItem } from '../types';
 import { playTaskCompleteSound } from '../utils/audioSynth';
 import { fireConfetti } from '../utils/audioVibes';
@@ -85,28 +86,111 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
   const [semester, setSemester] = useState<number>(profile.semester || 1);
   const [rollNo, setRollNo] = useState(profile.rollNo || '0108CS211045');
 
-  // Step 2: Elective selections for that semester
-  const semCurriculum = SATI_SEMESTER_CURRICULA[semester] || SATI_SEMESTER_CURRICULA[1];
-  
-  const getInitialElectivesForSem = (sem: number): Record<string, string> => {
-    const cur = SATI_SEMESTER_CURRICULA[sem];
-    const initial: Record<string, string> = {};
-    if (cur?.electiveGroups) {
-      cur.electiveGroups.forEach((group, index) => {
-        const key = group.groupName.split(' ')[0] || `group-${index}`;
-        initial[key] = group.defaultSelectedId || group.subjects[0]?.id;
-      });
-    }
-    return initial;
+  // Step 2: Foundation Engineering Subject Options Selection
+  const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>([
+    'sub-applied-chem',
+    'sub-applied-phys',
+    'sub-maths',
+    'sub-eng-comm',
+    'sub-basic-cs',
+  ]);
+  const [customSubjects, setCustomSubjects] = useState<SubjectCourse[]>([]);
+  const [newSubjectTitle, setNewSubjectTitle] = useState('');
+  const [newSubjectCode, setNewSubjectCode] = useState('');
+  const [subjectSelectionError, setSubjectSelectionError] = useState<string | null>(null);
+
+  const toggleSubject = (subId: string) => {
+    setSubjectSelectionError(null);
+    setSelectedSubjectIds((prev) =>
+      prev.includes(subId) ? prev.filter((id) => id !== subId) : [...prev, subId]
+    );
   };
 
-  const [selectedElectives, setSelectedElectives] = useState<Record<string, string>>(() =>
-    getInitialElectivesForSem(profile.semester || 1)
-  );
+  const handleSelectAllSubjects = () => {
+    setSubjectSelectionError(null);
+    const allIds = [
+      ...FOUNDATION_ENGINEERING_SUBJECTS.map((s) => s.id),
+      ...customSubjects.map((s) => s.id),
+    ];
+    setSelectedSubjectIds(allIds);
+  };
+
+  const handleDeselectAllSubjects = () => {
+    setSelectedSubjectIds([]);
+  };
+
+  const handleSelectStandardGroupA = () => {
+    setSubjectSelectionError(null);
+    setSelectedSubjectIds([
+      'sub-applied-phys',
+      'sub-maths',
+      'sub-basic-elec',
+      'sub-basic-cs',
+      'sub-eng-comm',
+    ]);
+  };
+
+  const handleSelectStandardGroupB = () => {
+    setSubjectSelectionError(null);
+    setSelectedSubjectIds([
+      'sub-applied-chem',
+      'sub-maths',
+      'sub-basic-electr',
+      'sub-eng-graphics',
+      'sub-fund-mech',
+      'sub-fund-civil',
+    ]);
+  };
+
+  const handleAddCustomSubject = () => {
+    if (!newSubjectTitle.trim()) return;
+    const cleanTitle = newSubjectTitle.trim();
+    const cleanCode = newSubjectCode.trim() || `ENG-${100 + customSubjects.length + 1}`;
+    const newId = `custom-sub-${Date.now()}`;
+    const newCourse: SubjectCourse = {
+      id: newId,
+      code: cleanCode.toUpperCase(),
+      name: cleanTitle,
+      credits: 3,
+      color: 'teal',
+      standardTextbook: 'Institute Prescribed Textbook & Lecture Notes',
+      pyqPaperAvailable: true,
+      modules: [
+        {
+          id: `${newId}-u1`,
+          title: 'Unit-I: Foundational Principles & Theory',
+          weightagePercentage: 20,
+          topics: [
+            { id: `${newId}-t1`, name: 'Core principles, definitions & foundational models', completed: false },
+            { id: `${newId}-t2`, name: 'Theoretical concepts & analytical frameworks', completed: false },
+          ],
+        },
+        {
+          id: `${newId}-u2`,
+          title: 'Unit-II: Advanced Engineering Applications',
+          weightagePercentage: 20,
+          topics: [
+            { id: `${newId}-t3`, name: 'Methodologies, tools & problem solving', completed: false },
+            { id: `${newId}-t4`, name: 'Practical implementation & engineering case studies', completed: false },
+          ],
+        },
+      ],
+    };
+
+    setCustomSubjects((prev) => [...prev, newCourse]);
+    setSelectedSubjectIds((prev) => [...prev, newId]);
+    setNewSubjectTitle('');
+    setNewSubjectCode('');
+    setSubjectSelectionError(null);
+  };
+
+  const removeCustomSubject = (id: string) => {
+    setCustomSubjects((prev) => prev.filter((s) => s.id !== id));
+    setSelectedSubjectIds((prev) => prev.filter((i) => i !== id));
+  };
 
   const handleSemesterChange = (newSem: number) => {
     setSemester(newSem);
-    setSelectedElectives(getInitialElectivesForSem(newSem));
   };
 
   // Step 3: Timing & Goals (SATI Vidisha college time is permanently fixed: 10:30 to 17:30)
@@ -129,24 +213,21 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
 
   if (!isOpen) return null;
 
-  // Compute final subject list based on core + selected electives
+  // Compute final subject list from user selections
   const getCompiledSubjects = (): SubjectCourse[] => {
-    const list = [...semCurriculum.coreSubjects];
-    if (semCurriculum.electiveGroups) {
-      semCurriculum.electiveGroups.forEach((group, index) => {
-        const key = group.groupName.split(' ')[0] || `group-${index}`;
-        const selectedId = selectedElectives[key] || group.defaultSelectedId;
-        const sub = group.subjects.find((s) => s.id === selectedId) || group.subjects[0];
-        if (sub && !list.some((s) => s.id === sub.id)) {
-          list.push(sub);
-        }
-      });
-    }
-    return list;
+    const allAvailable = [...FOUNDATION_ENGINEERING_SUBJECTS, ...customSubjects];
+    const selected = allAvailable.filter((sub) => selectedSubjectIds.includes(sub.id));
+    if (selected.length > 0) return selected;
+    return [FOUNDATION_ENGINEERING_SUBJECTS[0]];
   };
 
-  const handleElectiveChange = (groupKey: string, subjectId: string) => {
-    setSelectedElectives((prev) => ({ ...prev, [groupKey]: subjectId }));
+  const handleNextStep = () => {
+    if (step === 2 && selectedSubjectIds.length === 0) {
+      setSubjectSelectionError('Please select at least 1 subject from the options to proceed.');
+      return;
+    }
+    setSubjectSelectionError(null);
+    setStep((prev) => (prev + 1) as any);
   };
 
   const handleHabitToggle = (habit: string) => {
@@ -507,111 +588,226 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
         )}
 
         {/* ---------------------------------------------------- */}
-        {/* STEP 2: Elective & Subject Selection for Semester   */}
+        {/* STEP 2: Subject Options Selection for Current Semester */}
         {/* ---------------------------------------------------- */}
         {step === 2 && (
           <div className="space-y-4 animate-fadeIn text-xs">
-            <div className="flex items-center justify-between">
+            {/* Header & Description */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-stone-100 dark:border-stone-800">
               <div>
-                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">
-                  Semester {semester} Courses & Electives
+                <h3 className="font-bold text-sm sm:text-base text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <span>Semester {semester} Subject Selection</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 font-bold border border-teal-500/20">
+                    {selectedSubjectIds.length} Selected
+                  </span>
                 </h3>
-                <p className="text-stone-500 dark:text-stone-400 text-xs">
-                  Pick your registered departmental & open electives below.
+                <p className="text-stone-500 dark:text-stone-400 text-xs mt-0.5">
+                  Choose the subjects you are studying this semester from the options below. Tap any subject to select or deselect.
                 </p>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
-                Official Syllabus
-              </span>
+
+              {/* Quick Select Preset Buttons */}
+              <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleSelectAllSubjects}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-stone-100 dark:bg-stone-800 hover:bg-teal-50 dark:hover:bg-teal-950/60 hover:text-teal-700 dark:hover:text-teal-300 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 transition-colors cursor-pointer"
+                >
+                  Select All (10)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSelectStandardGroupA}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-stone-100 dark:bg-stone-800 hover:bg-teal-50 dark:hover:bg-teal-950/60 hover:text-teal-700 dark:hover:text-teal-300 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 transition-colors cursor-pointer"
+                  title="Physics, Maths, Electrical, CS, English"
+                >
+                  Group A (5)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSelectStandardGroupB}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-stone-100 dark:bg-stone-800 hover:bg-teal-50 dark:hover:bg-teal-950/60 hover:text-teal-700 dark:hover:text-teal-300 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 transition-colors cursor-pointer"
+                  title="Chemistry, Maths, Electronics, Drawing, Mech, Civil"
+                >
+                  Group B (6)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeselectAllSubjects}
+                  className="px-2 py-1 rounded-lg text-[11px] font-semibold text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
+                >
+                  Clear
+                </button>
+              </div>
             </div>
 
-            {/* Core Compulsory Courses */}
-            <div className="space-y-2">
-              <div className="text-[11px] font-mono uppercase font-bold text-stone-400">
-                Core Compulsory Subjects:
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {semCurriculum.coreSubjects.map((sub) => (
-                  <div
-                    key={sub.id}
-                    className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/60 dark:bg-stone-900/40 flex items-center justify-between"
-                  >
-                    <div>
-                      <div className="font-bold text-stone-900 dark:text-stone-100">
-                        {sub.code}: {sub.name}
-                      </div>
-                      <div className="text-[10px] text-stone-500 font-mono">
-                        {sub.credits} Credits · Units 1 to 5
-                      </div>
-                    </div>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Elective Groups Selection */}
-            {semCurriculum.electiveGroups && semCurriculum.electiveGroups.length > 0 && (
-              <div className="space-y-3 pt-2 border-t border-stone-100 dark:border-stone-800">
-                <div className="text-[11px] font-mono uppercase font-bold text-stone-400">
-                  Choose Your Electives:
-                </div>
-                {semCurriculum.electiveGroups.map((group, gIdx) => {
-                  const groupKey = group.groupName.split(' ')[0] || `group-${gIdx}`;
-                  const currentChoice = selectedElectives[groupKey] || group.defaultSelectedId;
-
-                  return (
-                    <div
-                      key={gIdx}
-                      className="p-3.5 rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-stone-50/40 dark:bg-stone-900/30 space-y-2"
-                    >
-                      <div className="font-bold text-stone-800 dark:text-stone-200 text-xs flex items-center justify-between">
-                        <span>{group.groupName}</span>
-                        <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
-                          Choose 1
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-stone-500 dark:text-stone-400">
-                        {group.description}
-                      </p>
-
-                      <div className="space-y-1.5 pt-1">
-                        {group.subjects.map((sub) => {
-                          const isSelected = currentChoice === sub.id;
-                          return (
-                            <label
-                              key={sub.id}
-                              onClick={() => handleElectiveChange(groupKey, sub.id)}
-                              className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                                isSelected
-                                  ? 'border-emerald-500 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 font-semibold'
-                                  : 'border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700 text-stone-700 dark:text-stone-300'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="radio"
-                                  name={`group-${gIdx}`}
-                                  checked={isSelected}
-                                  onChange={() => handleElectiveChange(groupKey, sub.id)}
-                                  className="accent-emerald-500"
-                                />
-                                <span className="text-xs">
-                                  <strong>{sub.code}:</strong> {sub.name}
-                                </span>
-                              </div>
-                              <span className="text-[10px] font-mono text-stone-400">
-                                {sub.credits} Credits
-                              </span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
+            {/* Error Message if None Selected */}
+            {subjectSelectionError && (
+              <div className="p-3 rounded-xl border border-rose-300 dark:border-rose-800/80 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 font-medium text-xs flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+                <span>{subjectSelectionError}</span>
               </div>
             )}
+
+            {/* 10 Engineering Subject Options Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[340px] overflow-y-auto pr-1">
+              {FOUNDATION_ENGINEERING_SUBJECTS.map((sub) => {
+                const isSelected = selectedSubjectIds.includes(sub.id);
+                return (
+                  <div
+                    key={sub.id}
+                    onClick={() => toggleSubject(sub.id)}
+                    className={`group relative p-3 rounded-xl border transition-all cursor-pointer select-none flex items-start gap-3 ${
+                      isSelected
+                        ? 'border-teal-500 bg-teal-50/70 dark:bg-teal-950/40 text-stone-900 dark:text-stone-100 ring-2 ring-teal-500/20 shadow-xs'
+                        : 'border-stone-200/90 dark:border-stone-800 bg-white dark:bg-stone-900/40 text-stone-600 dark:text-stone-400 hover:border-teal-400/60 hover:bg-stone-50/80 dark:hover:bg-stone-850/60'
+                    }`}
+                  >
+                    {/* Custom Checkbox Indicator */}
+                    <div
+                      className={`mt-0.5 w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-all ${
+                        isSelected
+                          ? 'border-teal-600 bg-teal-600 text-white shadow-xs'
+                          : 'border-stone-300 dark:border-stone-600 group-hover:border-teal-400'
+                      }`}
+                    >
+                      {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold ${
+                          isSelected
+                            ? 'bg-teal-100 dark:bg-teal-900/80 text-teal-800 dark:text-teal-200'
+                            : 'bg-stone-100 dark:bg-stone-800 text-stone-500'
+                        }`}>
+                          {sub.code}
+                        </span>
+                        <span className="text-[10px] font-mono text-stone-400 font-medium">
+                          {sub.credits} Credits
+                        </span>
+                      </div>
+
+                      <div className={`font-bold text-xs mt-1 truncate ${
+                        isSelected ? 'text-teal-950 dark:text-teal-100' : 'text-stone-800 dark:text-stone-200'
+                      }`}>
+                        {sub.name}
+                      </div>
+
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5 truncate">
+                        5 Units · Theory & Practice
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Any Custom Subjects Added by User */}
+              {customSubjects.map((sub) => {
+                const isSelected = selectedSubjectIds.includes(sub.id);
+                return (
+                  <div
+                    key={sub.id}
+                    onClick={() => toggleSubject(sub.id)}
+                    className={`group relative p-3 rounded-xl border transition-all cursor-pointer select-none flex items-start gap-3 ${
+                      isSelected
+                        ? 'border-teal-500 bg-teal-50/70 dark:bg-teal-950/40 text-stone-900 dark:text-stone-100 ring-2 ring-teal-500/20'
+                        : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900/40 text-stone-600 dark:text-stone-400'
+                    }`}
+                  >
+                    <div
+                      className={`mt-0.5 w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-all ${
+                        isSelected
+                          ? 'border-teal-600 bg-teal-600 text-white'
+                          : 'border-stone-300 dark:border-stone-600'
+                      }`}
+                    >
+                      {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded font-bold bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">
+                          {sub.code} · Custom
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeCustomSubject(sub.id);
+                          }}
+                          className="text-[10px] text-rose-500 hover:underline cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      <div className="font-bold text-xs mt-1 truncate">
+                        {sub.name}
+                      </div>
+
+                      <div className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5 truncate">
+                        Custom Course · {sub.credits} Credits
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Custom Subject Addition Expandable Box */}
+            <div className="p-3 rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/60 dark:bg-stone-900/30 space-y-2">
+              <div className="font-semibold text-stone-700 dark:text-stone-300 text-[11px] flex items-center justify-between">
+                <span>Have another specific course or lab?</span>
+                <span className="text-[10px] text-stone-400">Optional</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newSubjectCode}
+                  onChange={(e) => setNewSubjectCode(e.target.value)}
+                  placeholder="Code (e.g. IT-101)"
+                  className="w-24 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 font-mono text-xs text-stone-800 dark:text-stone-200 placeholder-stone-400 focus:outline-hidden focus:ring-1 focus:ring-teal-500"
+                />
+                <input
+                  type="text"
+                  value={newSubjectTitle}
+                  onChange={(e) => setNewSubjectTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddCustomSubject();
+                    }
+                  }}
+                  placeholder="Subject name (e.g. Environmental Science, Python Lab)..."
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-xs text-stone-800 dark:text-stone-200 placeholder-stone-400 focus:outline-hidden focus:ring-1 focus:ring-teal-500"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCustomSubject}
+                  disabled={!newSubjectTitle.trim()}
+                  className="px-3 py-1.5 rounded-lg bg-teal-700 hover:bg-teal-800 disabled:opacity-40 text-white font-bold text-xs transition-colors cursor-pointer shrink-0"
+                >
+                  + Add
+                </button>
+              </div>
+            </div>
+
+            {/* Total Credits & Selection Status Summary */}
+            <div className="px-3 py-2 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-between text-xs">
+              <span className="text-teal-800 dark:text-teal-200 font-medium">
+                {selectedSubjectIds.length === 0 ? (
+                  <span className="text-rose-600 dark:text-rose-400">No subjects selected yet</span>
+                ) : (
+                  <span>
+                    <strong>{selectedSubjectIds.length}</strong> subjects selected for Semester {semester}
+                  </span>
+                )}
+              </span>
+              <span className="font-mono text-[11px] text-teal-700 dark:text-teal-300 font-bold">
+                {getCompiledSubjects().reduce((acc, curr) => acc + curr.credits, 0)} Total Credits
+              </span>
+            </div>
           </div>
         )}
 
@@ -884,6 +1080,19 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
                 <span className="text-stone-500">Courses Mapped:</span>
                 <span className="font-bold text-stone-800 dark:text-stone-200">{getCompiledSubjects().length} Courses</span>
               </div>
+              <div className="pt-1 border-t border-stone-200/60 dark:border-stone-800/60">
+                <span className="text-stone-500 text-[10px] block mb-1 font-mono uppercase font-bold">Enrolled Subjects:</span>
+                <div className="flex flex-wrap gap-1">
+                  {getCompiledSubjects().map((sub) => (
+                    <span
+                      key={sub.id}
+                      className="px-2 py-0.5 rounded-md bg-white dark:bg-stone-850 text-stone-800 dark:text-stone-200 text-[10px] font-medium border border-stone-200/80 dark:border-stone-750"
+                    >
+                      {sub.code}: {sub.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
               <div className="flex items-center justify-between">
                 <span className="text-stone-500">College Schedule:</span>
                 <span className="font-bold text-stone-800 dark:text-stone-200">{collegeStart} to {collegeEnd}</span>
@@ -926,7 +1135,7 @@ export const PersonalizationSetupWizard: React.FC<PersonalizationSetupWizardProp
           {step < 5 ? (
             <button
               type="button"
-              onClick={() => setStep((prev) => (prev + 1) as any)}
+              onClick={handleNextStep}
               className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-xs"
             >
               <span>Next Step</span>
