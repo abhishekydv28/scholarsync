@@ -13,7 +13,12 @@ const app = express();
 const PORT = 3000;
 
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header('Access-Control-Allow-Origin', origin);
+  } else {
+    res.header('Access-Control-Allow-Origin', '*');
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -31,9 +36,18 @@ app.get('/api/chat', (_req, res) => {
   res.json({ status: 'ok', service: 'Sarthi AI Copilot Server', timestamp: Date.now() });
 });
 
-// Initialize GoogleGenAI server-side
+// Initialize GoogleGenAI server-side with required telemetry User-Agent
 const apiKey = process.env.GEMINI_API_KEY;
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+const ai = apiKey
+  ? new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        },
+      },
+    })
+  : null;
 
 // Endpoint: Student Life AI Chatbot (PlanZo Coach / Sarthi AI)
 app.post('/api/chat', async (req, res) => {
@@ -48,29 +62,39 @@ app.post('/api/chat', async (req, res) => {
     const systemInstruction = `You are Sarthi, an expert, empathetic, and exceptionally practical senior B.Tech mentor & academic copilot on PlanZo.
 Student Academic Context:
 - College / Institute: ${context?.college || 'B.Tech Engineering College'}
-- Engineering Branch: ${context?.branch || 'Engineering'}
+- Engineering Branch: ${context?.branch || 'Computer Science & Engineering'}
 - Current Semester: Semester ${context?.semester || '1'}
 - Current Schedule Load: ${context?.bandwidth || 'Balanced'}
 
 Core Principles:
-1. Provide direct, rigorous, and intelligent answers to whatever question the student asks—whether it is solving mathematics equations, explaining physics/chemistry concepts, writing and debugging code (C, C++, Python, Java, JS), breaking down syllabus topics, explaining engineering drawing principles, or advising on 75% attendance rules.
+1. Provide direct, rigorous, and intelligent answers to whatever specific question the student asks—whether it is solving mathematics equations, explaining physics/chemistry concepts, writing and debugging code (C, C++, Python, Java, JS), breaking down syllabus topics, explaining engineering drawing principles, or advising on 75% attendance rules.
 2. If an image or file is attached (e.g. photos of exam question papers, textbook pages, circuit diagrams, code screenshots, handwritten notes, or lab manuals), thoroughly analyze and explain it step-by-step.
-3. Keep formatting clean, highly readable, and structured. Use clear section titles, clean numbered steps (1., 2., 3.), clean bullet points, and code blocks for code snippets. Avoid dumping messy raw symbols or excessive asterisks.
-4. Never give robotic generic boilerplate or repeated pre-fed canned answers. Answer specifically and dynamically to the student's exact query.`;
+3. Keep formatting clean, highly readable, and structured. Use clear section titles, clean numbered steps (1., 2., 3.), clean bullet points, and code blocks with syntax highlighting for code snippets. Avoid dumping messy raw symbols or excessive asterisks.
+4. Never give robotic generic boilerplate, never repeat pre-fed canned answers, and never give a generic placeholder. Answer specifically and dynamically to the student's exact query.`;
 
     if (ai) {
-      // Build conversation contents for Gemini
+      // Build conversation contents for Gemini ensuring valid multiturn format
       const contents: any[] = [];
 
       // Include previous turns for context (up to last 6 messages)
       if (Array.isArray(messages) && messages.length > 1) {
         const history = messages.slice(-7, -1);
         for (const msg of history) {
-          if (msg.content) {
-            contents.push({
-              role: msg.sender === 'user' ? 'user' : 'model',
-              parts: [{ text: msg.content }],
-            });
+          if (msg.content && typeof msg.content === 'string') {
+            const role = msg.sender === 'user' ? 'user' : 'model';
+            // Gemini strictly requires conversation contents to start with 'user'
+            if (contents.length === 0 && role === 'model') {
+              continue; // Skip initial welcome or assistant greetings
+            }
+            // Gemini strictly requires alternating roles: user -> model -> user -> model
+            if (contents.length > 0 && contents[contents.length - 1].role === role) {
+              contents[contents.length - 1].parts.push({ text: msg.content });
+            } else {
+              contents.push({
+                role,
+                parts: [{ text: msg.content }],
+              });
+            }
           }
         }
       }
@@ -94,20 +118,29 @@ Core Principles:
         });
       }
 
-      // If user uploaded a file without text prompt
+      // Fallback text if user only uploaded an attachment
       if (currentParts.length === 1 && currentParts[0].inlineData) {
         currentParts.unshift({
           text: 'Please carefully analyze this uploaded image/document, identify what it contains, explain the concepts, and solve or answer any problems shown.',
         });
       }
 
-      contents.push({
-        role: 'user',
-        parts: currentParts,
-      });
+      if (currentParts.length === 0) {
+        currentParts.push({ text: 'Hello, please help me with my B.Tech studies.' });
+      }
 
-      // Try modern models with fallback
-      const candidateModels = ['gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
+      // Append final turn as 'user'
+      if (contents.length > 0 && contents[contents.length - 1].role === 'user') {
+        contents[contents.length - 1].parts.push(...currentParts);
+      } else {
+        contents.push({
+          role: 'user',
+          parts: currentParts,
+        });
+      }
+
+      // Try modern models with gemini-3.1-flash-lite first for lightning-fast and reliable responses
+      const candidateModels = ['gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
       let generatedText = '';
       let lastError: any = null;
 
@@ -125,7 +158,7 @@ Core Principles:
             break;
           }
         } catch (err: any) {
-          console.warn(`Model ${model} attempt error:`, err?.message?.slice(0, 120) || err);
+          console.warn(`Model ${model} attempt error:`, err?.message?.slice(0, 150) || err);
           lastError = err;
         }
       }

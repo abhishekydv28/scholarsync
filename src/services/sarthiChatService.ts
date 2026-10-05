@@ -29,7 +29,7 @@ export interface ChatRequestPayload {
 /**
  * Cleanly format academic response text
  */
-function cleanAiResponseFormat(text: string): string {
+export function cleanAiResponseFormat(text: string): string {
   if (!text) return '';
   return text
     .replace(/^#{4,6}\s+/gm, '### ')
@@ -38,206 +38,81 @@ function cleanAiResponseFormat(text: string): string {
     .trim();
 }
 
-/**
- * Intelligent Academic Offline / Fallback Responder
- * Generates structured, step-by-step engineering explanations, code, and math solutions
- * whenever network proxies, iframe auth bridges, or 405 redirects interfere.
- */
-function generateIntelligentFallbackResponse(
-  userQuery: string,
-  attachment?: ChatAttachment,
-  context?: ChatContextPayload
-): string {
-  const query = userQuery.toLowerCase().trim();
-  const college = context?.college || 'B.Tech Engineering College';
-  const branch = context?.branch || 'Engineering';
-  const sem = context?.semester || 1;
-
-  // 1. Math / Derivation / Calculus / Matrices
-  if (
-    query.includes('math') ||
-    query.includes('calculus') ||
-    query.includes('matrix') ||
-    query.includes('eigen') ||
-    query.includes('derivative') ||
-    query.includes('integral') ||
-    query.includes('taylor') ||
-    query.includes('differential')
-  ) {
-    return cleanAiResponseFormat(`### Engineering Mathematics Solution & Breakdown
-
-Here is the systematic, step-by-step solution for your query:
-
-**1. Core Principle & Formula:**
-For foundational engineering problems, we start by stating the standard analytical formula and identifying boundary conditions:
-- **Given Concept:** Applied Calculus & Linear Algebra
-- **Governing Equation:** $$\\det(A - \\lambda I) = 0$$ or $$\\frac{dy}{dx} + P(x)y = Q(x)$$
-- **Integrating Factor (if differential equation):** $$I.F. = e^{\\int P(x)\\,dx}$$
-
-**2. Step-by-Step Derivation & Solution:**
-1. **Identify the variables:** Separate known parameters from dependent variables.
-2. **Apply Analytical Transformation:** Substitute into the standard form to simplify terms.
-3. **Execute Integration / Row Reduction:** Compute row operations systematically to avoid sign mistakes (frequent in mid-sem exams).
-4. **Apply Boundary / Initial Conditions:** Solve for arbitrary constants $C$.
-
-**3. Exam Strategy Tip for ${college}:**
-In university exams, always draw a clear box around your final answer and state the physical significance or convergence condition. Examiners award 40% partial marks for correct formula presentation!`);
-  }
-
-  // 2. Programming / Coding / C / C++ / Python / DSA
-  if (
-    query.includes('code') ||
-    query.includes('program') ||
-    query.includes('c++') ||
-    query.includes('python') ||
-    query.includes('java') ||
-    query.includes('pointer') ||
-    query.includes('array') ||
-    query.includes('linked list') ||
-    query.includes('algorithm') ||
-    query.includes('error') ||
-    query.includes('syntax')
-  ) {
-    return cleanAiResponseFormat(`### Code Solution & Architecture
-
-Here is the robust, production-tested implementation addressing your requirements:
-
-\`\`\`c
-#include <stdio.h>
-#include <stdlib.h>
-
-// Core Engineering Function Implementation
-int solveEngineeringProblem(int n) {
-    if (n <= 0) return 0;
-    
-    // Efficient linear time approach - O(n) Time, O(1) Auxiliary Space
-    int result = 0;
-    for (int i = 1; i <= n; i++) {
-        result += i;
-    }
-    return result;
-}
-
-int main() {
-    int inputVal = 10;
-    printf("Evaluating problem for n = %d\\n", inputVal);
-    
-    int ans = solveEngineeringProblem(inputVal);
-    printf("Computed Result: %d\\n", ans);
-    
-    return 0;
-}
-\`\`\`
-
-**Key Execution Points:**
-1. **Time Complexity:** $\\mathcal{O}(n)$ — Optimal for university lab evaluations and viva.
-2. **Space Complexity:** $\\mathcal{O}(1)$ — No dynamic memory leaks.
-3. **Common Pitfalls to Avoid:**
-   - Always initialize loop accumulators to zero.
-   - For pointers in C/C++, check for \`NULL\` before dereferencing.
-   - Ensure array indexing stays strictly within \`0\` to \`n-1\`.`);
-  }
-
-  // 3. Attendance / Bunk / Debar
-  if (query.includes('attendance') || query.includes('bunk') || query.includes('debar') || query.includes('75')) {
-    return cleanAiResponseFormat(`### 75% Attendance Guard Analysis & Formula
-
-**The 75% Rule Calculation:**
-To maintain a safe 75% threshold without being detained or debarred:
-
-$$\\text{Current % } = \\left(\\frac{\\text{Attended Classes}}{\\text{Total Conducted Classes}}\\right) \\times 100$$
-
-**1. How to Calculate Classes You Must Attend:**
-If your attendance is below 75%, the number of consecutive classes ($x$) you must attend is:
-$$x = \\frac{0.75 \\times T - A}{0.25} = 3T - 4A$$
-*(Where $T$ is total conducted classes, and $A$ is attended classes)*.
-
-**2. Tactical Advice:**
-- **Protect Core Labs First:** Lab practicals usually have fewer total sessions, so missing even 1 lab drops your percentage sharply.
-- **Medical / Event Exemption:** Keep official signed applications ready for institute tech fests or medical leaves before end-semester exam admit cards are issued.`);
-  }
-
-  // 4. File / Image Attachment Analysis
-  if (attachment) {
-    return cleanAiResponseFormat(`### Attached File Analysis (${attachment.name})
-
-I have reviewed the uploaded document/image for your ${branch} coursework:
-
-**1. File Summary:**
-- **Document Name:** \`${attachment.name}\`
-- **Detected Type:** \`${attachment.mimeType}\`
-- **Academic Context:** Semester ${sem} Engineering Material
-
-**2. Key Insights & Breakdown:**
-- The document covers core theoretical and practical modules relevant to your syllabus.
-- Key formulas and diagrams should be verified against standard university textbook reference guides.
-- Make sure to review previous year question (PYQ) patterns for this specific chapter.
-
-Feel free to ask a specific question about any equation, line of code, or diagram in this file!`);
-  }
-
-  // 5. Default Comprehensive Engineering Copilot Response
-  return cleanAiResponseFormat(`### Sarthi Academic Guidance for ${branch}
-
-Here is a direct, structured answer to your question:
-
-**1. Understanding the Concept:**
-In Semester ${sem} engineering curricula, this topic is central to both university examinations and technical interview assessments. The core mechanism relies on breaking down complex problems into modular analytical components.
-
-**2. Key Steps & Implementation:**
-1. **Grasp the Fundamental Definition:** Review standard definitions from university prescribed textbooks.
-2. **Analyze Standard Diagrams & Derivations:** Examiners look for labeled diagrams, clear assumptions, and standard notation.
-3. **Practice Past 5 Years Questions (PYQs):** Over 60% of university exam questions follow repeating patterns from previous cycles.
-
-**3. Next Step:**
-Would you like me to solve a specific numerical problem on this, write code, or provide a 3-phase revision checklist? Just drop the details!`);
-}
-
 const DEV_BACKEND_ENDPOINT = 'https://ais-dev-xwtqs7ljetyij5npxh755f-893813178872.asia-east1.run.app/api/chat';
 
 /**
  * Primary Sarthi AI Query Handler
- * Sends request to /api/chat with full credentials & auth query params.
- * If running on a static preview deployment (ais-pre) where /api/chat is 404,
- * seamlessly calls the live backend endpoint with CORS enabled.
+ * Calls the backend `/api/chat` endpoint with automatic retry on transient spikes.
+ * Does NOT use credentials: 'include' to guarantee seamless cross-origin and cross-browser support
+ * across all student laptops, mobile phones, and incognito sessions.
  */
 export async function querySarthiAi(payload: ChatRequestPayload): Promise<string> {
-  const userMessage = payload.messages[payload.messages.length - 1]?.content || '';
-  const searchParams = typeof window !== 'undefined' ? window.location.search || '' : '';
-  const localEndpoint = `/api/chat${searchParams}`;
+  const localEndpoint = '/api/chat';
 
-  // Candidate endpoints to try in order
-  const endpointsToTry = [localEndpoint];
-  if (typeof window !== 'undefined' && !window.location.origin.includes('localhost') && !window.location.origin.includes('ais-dev')) {
+  // Candidate endpoints to try
+  const endpointsToTry: string[] = [localEndpoint];
+  if (
+    typeof window !== 'undefined' &&
+    window.location.origin &&
+    !window.location.origin.includes('localhost') &&
+    !window.location.origin.includes('ais-dev')
+  ) {
     endpointsToTry.push(DEV_BACKEND_ENDPOINT);
   }
 
-  for (const endpoint of endpointsToTry) {
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        credentials: 'include',
-        redirect: 'follow',
-        body: JSON.stringify(payload),
-      });
+  let lastErrorMessage = '';
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.reply) {
-          return cleanAiResponseFormat(data.reply);
+  for (const endpoint of endpointsToTry) {
+    // Attempt up to 2 times for each endpoint in case of transient 503 load spike
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 35000); // 35s timeout for deep thinking
+
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          signal: controller.signal,
+          body: JSON.stringify(payload),
+        });
+
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.reply) {
+            return cleanAiResponseFormat(data.reply);
+          }
+        }
+
+        if (res.status === 503 || res.status === 429) {
+          lastErrorMessage = 'AI server is experiencing high traffic. Please retry.';
+          // Wait 1.5s before second attempt
+          if (attempt === 1) {
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            continue;
+          }
+        } else {
+          lastErrorMessage = `Server responded with status ${res.status}`;
+        }
+      } catch (netErr: any) {
+        if (netErr?.name === 'AbortError') {
+          lastErrorMessage = 'Request timed out. Please try asking again.';
+        } else {
+          lastErrorMessage = netErr?.message || 'Network connection failed.';
+        }
+        if (attempt === 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
-
-      console.warn(`Sarthi AI endpoint ${endpoint} returned HTTP ${res.status}.`);
-    } catch (netErr) {
-      console.warn(`Network call to ${endpoint} failed:`, netErr);
     }
   }
 
-  // Resilient fallback: Never leave student stranded with a connection error
-  return generateIntelligentFallbackResponse(userMessage, payload.attachment, payload.context);
+  // If all live endpoints failed, throw so UI can show a clear Retry button
+  throw new Error(
+    lastErrorMessage || 'Sarthi AI is currently unreachable. Please check your network and retry.'
+  );
 }
